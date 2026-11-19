@@ -24,6 +24,8 @@ if DEBUG:
 else:
     allowed_hosts_env = os.environ.get('ALLOWED_HOSTS', '127.0.0.1,localhost')
     ALLOWED_HOSTS = [h.strip() for h in allowed_hosts_env.split(',') if h.strip()]
+    if '.onrender.com' not in ALLOWED_HOSTS:
+        ALLOWED_HOSTS.append('.onrender.com')
 
 # Application definition
 INSTALLED_APPS = [
@@ -70,9 +72,25 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'bookbazaar_backend.wsgi.application'
 
-# Database Configuration: SQLite default, PostgreSQL ready via environment toggle
+# Database Configuration: Render DATABASE_URL support, PostgreSQL toggle, SQLite fallback
+DATABASE_URL = os.environ.get('DATABASE_URL')
 USE_POSTGRES = os.environ.get('USE_POSTGRES', 'False').strip().lower() in ('true', '1', 'yes')
-if USE_POSTGRES:
+
+if DATABASE_URL:
+    from urllib.parse import urlparse
+    parsed = urlparse(DATABASE_URL)
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': parsed.path.lstrip('/'),
+            'USER': parsed.username or '',
+            'PASSWORD': parsed.password or '',
+            'HOST': parsed.hostname or '',
+            'PORT': str(parsed.port or 5432),
+            'CONN_MAX_AGE': int(os.environ.get('DB_CONN_MAX_AGE', '600')),
+        }
+    }
+elif USE_POSTGRES:
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.postgresql',
@@ -132,6 +150,8 @@ else:
 # CSRF Trusted Origins for Form Submissions & API
 csrf_trusted_env = os.environ.get('CSRF_TRUSTED_ORIGINS', 'http://127.0.0.1:8000,http://localhost:8000')
 CSRF_TRUSTED_ORIGINS = [c.strip() for c in csrf_trusted_env.split(',') if c.strip()]
+if 'https://*.onrender.com' not in CSRF_TRUSTED_ORIGINS:
+    CSRF_TRUSTED_ORIGINS.append('https://*.onrender.com')
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
