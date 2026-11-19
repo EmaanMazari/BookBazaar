@@ -1,0 +1,26 @@
+databases:
+  - name: bookbazaar-db
+    plan: free
+    databaseName: bookbazaar_db
+    user: bookbazaar_user
+
+services:
+  - type: web
+    name: bookbazaar
+    runtime: python
+    plan: free
+    buildCommand: pip install -r requirements.txt && python manage.py collectstatic --noinput && python manage.py migrate
+    startCommand: gunicorn bookbazaar_backend.wsgi:application
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: bookbazaar-db
+          property: connectionString
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DEBUG
+        value: "False"
+      - key: ALLOWED_HOSTS
+        value: "*"
+      - key: PAYMENT_GATEWAY_MODE
+        value: "sandbox"
