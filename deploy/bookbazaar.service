@@ -1,0 +1,33 @@
+# ========================================================
+# BookBazaar Pakistan - Systemd Service Unit
+# Path: /etc/systemd/system/bookbazaar.service
+# Command to enable: sudo systemctl enable --now bookbazaar
+# ========================================================
+
+[Unit]
+Description=BookBazaar Django WSGI Application Daemon
+After=network.target postgresql.service
+
+[Service]
+Type=notify
+User=www-data
+Group=www-data
+WorkingDirectory=/var/www/bookbazaar
+EnvironmentFile=/var/www/bookbazaar/.env
+ExecStart=/var/www/bookbazaar/venv/bin/gunicorn \
+    -c /var/www/bookbazaar/deploy/gunicorn_conf.py \
+    bookbazaar_backend.wsgi:application
+ExecReload=/bin/kill -s HUP $MAINPID
+KillMode=mixed
+TimeoutStopSec=30
+Restart=on-failure
+RestartSec=5s
+
+# Security Sandboxing
+PrivateTmp=true
+ProtectSystem=full
+ProtectHome=true
+NoNewPrivileges=true
+
+[Install]
+WantedBy=multi-user.target

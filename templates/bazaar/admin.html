@@ -1,0 +1,1939 @@
+{% extends 'bazaar/base.html' %}
+
+{% block title %}BookBazaar Admin Dashboard - FYP & Commercial Management{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-slate-100 flex flex-col font-sans pb-16">
+    <!-- Top Admin Header -->
+    <header class="bg-slate-900 text-white py-3.5 px-4 sm:px-6 border-b border-slate-800 sticky top-0 z-40 shadow-md">
+        <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-3">
+            <div class="flex items-center gap-3">
+                <a href="/" class="w-9 h-9 rounded-xl bg-pakistan-600 flex items-center justify-center font-black text-white text-sm shadow-md">
+                    BB
+                </a>
+                <div>
+                    <h1 class="text-base font-extrabold text-emerald-400 flex items-center gap-2">
+                        <span>BookBazaar Operations & Admin Dashboard</span>
+                        <span class="text-[10px] bg-emerald-950 text-emerald-300 font-bold px-2.5 py-0.5 rounded-full border border-emerald-700">
+                            Phase 4 Complete System
+                        </span>
+                    </h1>
+                    <p class="text-xs text-slate-400">National Academic & Used Books Marketplace Administration</p>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-3">
+                <span class="hidden md:inline-flex items-center gap-1.5 px-3 py-1 bg-slate-800 text-emerald-400 rounded-lg text-xs font-semibold border border-slate-700">
+                    <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                    PostgreSQL 18 Connected
+                </span>
+
+                <!-- Notification Bell & Dropdown -->
+                <div class="relative" id="admin-notification-container">
+                    <button id="admin-notif-bell-btn" onclick="toggleAdminNotifications()" 
+                            class="relative px-3 py-1.5 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-lg text-xs font-bold text-slate-200 flex items-center gap-1.5 transition-colors focus:outline-none">
+                        <i class="fa-solid fa-bell text-amber-400"></i>
+                        <span class="hidden sm:inline">Alerts</span>
+                        <span id="admin-notif-badge" class="hidden px-1.5 py-0.2 bg-rose-500 text-white text-[10px] font-black rounded-full min-w-[18px] text-center">0</span>
+                    </button>
+
+                    <!-- Notifications Dropdown Panel -->
+                    <div id="admin-notif-dropdown" class="hidden absolute right-0 mt-2 w-80 sm:w-96 bg-white rounded-2xl shadow-2xl border border-slate-200 z-50 overflow-hidden text-slate-800">
+                        <div class="p-3.5 bg-slate-900 text-white flex items-center justify-between border-b border-slate-800">
+                            <div class="flex items-center gap-2">
+                                <i class="fa-solid fa-bell text-amber-400 text-sm"></i>
+                                <span class="font-extrabold text-xs">Admin Notifications</span>
+                                <span id="admin-notif-count-label" class="text-[10px] bg-slate-800 text-slate-300 font-bold px-2 py-0.5 rounded-full border border-slate-700">0 unread</span>
+                            </div>
+                            <button onclick="markAllNotificationsRead()" class="text-[10px] text-emerald-400 hover:text-emerald-300 font-bold hover:underline">
+                                Mark all read
+                            </button>
+                        </div>
+                        <div id="admin-notif-list" class="max-h-96 overflow-y-auto divide-y divide-slate-100 p-1">
+                            <div class="p-6 text-center text-xs text-slate-400">
+                                <i class="fa-solid fa-bell-slash text-2xl text-slate-300 mb-2 block"></i>
+                                No notifications yet
+                            </div>
+                        </div>
+                        <div class="p-2.5 bg-slate-50 border-t border-slate-100 text-center text-[10px] text-slate-500 font-semibold flex items-center justify-between">
+                            <span>Payment & Deal Lifecycle Activity</span>
+                            <button onclick="fetchAdminNotifications(true)" class="text-emerald-700 hover:underline flex items-center gap-1 font-bold">
+                                <i class="fa-solid fa-rotate text-[9px]"></i> Refresh
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <a href="/" class="px-3.5 py-1.5 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-lg text-xs font-bold text-slate-200 flex items-center gap-1.5 transition-colors">
+                    <i class="fa-solid fa-arrow-left"></i> Marketplace Front
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <div class="max-w-7xl mx-auto w-full p-4 sm:p-6 flex-1 space-y-6">
+
+        <!-- Top Metrics KPI Cards -->
+        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3.5">
+            <!-- Retained Platform Revenue -->
+            <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-xs">
+                <div class="flex items-center justify-between text-xs text-slate-500 mb-1">
+                    <span class="font-semibold">Retained Rev</span>
+                    <i class="fa-solid fa-coins text-emerald-600"></i>
+                </div>
+                <div class="text-xl font-black text-pakistan-800" id="stat-retained-rev">Rs. 0</div>
+                <span class="text-[10px] text-emerald-700 font-bold bg-emerald-50 px-1.5 py-0.5 rounded mt-1 inline-block">
+                    Fee on Confirmed Deals
+                </span>
+            </div>
+
+            <!-- Refunded Fees -->
+            <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-xs">
+                <div class="flex items-center justify-between text-xs text-slate-500 mb-1">
+                    <span class="font-semibold">Total Refunded</span>
+                    <i class="fa-solid fa-rotate-left text-blue-600"></i>
+                </div>
+                <div class="text-xl font-black text-blue-700" id="stat-refunded-rev">Rs. 0</div>
+                <span class="text-[10px] text-blue-700 font-bold bg-blue-50 px-1.5 py-0.5 rounded mt-1 inline-block">
+                    100% Wallet Refunds
+                </span>
+            </div>
+
+            <!-- Total Contact Unlocks -->
+            <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-xs">
+                <div class="flex items-center justify-between text-xs text-slate-500 mb-1">
+                    <span class="font-semibold">Total Unlocks</span>
+                    <i class="fa-solid fa-key text-amber-500"></i>
+                </div>
+                <div class="text-xl font-black text-slate-900" id="stat-total-unlocks">0</div>
+                <span class="text-[10px] text-slate-500 mt-1 block">Rs. 50 platform fee</span>
+            </div>
+
+            <!-- Active Listings -->
+            <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-xs">
+                <div class="flex items-center justify-between text-xs text-slate-500 mb-1">
+                    <span class="font-semibold">Active Listings</span>
+                    <i class="fa-solid fa-book text-pakistan-600"></i>
+                </div>
+                <div class="text-xl font-black text-slate-900" id="stat-active-listings">0</div>
+                <span class="text-[10px] text-slate-500 mt-1 block" id="stat-pending-listings-sub">0 pending approval</span>
+            </div>
+
+            <!-- Registered Users -->
+            <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-xs">
+                <div class="flex items-center justify-between text-xs text-slate-500 mb-1">
+                    <span class="font-semibold">Users & Sellers</span>
+                    <i class="fa-solid fa-users text-purple-600"></i>
+                </div>
+                <div class="text-xl font-black text-slate-900" id="stat-total-users">0</div>
+                <span class="text-[10px] text-red-600 font-semibold mt-1 block" id="stat-blocked-users-sub">0 blocked</span>
+            </div>
+
+            <!-- Complaints & Reports -->
+            <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-xs">
+                <div class="flex items-center justify-between text-xs text-slate-500 mb-1">
+                    <span class="font-semibold">Safety Reports</span>
+                    <i class="fa-solid fa-shield-halved text-rose-600"></i>
+                </div>
+                <div class="text-xl font-black text-rose-700" id="stat-pending-reports">0</div>
+                <span class="text-[10px] text-rose-700 font-bold bg-rose-50 px-1.5 py-0.5 rounded mt-1 inline-block">
+                    Pending Review
+                </span>
+            </div>
+        </div>
+
+        <!-- Navigation Tabs Bar -->
+        <div class="flex overflow-x-auto border-b border-slate-200 gap-1 text-xs font-bold bg-white px-2 py-1.5 rounded-2xl shadow-xs">
+            <button onclick="switchAdminTab('overview')" id="tabbtn-overview" class="admin-tab active py-2.5 px-4 text-pakistan-700 border-b-2 border-pakistan-700 rounded-lg flex items-center gap-1.5 whitespace-nowrap">
+                <i class="fa-solid fa-chart-pie"></i> Analytics & Overview
+            </button>
+            <button onclick="switchAdminTab('users')" id="tabbtn-users" class="admin-tab py-2.5 px-4 text-slate-600 hover:text-slate-900 rounded-lg flex items-center gap-1.5 whitespace-nowrap">
+                <i class="fa-solid fa-users-gear"></i> User Management
+            </button>
+            <button onclick="switchAdminTab('listings')" id="tabbtn-listings" class="admin-tab py-2.5 px-4 text-slate-600 hover:text-slate-900 rounded-lg flex items-center gap-1.5 whitespace-nowrap">
+                <i class="fa-solid fa-book-open-reader"></i> Listings Moderation
+            </button>
+            <button onclick="switchAdminTab('sellers')" id="tabbtn-sellers" class="admin-tab py-2.5 px-4 text-slate-600 hover:text-slate-900 rounded-lg flex items-center gap-1.5 whitespace-nowrap">
+                <i class="fa-solid fa-user-check"></i> Seller Activity
+            </button>
+            <button onclick="switchAdminTab('transactions')" id="tabbtn-transactions" class="admin-tab py-2.5 px-4 text-slate-600 hover:text-slate-900 rounded-lg flex items-center gap-1.5 whitespace-nowrap">
+                <i class="fa-solid fa-money-bill-transfer"></i> Payment & Unlocks Ledger
+            </button>
+            <button onclick="switchAdminTab('reports')" id="tabbtn-reports" class="admin-tab py-2.5 px-4 text-slate-600 hover:text-slate-900 rounded-lg flex items-center gap-1.5 whitespace-nowrap">
+                <i class="fa-solid fa-triangle-exclamation"></i> Reports & Disputes
+                <span id="tab-report-badge" class="ml-1 px-1.5 py-0.2 bg-rose-600 text-white rounded-full text-[10px] hidden">0</span>
+            </button>
+            <button onclick="switchAdminTab('ads')" id="tabbtn-ads" class="admin-tab py-2.5 px-4 text-slate-600 hover:text-slate-900 rounded-lg flex items-center gap-1.5 whitespace-nowrap">
+                <i class="fa-solid fa-rectangle-ad"></i> Advertisements
+            </button>
+            <button onclick="switchAdminTab('settings')" id="tabbtn-settings" class="admin-tab py-2.5 px-4 text-slate-600 hover:text-slate-900 rounded-lg flex items-center gap-1.5 whitespace-nowrap">
+                <i class="fa-solid fa-sliders"></i> Platform Settings
+            </button>
+        </div>
+
+        <!-- ============================================================== -->
+        <!-- TAB 1: OVERVIEW & ANALYTICS WIDGETS -->
+        <!-- ============================================================== -->
+        <div id="admin-sec-overview" class="admin-sec space-y-5">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                <!-- Payment Gateway Distribution Card -->
+                <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs space-y-3">
+                    <h3 class="text-xs font-extrabold uppercase tracking-wider text-slate-800 flex items-center justify-between">
+                        <span>Payment Gateway Share</span>
+                        <i class="fa-solid fa-chart-bar text-pakistan-600"></i>
+                    </h3>
+                    <p class="text-[11px] text-slate-500">Breakdown of Rs. 50 contact unlock fees collected per local gateway.</p>
+                    <div id="gateway-distribution-bars" class="space-y-2.5 pt-2">
+                        <!-- Rendered dynamically -->
+                    </div>
+                </div>
+
+                <!-- Marketplace Listing Status Breakdown -->
+                <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs space-y-3">
+                    <h3 class="text-xs font-extrabold uppercase tracking-wider text-slate-800 flex items-center justify-between">
+                        <span>Book Listing Statuses</span>
+                        <i class="fa-solid fa-layer-group text-blue-600"></i>
+                    </h3>
+                    <p class="text-[11px] text-slate-500">Real-time breakdown of all books uploaded across Pakistan.</p>
+                    <div id="listing-status-breakdown" class="space-y-2 pt-2">
+                        <!-- Rendered dynamically -->
+                    </div>
+                </div>
+
+                <!-- Platform Monetization Quick Controls -->
+                <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs space-y-3">
+                    <h3 class="text-xs font-extrabold uppercase tracking-wider text-slate-800 flex items-center justify-between">
+                        <span>Quick Policy Controls</span>
+                        <i class="fa-solid fa-gear text-purple-600"></i>
+                    </h3>
+                    <div class="space-y-3 pt-1">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 mb-1">Contact Unlock Fee (PKR)</label>
+                            <div class="flex items-center gap-2">
+                                <span class="text-xs font-bold text-slate-400">Rs.</span>
+                                <input type="number" id="quick-fee-input" min="10" max="200" step="5" class="w-full text-xs font-black p-2 border border-slate-300 rounded-lg">
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between pt-1">
+                            <span class="text-xs font-semibold text-slate-700">Moderate New Listings:</span>
+                            <input type="checkbox" id="quick-approval-input" class="w-4 h-4 text-pakistan-700 rounded">
+                        </div>
+                        <button onclick="saveQuickSettings()" class="w-full py-2 bg-pakistan-700 hover:bg-pakistan-800 text-white rounded-lg text-xs font-bold transition-all shadow-xs">
+                            Apply Platform Rules
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Activity Ticker Table -->
+            <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-xs space-y-3">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-xs font-extrabold uppercase tracking-wider text-slate-800 flex items-center gap-2">
+                        <i class="fa-solid fa-clock-rotate-left text-slate-400"></i> Real-Time Unlock & Transaction Feed
+                    </h3>
+                    <span class="text-xs text-slate-500 font-medium">Shows latest 10 transactions</span>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-xs">
+                        <thead>
+                            <tr class="bg-slate-50 text-slate-600 border-b border-slate-200">
+                                <th class="py-2 px-3">Reference</th>
+                                <th class="py-2 px-3">Book Title</th>
+                                <th class="py-2 px-3">Buyer</th>
+                                <th class="py-2 px-3">Seller</th>
+                                <th class="py-2 px-3">Gateway</th>
+                                <th class="py-2 px-3">Fee</th>
+                                <th class="py-2 px-3">Deal Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="overview-recent-txns-body" class="divide-y divide-slate-100">
+                            <!-- Populated dynamically -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- ============================================================== -->
+        <!-- TAB 2: USER MANAGEMENT & ANTI-FRAUD -->
+        <!-- ============================================================== -->
+        <div id="admin-sec-users" class="admin-sec hidden space-y-4">
+            <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-xs flex flex-wrap items-center justify-between gap-3">
+                <!-- Search & Filters -->
+                <div class="flex flex-wrap items-center gap-2.5 flex-1">
+                    <div class="relative min-w-[240px]">
+                        <i class="fa-solid fa-magnifying-glass absolute left-3 top-3 text-slate-400 text-xs"></i>
+                        <input type="text" id="user-search-input" oninput="debounce(filterAdminUsers, 300)()" 
+                               placeholder="Search name, phone, city, campus..." 
+                               class="w-full pl-8 pr-3 py-2 text-xs border border-slate-300 rounded-xl focus:ring-2 focus:ring-pakistan-600 focus:outline-none">
+                    </div>
+                    <select id="user-status-filter" onchange="filterAdminUsers()" class="text-xs p-2 border border-slate-300 rounded-xl bg-white">
+                        <option value="all">All User Statuses</option>
+                        <option value="active">Active Only</option>
+                        <option value="blocked">Blocked Only</option>
+                    </select>
+                    <select id="user-role-filter" onchange="filterAdminUsers()" class="text-xs p-2 border border-slate-300 rounded-xl bg-white">
+                        <option value="all">All Roles</option>
+                        <option value="student">Student</option>
+                        <option value="reader">General Reader</option>
+                        <option value="bookstore">Bookstore</option>
+                        <option value="admin">Administrator</option>
+                    </select>
+                </div>
+                <div class="text-xs font-bold text-slate-500">
+                    Showing: <span id="user-count-display" class="text-slate-900">0</span> users
+                </div>
+            </div>
+
+            <!-- Users Table -->
+            <div class="bg-white rounded-2xl border border-slate-200 p-4 shadow-xs overflow-x-auto">
+                <table class="w-full text-left text-xs">
+                    <thead>
+                        <tr class="bg-slate-50 text-slate-600 border-b border-slate-200">
+                            <th class="py-2.5 px-3">ID</th>
+                            <th class="py-2.5 px-3">User & Contact</th>
+                            <th class="py-2.5 px-3">City & Campus</th>
+                            <th class="py-2.5 px-3">Role</th>
+                            <th class="py-2.5 px-3">Rating</th>
+                            <th class="py-2.5 px-3">Wallet</th>
+                            <th class="py-2.5 px-3">Sales / Books</th>
+                            <th class="py-2.5 px-3">Status</th>
+                            <th class="py-2.5 px-3 text-right">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="admin-users-table-body" class="divide-y divide-slate-100">
+                        <!-- Populated dynamically -->
+                    </tbody>
+                </table>
+                <div id="users-empty-state" class="hidden text-center py-8 text-slate-400 text-xs">
+                    <i class="fa-solid fa-user-slash text-2xl mb-1 block"></i> No users matching search filters.
+                </div>
+            </div>
+        </div>
+
+        <!-- ============================================================== -->
+        <!-- TAB 3: LISTINGS MODERATION & MANAGEMENT -->
+        <!-- ============================================================== -->
+        <div id="admin-sec-listings" class="admin-sec hidden space-y-4">
+            <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-xs flex flex-wrap items-center justify-between gap-3">
+                <div class="flex flex-wrap items-center gap-2.5 flex-1">
+                    <div class="relative min-w-[240px]">
+                        <i class="fa-solid fa-magnifying-glass absolute left-3 top-3 text-slate-400 text-xs"></i>
+                        <input type="text" id="listing-search-input" oninput="debounce(filterAdminListings, 300)()" 
+                               placeholder="Search book title, ISBN, author, seller..." 
+                               class="w-full pl-8 pr-3 py-2 text-xs border border-slate-300 rounded-xl focus:ring-2 focus:ring-pakistan-600 focus:outline-none">
+                    </div>
+                    <select id="listing-status-filter" onchange="filterAdminListings()" class="text-xs p-2 border border-slate-300 rounded-xl bg-white">
+                        <option value="all">All Statuses</option>
+                        <option value="active">Active</option>
+                        <option value="pending">Pending Admin Approval</option>
+                        <option value="sold">Sold</option>
+                        <option value="inactive">Inactive / Paused</option>
+                    </select>
+                    <select id="listing-condition-filter" onchange="filterAdminListings()" class="text-xs p-2 border border-slate-300 rounded-xl bg-white">
+                        <option value="all">All Conditions</option>
+                        <option value="Brand New">Brand New</option>
+                        <option value="Like New">Like New</option>
+                        <option value="Good">Good</option>
+                        <option value="Fair">Fair</option>
+                    </select>
+                </div>
+                <div class="text-xs font-bold text-slate-500">
+                    Showing: <span id="listing-count-display" class="text-slate-900">0</span> listings
+                </div>
+            </div>
+
+            <!-- Listings Table -->
+            <div class="bg-white rounded-2xl border border-slate-200 p-4 shadow-xs overflow-x-auto">
+                <table class="w-full text-left text-xs">
+                    <thead>
+                        <tr class="bg-slate-50 text-slate-600 border-b border-slate-200">
+                            <th class="py-2.5 px-3">ID</th>
+                            <th class="py-2.5 px-3">Book & ISBN</th>
+                            <th class="py-2.5 px-3">Seller</th>
+                            <th class="py-2.5 px-3">City / Area</th>
+                            <th class="py-2.5 px-3">Condition</th>
+                            <th class="py-2.5 px-3">Price</th>
+                            <th class="py-2.5 px-3">Status</th>
+                            <th class="py-2.5 px-3">Sponsored</th>
+                            <th class="py-2.5 px-3 text-right">Moderation Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="admin-listings-table-body" class="divide-y divide-slate-100">
+                        <!-- Populated dynamically -->
+                    </tbody>
+                </table>
+                <div id="listings-empty-state" class="hidden text-center py-8 text-slate-400 text-xs">
+                    <i class="fa-solid fa-box-open text-2xl mb-1 block"></i> No book listings found.
+                </div>
+            </div>
+        </div>
+
+        <!-- ============================================================== -->
+        <!-- TAB 4: SELLER PERFORMANCE & ACTIVITY MONITORING -->
+        <!-- ============================================================== -->
+        <div id="admin-sec-sellers" class="admin-sec hidden space-y-4">
+            <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-xs flex items-center justify-between">
+                <div>
+                    <h3 class="text-xs font-extrabold uppercase tracking-wider text-slate-800">
+                        Seller Performance & Verification Directory
+                    </h3>
+                    <p class="text-[11px] text-slate-500">Track student sellers, bookstores, ratings, and unfulfilled unlock rates.</p>
+                </div>
+                <span id="seller-total-badge" class="px-2.5 py-1 bg-purple-50 text-purple-700 border border-purple-200 rounded-lg text-xs font-bold">
+                    0 Sellers Active
+                </span>
+            </div>
+
+            <!-- Sellers Table -->
+            <div class="bg-white rounded-2xl border border-slate-200 p-4 shadow-xs overflow-x-auto">
+                <table class="w-full text-left text-xs">
+                    <thead>
+                        <tr class="bg-slate-50 text-slate-600 border-b border-slate-200">
+                            <th class="py-2.5 px-3">Seller Name</th>
+                            <th class="py-2.5 px-3">Phone (OTP Verified)</th>
+                            <th class="py-2.5 px-3">City / Campus</th>
+                            <th class="py-2.5 px-3">Rating</th>
+                            <th class="py-2.5 px-3">Active Listings</th>
+                            <th class="py-2.5 px-3">Sold Books</th>
+                            <th class="py-2.5 px-3">Unlocks Received</th>
+                            <th class="py-2.5 px-3">Account Status</th>
+                            <th class="py-2.5 px-3 text-right">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="admin-sellers-table-body" class="divide-y divide-slate-100">
+                        <!-- Populated dynamically -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- ============================================================== -->
+        <!-- TAB 5: PAYMENT TRANSACTIONS & UNLOCK LEDGER -->
+        <!-- ============================================================== -->
+        <div id="admin-sec-transactions" class="admin-sec hidden space-y-4">
+            <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-xs flex flex-wrap items-center justify-between gap-3">
+                <div class="flex flex-wrap items-center gap-2.5 flex-1">
+                    <div class="relative min-w-[240px]">
+                        <i class="fa-solid fa-magnifying-glass absolute left-3 top-3 text-slate-400 text-xs"></i>
+                        <input type="text" id="txn-search-input" oninput="debounce(filterAdminTransactions, 300)()" 
+                               placeholder="Search transaction ref, buyer, seller..." 
+                               class="w-full pl-8 pr-3 py-2 text-xs border border-slate-300 rounded-xl focus:ring-2 focus:ring-pakistan-600 focus:outline-none">
+                    </div>
+                    <select id="txn-gateway-filter" onchange="filterAdminTransactions()" class="text-xs p-2 border border-slate-300 rounded-xl bg-white">
+                        <option value="all">All Gateways</option>
+                        <option value="jazzcash">JazzCash</option>
+                        <option value="easypaisa">Easypaisa</option>
+                        <option value="card_safepay">Debit / Card</option>
+                        <option value="wallet">In-App Wallet</option>
+                    </select>
+                    <select id="txn-status-filter" onchange="filterAdminTransactions()" class="text-xs p-2 border border-slate-300 rounded-xl bg-white">
+                        <option value="all">All Deal Statuses</option>
+                        <option value="deal_made">Deal Confirmed (Fee Kept)</option>
+                        <option value="no_deal_refunded">Refunded to Buyer</option>
+                        <option value="unlocked_pending">Pending Response</option>
+                        <option value="disputed">Disputed</option>
+                    </select>
+                </div>
+                <div class="text-xs font-bold text-slate-500">
+                    Total Transactions: <span id="txn-count-display" class="text-slate-900">0</span>
+                </div>
+            </div>
+
+            <!-- Ledger Table -->
+            <div class="bg-white rounded-2xl border border-slate-200 p-4 shadow-xs overflow-x-auto">
+                <table class="w-full text-left text-xs">
+                    <thead>
+                        <tr class="bg-slate-50 text-slate-600 border-b border-slate-200">
+                            <th class="py-2.5 px-3">Transaction ID</th>
+                            <th class="py-2.5 px-3">Book Title</th>
+                            <th class="py-2.5 px-3">Buyer</th>
+                            <th class="py-2.5 px-3">Seller</th>
+                            <th class="py-2.5 px-3">Gateway</th>
+                            <th class="py-2.5 px-3">Fee (PKR)</th>
+                            <th class="py-2.5 px-3">Deal Status</th>
+                            <th class="py-2.5 px-3">Refund Ref</th>
+                            <th class="py-2.5 px-3 text-right">Admin Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="admin-unlocks-table-body" class="divide-y divide-slate-100">
+                        <!-- Populated dynamically -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- ============================================================== -->
+        <!-- TAB 6: REPORTS & COMPLAINTS MANAGEMENT -->
+        <!-- ============================================================== -->
+        <div id="admin-sec-reports" class="admin-sec hidden space-y-4">
+            <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-xs flex flex-wrap items-center justify-between gap-3">
+                <div class="flex flex-wrap items-center gap-2.5 flex-1">
+                    <select id="report-status-filter" onchange="filterAdminReports()" class="text-xs p-2 border border-slate-300 rounded-xl bg-white">
+                        <option value="all">All Report Statuses</option>
+                        <option value="pending">Pending Review</option>
+                        <option value="investigating">Under Investigation</option>
+                        <option value="resolved">Resolved</option>
+                        <option value="dismissed">Dismissed</option>
+                    </select>
+                    <select id="report-type-filter" onchange="filterAdminReports()" class="text-xs p-2 border border-slate-300 rounded-xl bg-white">
+                        <option value="all">All Violation Types</option>
+                        <option value="fraud_scam">Fraud / Fake Listing</option>
+                        <option value="wrong_price">Wrong Price</option>
+                        <option value="fake_condition">Bad Condition</option>
+                        <option value="unresponsive_seller">Seller Unresponsive</option>
+                        <option value="abusive_behavior">Abusive Behavior</option>
+                    </select>
+                </div>
+                <div class="text-xs font-bold text-slate-500">
+                    Complaints: <span id="report-count-display" class="text-slate-900">0</span>
+                </div>
+            </div>
+
+            <!-- Reports Table -->
+            <div class="bg-white rounded-2xl border border-slate-200 p-4 shadow-xs overflow-x-auto">
+                <table class="w-full text-left text-xs">
+                    <thead>
+                        <tr class="bg-slate-50 text-slate-600 border-b border-slate-200">
+                            <th class="py-2.5 px-3">Report ID</th>
+                            <th class="py-2.5 px-3">Reporter</th>
+                            <th class="py-2.5 px-3">Reported Subject</th>
+                            <th class="py-2.5 px-3">Violation Category</th>
+                            <th class="py-2.5 px-3 max-w-xs">Description</th>
+                            <th class="py-2.5 px-3">Status</th>
+                            <th class="py-2.5 px-3">Created</th>
+                            <th class="py-2.5 px-3 text-right">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="admin-reports-table-body" class="divide-y divide-slate-100">
+                        <!-- Populated dynamically -->
+                    </tbody>
+                </table>
+                <div id="reports-empty-state" class="hidden text-center py-8 text-slate-400 text-xs">
+                    <i class="fa-solid fa-circle-check text-2xl text-emerald-500 mb-1 block"></i> No pending complaints or safety reports!
+                </div>
+            </div>
+        </div>
+
+        <!-- ============================================================== -->
+        <!-- TAB 7: ADVERTISEMENTS MANAGER -->
+        <!-- ============================================================== -->
+        <div id="admin-sec-ads" class="admin-sec hidden space-y-4">
+            <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-xs flex items-center justify-between">
+                <div>
+                    <h3 class="text-xs font-extrabold uppercase tracking-wider text-slate-800">
+                        Sponsored Advertisements & Campus Banners (Section 8)
+                    </h3>
+                    <p class="text-[11px] text-slate-500">Manage stationery sponsor banners, native in-feed cards, and track CTR performance.</p>
+                </div>
+                <button onclick="openCreateAdModal()" class="px-3.5 py-2 bg-pakistan-700 hover:bg-pakistan-800 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-sm">
+                    <i class="fa-solid fa-plus"></i> Create New Ad
+                </button>
+            </div>
+
+            <!-- Ads Table -->
+            <div class="bg-white rounded-2xl border border-slate-200 p-4 shadow-xs overflow-x-auto">
+                <table class="w-full text-left text-xs">
+                    <thead>
+                        <tr class="bg-slate-50 text-slate-600 border-b border-slate-200">
+                            <th class="py-2.5 px-3">ID</th>
+                            <th class="py-2.5 px-3">Title & Headline</th>
+                            <th class="py-2.5 px-3">Sponsor</th>
+                            <th class="py-2.5 px-3">Placement Type</th>
+                            <th class="py-2.5 px-3">Impressions</th>
+                            <th class="py-2.5 px-3">Clicks</th>
+                            <th class="py-2.5 px-3">CTR (%)</th>
+                            <th class="py-2.5 px-3">Status</th>
+                            <th class="py-2.5 px-3 text-right">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="admin-ads-table-body" class="divide-y divide-slate-100">
+                        <!-- Populated dynamically -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- ============================================================== -->
+        <!-- TAB 8: PLATFORM MONETIZATION & POLICIES SETTINGS -->
+        <!-- ============================================================== -->
+        <div id="admin-sec-settings" class="admin-sec hidden space-y-4">
+            <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs max-w-3xl space-y-5">
+                <h3 class="text-sm font-extrabold text-slate-900 border-b border-slate-100 pb-3 flex items-center gap-2">
+                    <i class="fa-solid fa-shield-halved text-pakistan-700"></i> Platform Economics & Safety Policies
+                </h3>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1.5">
+                            Seller Contact Unlock Fee (PKR)
+                        </label>
+                        <div class="flex items-center gap-2">
+                            <span class="text-sm font-bold text-slate-500">Rs.</span>
+                            <input type="number" id="setting-full-fee" min="10" max="250" step="5" class="w-full text-sm font-black p-2.5 border border-slate-300 rounded-xl">
+                        </div>
+                        <p class="text-[11px] text-slate-500 mt-1">Platform fee paid by buyer to reveal phone & WhatsApp.</p>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1.5">
+                            Auto-Refund Timeout (Days)
+                        </label>
+                        <input type="number" id="setting-refund-days" min="1" max="30" class="w-full text-sm font-black p-2.5 border border-slate-300 rounded-xl">
+                        <p class="text-[11px] text-slate-500 mt-1">Number of days before unconfirmed deal auto-refunds to buyer wallet.</p>
+                    </div>
+                </div>
+
+                <div class="space-y-3 pt-3 border-t border-slate-100">
+                    <label class="flex items-center gap-3 cursor-pointer">
+                        <input type="checkbox" id="setting-full-approval" class="w-4 h-4 text-pakistan-700 rounded">
+                        <div>
+                            <span class="block text-xs font-bold text-slate-800">Require Admin Approval For New Book Listings</span>
+                            <span class="block text-[11px] text-slate-500">When enabled, newly uploaded listings remain pending until approved by a moderator.</span>
+                        </div>
+                    </label>
+
+                    <label class="flex items-center gap-3 cursor-pointer">
+                        <input type="checkbox" id="setting-full-sponsored" class="w-4 h-4 text-pakistan-700 rounded">
+                        <div>
+                            <span class="block text-xs font-bold text-slate-800">Enable Sponsored Listings Promotion</span>
+                            <span class="block text-[11px] text-slate-500">Allows promoted books to appear highlighted at the top of category feeds.</span>
+                        </div>
+                    </label>
+                </div>
+
+                <div class="pt-4 border-t border-slate-100 flex justify-end">
+                    <button onclick="saveFullPlatformSettings()" class="px-6 py-2.5 bg-pakistan-700 hover:bg-pakistan-800 text-white rounded-xl text-xs font-bold shadow-md transition-all">
+                        Save Platform Configuration
+                    </button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<!-- ============================================================== -->
+<!-- MODAL: VIEW USER ACTIVITY & SELLER DETAILS -->
+<!-- ============================================================== -->
+<div id="user-detail-modal" class="fixed inset-0 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 z-50 hidden">
+    <div class="bg-white rounded-3xl max-w-2xl w-full p-6 shadow-2xl relative max-h-[90vh] overflow-y-auto space-y-4">
+        <button onclick="closeModal('user-detail-modal')" class="absolute top-4 right-4 w-7 h-7 bg-slate-100 hover:bg-slate-200 rounded-full flex items-center justify-center text-slate-600 text-xs">
+            <i class="fa-solid fa-xmark"></i>
+        </button>
+
+        <div class="border-b border-slate-100 pb-3">
+            <h3 class="font-extrabold text-slate-900 text-base" id="udm-name">User Name</h3>
+            <p class="text-xs text-slate-500" id="udm-contact">0300 • City</p>
+        </div>
+
+        <div class="grid grid-cols-4 gap-2 text-center">
+            <div class="p-2.5 bg-slate-50 border border-slate-200 rounded-xl">
+                <span class="block text-[10px] text-slate-400 uppercase font-bold">Wallet</span>
+                <strong class="text-sm font-extrabold text-pakistan-700" id="udm-wallet">Rs. 0</strong>
+            </div>
+            <div class="p-2.5 bg-slate-50 border border-slate-200 rounded-xl">
+                <span class="block text-[10px] text-slate-400 uppercase font-bold">Listings</span>
+                <strong class="text-sm font-extrabold text-slate-800" id="udm-listings">0</strong>
+            </div>
+            <div class="p-2.5 bg-slate-50 border border-slate-200 rounded-xl">
+                <span class="block text-[10px] text-slate-400 uppercase font-bold">Sales</span>
+                <strong class="text-sm font-extrabold text-slate-800" id="udm-sales">0</strong>
+            </div>
+            <div class="p-2.5 bg-slate-50 border border-slate-200 rounded-xl">
+                <span class="block text-[10px] text-slate-400 uppercase font-bold">Rating</span>
+                <strong class="text-sm font-extrabold text-amber-500" id="udm-rating">★ 5.0</strong>
+            </div>
+        </div>
+
+        <div>
+            <h4 class="text-xs font-bold text-slate-800 mb-2">Book Listings by User:</h4>
+            <div id="udm-listings-container" class="space-y-1.5 max-h-48 overflow-y-auto text-xs">
+                <!-- Injected -->
+            </div>
+        </div>
+
+        <div class="pt-2 border-t border-slate-100 flex justify-end gap-2">
+            <button id="udm-block-btn" class="px-4 py-2 bg-red-600 text-white rounded-xl text-xs font-bold">
+                Block User
+            </button>
+            <button onclick="closeModal('user-detail-modal')" class="px-4 py-2 bg-slate-100 text-slate-700 rounded-xl text-xs font-bold">
+                Close
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- ============================================================== -->
+<!-- MODAL: EDIT LISTING (ADMIN OVERRIDE) -->
+<!-- ============================================================== -->
+<div id="listing-edit-modal" class="fixed inset-0 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 z-50 hidden">
+    <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl relative space-y-4">
+        <button onclick="closeModal('listing-edit-modal')" class="absolute top-4 right-4 w-7 h-7 bg-slate-100 hover:bg-slate-200 rounded-full flex items-center justify-center text-slate-600 text-xs">
+            <i class="fa-solid fa-xmark"></i>
+        </button>
+
+        <h3 class="font-extrabold text-slate-900 text-sm">Edit Listing (Admin Override)</h3>
+        <input type="hidden" id="lem-id">
+
+        <div class="space-y-3 text-xs">
+            <div>
+                <label class="block font-bold text-slate-700 mb-1">Price (PKR)</label>
+                <input type="number" id="lem-price" class="w-full p-2 border border-slate-300 rounded-lg font-bold">
+            </div>
+            <div>
+                <label class="block font-bold text-slate-700 mb-1">Condition</label>
+                <select id="lem-condition" class="w-full p-2 border border-slate-300 rounded-lg bg-white">
+                    <option value="Brand New">Brand New</option>
+                    <option value="Like New">Like New</option>
+                    <option value="Good">Good</option>
+                    <option value="Fair">Fair</option>
+                </select>
+            </div>
+            <div>
+                <label class="block font-bold text-slate-700 mb-1">Listing Status</label>
+                <select id="lem-status" class="w-full p-2 border border-slate-300 rounded-lg bg-white">
+                    <option value="active">Active</option>
+                    <option value="pending">Pending Admin Approval</option>
+                    <option value="sold">Sold</option>
+                    <option value="inactive">Inactive</option>
+                </select>
+            </div>
+            <div>
+                <label class="block font-bold text-slate-700 mb-1">Pickup Campus / Location</label>
+                <input type="text" id="lem-location" class="w-full p-2 border border-slate-300 rounded-lg">
+            </div>
+            <label class="flex items-center gap-2 pt-1 cursor-pointer">
+                <input type="checkbox" id="lem-sponsored" class="w-4 h-4 text-pakistan-700 rounded">
+                <span class="font-bold text-slate-800">Promoted / Sponsored Listing</span>
+            </label>
+        </div>
+
+        <div class="pt-3 border-t border-slate-100 flex justify-end gap-2">
+            <button onclick="closeModal('listing-edit-modal')" class="px-4 py-2 bg-slate-100 text-slate-700 rounded-xl text-xs font-bold">Cancel</button>
+            <button onclick="submitAdminEditListing()" class="px-4 py-2 bg-pakistan-700 text-white rounded-xl text-xs font-bold">Save Changes</button>
+        </div>
+    </div>
+</div>
+
+<!-- ============================================================== -->
+<!-- MODAL: RESOLVE COMPLAINT REPORT -->
+<!-- ============================================================== -->
+<div id="report-resolve-modal" class="fixed inset-0 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 z-50 hidden">
+    <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl relative space-y-4">
+        <button onclick="closeModal('report-resolve-modal')" class="absolute top-4 right-4 w-7 h-7 bg-slate-100 hover:bg-slate-200 rounded-full flex items-center justify-center text-slate-600 text-xs">
+            <i class="fa-solid fa-xmark"></i>
+        </button>
+
+        <h3 class="font-extrabold text-slate-900 text-sm flex items-center gap-2">
+            <i class="fa-solid fa-triangle-exclamation text-rose-600"></i> Resolve Safety Report
+        </h3>
+        <input type="hidden" id="rrm-id">
+
+        <div class="bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs space-y-1">
+            <div class="font-bold text-slate-800" id="rrm-type">Report Type</div>
+            <div class="text-slate-600" id="rrm-desc">Description text...</div>
+        </div>
+
+        <div class="space-y-3 text-xs">
+            <div>
+                <label class="block font-bold text-slate-700 mb-1">Resolution Status</label>
+                <select id="rrm-status" class="w-full p-2 border border-slate-300 rounded-lg bg-white">
+                    <option value="resolved">Resolved (Action Taken)</option>
+                    <option value="investigating">Under Investigation</option>
+                    <option value="dismissed">Dismissed (False Report)</option>
+                </select>
+            </div>
+            <div>
+                <label class="block font-bold text-slate-700 mb-1">Moderator Notes</label>
+                <textarea id="rrm-notes" rows="2" placeholder="Explain action taken..." class="w-full p-2 border border-slate-300 rounded-lg"></textarea>
+            </div>
+            <div class="space-y-1.5 pt-1">
+                <label class="flex items-center gap-2 cursor-pointer">
+                    <input type="checkbox" id="rrm-block-user" class="w-4 h-4 text-red-600 rounded">
+                    <span class="font-bold text-red-700">Block Reported User Immediately</span>
+                </label>
+                <label class="flex items-center gap-2 cursor-pointer">
+                    <input type="checkbox" id="rrm-deactivate-listing" class="w-4 h-4 text-amber-600 rounded">
+                    <span class="font-bold text-amber-800">Deactivate Associated Listing</span>
+                </label>
+            </div>
+        </div>
+
+        <div class="pt-3 border-t border-slate-100 flex justify-end gap-2">
+            <button onclick="closeModal('report-resolve-modal')" class="px-4 py-2 bg-slate-100 text-slate-700 rounded-xl text-xs font-bold">Cancel</button>
+            <button onclick="submitReportResolution()" class="px-4 py-2 bg-emerald-700 text-white rounded-xl text-xs font-bold">Save Resolution</button>
+        </div>
+    </div>
+</div>
+
+<!-- ============================================================== -->
+<!-- MODAL: CREATE / EDIT ADVERTISEMENT -->
+<!-- ============================================================== -->
+<div id="ad-form-modal" class="fixed inset-0 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 z-50 hidden">
+    <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl relative space-y-4">
+        <button onclick="closeModal('ad-form-modal')" class="absolute top-4 right-4 w-7 h-7 bg-slate-100 hover:bg-slate-200 rounded-full flex items-center justify-center text-slate-600 text-xs">
+            <i class="fa-solid fa-xmark"></i>
+        </button>
+
+        <h3 class="font-extrabold text-slate-900 text-sm" id="afm-title">Create New Advertisement</h3>
+        <input type="hidden" id="afm-id">
+
+        <div class="space-y-3 text-xs">
+            <div>
+                <label class="block font-bold text-slate-700 mb-1">Ad Campaign Title</label>
+                <input type="text" id="afm-campaign-title" placeholder="e.g. Semester Stationery Sale" class="w-full p-2 border border-slate-300 rounded-lg">
+            </div>
+            <div>
+                <label class="block font-bold text-slate-700 mb-1">Sponsor Brand / Bookstore</label>
+                <input type="text" id="afm-sponsor" placeholder="e.g. National Book Hub" class="w-full p-2 border border-slate-300 rounded-lg">
+            </div>
+            <div>
+                <label class="block font-bold text-slate-700 mb-1">Ad Type / Placement</label>
+                <select id="afm-type" class="w-full p-2 border border-slate-300 rounded-lg bg-white">
+                    <option value="banner_bottom">Bottom Sticky Banner</option>
+                    <option value="banner_top">Top Banner</option>
+                    <option value="interstitial">Full Screen Interstitial (After Listing)</option>
+                    <option value="native_feed">Native In-Feed Sponsored Card</option>
+                    <option value="sponsored_listing">Sponsored Listing Banner</option>
+                </select>
+            </div>
+            <div>
+                <label class="block font-bold text-slate-700 mb-1">Headline Text</label>
+                <input type="text" id="afm-headline" placeholder="e.g. Get 30% Off Semester Guides & Notes" class="w-full p-2 border border-slate-300 rounded-lg">
+            </div>
+            <div>
+                <label class="block font-bold text-slate-700 mb-1">Target Web Link / WhatsApp</label>
+                <input type="text" id="afm-url" placeholder="https://..." class="w-full p-2 border border-slate-300 rounded-lg">
+            </div>
+            <label class="flex items-center gap-2 pt-1 cursor-pointer">
+                <input type="checkbox" id="afm-active" checked class="w-4 h-4 text-pakistan-700 rounded">
+                <span class="font-bold text-slate-800">Publish Immediately (Active)</span>
+            </label>
+        </div>
+
+        <div class="pt-3 border-t border-slate-100 flex justify-end gap-2">
+            <button onclick="closeModal('ad-form-modal')" class="px-4 py-2 bg-slate-100 text-slate-700 rounded-xl text-xs font-bold">Cancel</button>
+            <button onclick="submitAdForm()" class="px-4 py-2 bg-pakistan-700 text-white rounded-xl text-xs font-bold">Save Campaign</button>
+        </div>
+    </div>
+</div>
+
+<!-- ============================================================== -->
+<!-- TOAST NOTIFICATION CONTAINER -->
+<!-- ============================================================== -->
+<div id="admin-toast-container" class="fixed bottom-5 right-5 z-50 space-y-2 pointer-events-none"></div>
+
+<!-- ============================================================== -->
+<!-- JAVASCRIPT LOGIC (PHASE 4 COMPLETE SYSTEM) -->
+<!-- ============================================================== -->
+<script>
+    let ADMIN_CACHE = {
+        stats: null,
+        users: [],
+        listings: [],
+        sellers: [],
+        unlocks: [],
+        transactions: [],
+        reports: [],
+        ads: []
+    };
+
+    const ADMIN_TOKEN = "{{ admin_token|default:'' }}" || localStorage.getItem('bookbazaar_admin_token') || localStorage.getItem('bookloop_token');
+
+    function getAdminHeaders(extra = {}) {
+        const h = { 'Content-Type': 'application/json', ...extra };
+        if (ADMIN_TOKEN) {
+            h['Authorization'] = `Token ${ADMIN_TOKEN}`;
+        }
+        return h;
+    }
+
+    function showToast(message, type = 'success') {
+        const c = document.getElementById('admin-toast-container');
+        if (!c) return;
+        const t = document.createElement('div');
+        const bg = type === 'success' ? 'bg-emerald-800 text-white' : type === 'error' ? 'bg-rose-800 text-white' : 'bg-slate-800 text-white';
+        t.className = `${bg} px-4 py-2.5 rounded-xl shadow-lg text-xs font-bold pointer-events-auto flex items-center gap-2 transition-all transform duration-200`;
+        t.innerHTML = `<i class="fa-solid fa-${type === 'success' ? 'check' : 'circle-exclamation'}"></i> <span>${message}</span>`;
+        c.appendChild(t);
+        setTimeout(() => {
+            t.classList.add('opacity-0', 'translate-y-2');
+            setTimeout(() => t.remove(), 300);
+        }, 3200);
+    }
+
+    function closeModal(id) {
+        const el = document.getElementById(id);
+        if (el) el.classList.add('hidden');
+    }
+
+    function debounce(func, wait) {
+        let timeout;
+        return function(...args) {
+            clearTimeout(timeout);
+            timeout = setTimeout(() => func.apply(this, args), wait);
+        };
+    }
+
+    // INITIALIZATION
+    document.addEventListener('DOMContentLoaded', async () => {
+        await loadAllAdminData();
+    });
+
+    async function loadAllAdminData() {
+        try {
+            const res = await fetch('/api/admin/stats/', { headers: getAdminHeaders() });
+            if (!res.ok) {
+                if (res.status === 401 || res.status === 403) {
+                    showToast("Admin authorization required. Please login with staff account.", "error");
+                }
+                return;
+            }
+            ADMIN_CACHE.stats = await res.json();
+            renderDashboardStats(ADMIN_CACHE.stats);
+
+            // Parallel background fetch for tables
+            fetchAdminNotifications();
+            fetchAdminUsers();
+            fetchAdminListings();
+            fetchAdminSellers();
+            fetchAdminTransactions();
+            fetchAdminReports();
+            fetchAdminAds();
+
+            // Periodic polling for notifications (every 25 seconds)
+            if (!window.__adminNotifInterval) {
+                window.__adminNotifInterval = setInterval(() => fetchAdminNotifications(), 25000);
+            }
+        } catch (e) {
+            console.error(e);
+            showToast("Failed loading admin dashboard data.", "error");
+        }
+    }
+
+    // -------------------------------------------------------------
+    // ADMIN NOTIFICATIONS SYSTEM
+    // -------------------------------------------------------------
+    let lastUnreadCount = 0;
+
+    async function fetchAdminNotifications(isManual = false) {
+        try {
+            const res = await fetch('/api/admin/notifications/', { headers: getAdminHeaders() });
+            if (!res.ok) return;
+            const data = await res.json();
+            ADMIN_CACHE.notifications = data.notifications || [];
+            updateNotificationBadge(data.unread_count);
+            renderAdminNotifications(data.notifications, data.unread_count);
+
+            if (isManual) {
+                showToast(`Notifications updated (${data.unread_count} unread).`, 'info');
+            } else if (data.unread_count > lastUnreadCount && lastUnreadCount !== 0) {
+                showToast(`New admin alert: ${data.notifications[0].title}`, 'info');
+            }
+            lastUnreadCount = data.unread_count;
+        } catch (e) {
+            console.warn("Notifications fetch error:", e);
+        }
+    }
+
+    function updateNotificationBadge(unreadCount) {
+        const badge = document.getElementById('admin-notif-badge');
+        const countLabel = document.getElementById('admin-notif-count-label');
+        if (badge) {
+            if (unreadCount > 0) {
+                badge.textContent = unreadCount > 99 ? '99+' : unreadCount;
+                badge.classList.remove('hidden');
+            } else {
+                badge.classList.add('hidden');
+            }
+        }
+        if (countLabel) {
+            countLabel.textContent = `${unreadCount} unread`;
+        }
+    }
+
+    function toggleAdminNotifications() {
+        const dropdown = document.getElementById('admin-notif-dropdown');
+        if (!dropdown) return;
+        dropdown.classList.toggle('hidden');
+        if (!dropdown.classList.contains('hidden')) {
+            fetchAdminNotifications();
+        }
+    }
+
+    document.addEventListener('click', (e) => {
+        const container = document.getElementById('admin-notification-container');
+        const dropdown = document.getElementById('admin-notif-dropdown');
+        if (container && dropdown && !container.contains(e.target)) {
+            dropdown.classList.add('hidden');
+        }
+    });
+
+    function formatTimeAgo(isoString) {
+        try {
+            const d = new Date(isoString);
+            const now = new Date();
+            const diffSec = Math.floor((now - d) / 1000);
+            if (diffSec < 60) return 'Just now';
+            const diffMin = Math.floor(diffSec / 60);
+            if (diffMin < 60) return `${diffMin}m ago`;
+            const diffHr = Math.floor(diffMin / 60);
+            if (diffHr < 24) return `${diffHr}h ago`;
+            return d.toLocaleDateString('en-PK', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+        } catch (e) {
+            return '';
+        }
+    }
+
+    function renderAdminNotifications(notifications, unreadCount) {
+        const list = document.getElementById('admin-notif-list');
+        if (!list) return;
+
+        if (!notifications || notifications.length === 0) {
+            list.innerHTML = `
+                <div class="p-8 text-center text-xs text-slate-400">
+                    <i class="fa-solid fa-bell-slash text-2xl text-slate-300 mb-2 block"></i>
+                    No notifications yet.
+                </div>
+            `;
+            return;
+        }
+
+        list.innerHTML = notifications.map(n => {
+            const isUnread = !n.is_read;
+            const bgClass = isUnread ? 'bg-emerald-50/70 hover:bg-emerald-50' : 'bg-white hover:bg-slate-50';
+            
+            let iconHtml = '<i class="fa-solid fa-bell text-blue-500"></i>';
+            let typeBadge = '<span class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-slate-100 text-slate-600">ALERT</span>';
+            let actionHtml = '';
+
+            if (n.notification_type === 'PAYMENT_RECEIVED') {
+                iconHtml = '<i class="fa-solid fa-money-bill-wave text-emerald-600 text-sm"></i>';
+                typeBadge = '<span class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800">PAYMENT</span>';
+            } else if (n.notification_type === 'PAYMENT_FAILED') {
+                iconHtml = '<i class="fa-solid fa-circle-xmark text-rose-600 text-sm"></i>';
+                typeBadge = '<span class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-rose-100 text-rose-800">FAILED</span>';
+            } else if (n.notification_type === 'DEAL_SUCCESSFUL') {
+                iconHtml = '<i class="fa-solid fa-handshake text-teal-600 text-sm"></i>';
+                typeBadge = '<span class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-teal-100 text-teal-800">DEAL MADE</span>';
+            } else if (n.notification_type === 'REFUND_PROCESSED') {
+                iconHtml = '<i class="fa-solid fa-circle-check text-emerald-600 text-sm"></i>';
+                typeBadge = '<span class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800">REFUND PROCESSED</span>';
+            } else if (n.notification_type === 'DEAL_FAILED_REFUND_REQ') {
+                iconHtml = '<i class="fa-solid fa-triangle-exclamation text-amber-600 text-sm"></i>';
+                typeBadge = '<span class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-rose-100 text-rose-800">REFUND REQUIRED</span>';
+                
+                if (n.is_resolved || n.unlock_deal_status === 'no_deal_refunded') {
+                    actionHtml = `
+                        <div class="mt-2 flex items-center gap-1.5 text-[10px] text-emerald-700 font-bold bg-emerald-100/70 px-2 py-1 rounded-lg">
+                            <i class="fa-solid fa-check"></i> Refunded (Rs. ${n.fee_amount || '50'})
+                        </div>
+                    `;
+                } else {
+                    actionHtml = `
+                        <div class="mt-2 flex items-center gap-2">
+                            <button onclick="processNotificationRefund(${n.id}, this)" 
+                                    class="px-2.5 py-1 bg-rose-600 hover:bg-rose-700 text-white rounded-lg text-[10px] font-bold flex items-center gap-1 shadow-xs transition-colors">
+                                <i class="fa-solid fa-rotate-left"></i> Approve Refund (Rs. ${n.fee_amount || '50'})
+                            </button>
+                        </div>
+                    `;
+                }
+            } else {
+                iconHtml = '<i class="fa-solid fa-circle-info text-sky-600 text-sm"></i>';
+                typeBadge = '<span class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-sky-100 text-sky-800">ALERT</span>';
+            }
+
+            return `
+                <div class="p-3 transition-colors ${bgClass} relative flex gap-2.5 items-start">
+                    <div class="w-7 h-7 rounded-full bg-slate-100 flex items-center justify-center shrink-0 mt-0.5 border border-slate-200">
+                        ${iconHtml}
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <div class="flex items-center justify-between gap-1 mb-0.5">
+                            <div class="flex items-center gap-1.5">
+                                ${typeBadge}
+                                <span class="font-bold text-xs text-slate-900 truncate">${n.title}</span>
+                            </div>
+                            <span class="text-[10px] text-slate-400 shrink-0 font-medium">${formatTimeAgo(n.created_at)}</span>
+                        </div>
+                        <p class="text-xs text-slate-600 leading-snug break-words">${n.message}</p>
+                        ${actionHtml}
+                    </div>
+                    ${isUnread ? `
+                        <button onclick="markNotificationRead(${n.id})" title="Mark as read" class="text-slate-400 hover:text-emerald-600 text-xs p-1 shrink-0">
+                            <i class="fa-solid fa-check"></i>
+                        </button>
+                    ` : ''}
+                </div>
+            `;
+        }).join('');
+    }
+
+    async function markNotificationRead(id) {
+        try {
+            const res = await fetch(`/api/admin/notifications/${id}/read/`, {
+                method: 'POST',
+                headers: getAdminHeaders()
+            });
+            if (res.ok) {
+                const data = await res.json();
+                updateNotificationBadge(data.unread_count);
+                const item = ADMIN_CACHE.notifications.find(n => n.id === id);
+                if (item) item.is_read = true;
+                renderAdminNotifications(ADMIN_CACHE.notifications, data.unread_count);
+            }
+        } catch (e) {
+            console.warn(e);
+        }
+    }
+
+    async function markAllNotificationsRead() {
+        try {
+            const res = await fetch('/api/admin/notifications/mark_all_read/', {
+                method: 'POST',
+                headers: getAdminHeaders()
+            });
+            if (res.ok) {
+                updateNotificationBadge(0);
+                ADMIN_CACHE.notifications.forEach(n => n.is_read = true);
+                renderAdminNotifications(ADMIN_CACHE.notifications, 0);
+                showToast("All notifications marked as read.");
+            }
+        } catch (e) {
+            console.warn(e);
+        }
+    }
+
+    async function processNotificationRefund(id, btn) {
+        if (!confirm("Are you sure you want to approve this refund and credit Rs. 50 back to the buyer's wallet?")) {
+            return;
+        }
+
+        const originalText = btn.innerHTML;
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Processing...';
+
+        try {
+            const res = await fetch(`/api/admin/notifications/${id}/process_refund/`, {
+                method: 'POST',
+                headers: getAdminHeaders(),
+                body: JSON.stringify({ reason: 'Admin one-click approved refund from notifications' })
+            });
+
+            const data = await res.json();
+            if (res.ok) {
+                showToast(data.message || "Refund processed successfully!", "success");
+                btn.parentElement.innerHTML = `
+                    <div class="flex items-center gap-1.5 text-[10px] text-emerald-700 font-bold bg-emerald-100/70 px-2 py-1 rounded-lg">
+                        <i class="fa-solid fa-check"></i> Refunded (${data.refund_transaction_id})
+                    </div>
+                `;
+                fetchAdminNotifications();
+                fetchAdminTransactions();
+                loadAllAdminData();
+            } else {
+                showToast(data.error || "Failed to process refund", "error");
+                btn.disabled = false;
+                btn.innerHTML = originalText;
+            }
+        } catch (e) {
+            showToast("Network error processing refund", "error");
+            btn.disabled = false;
+            btn.innerHTML = originalText;
+        }
+    }
+
+    // -------------------------------------------------------------
+    // 1. STATS & OVERVIEW
+    // -------------------------------------------------------------
+    function renderDashboardStats(data) {
+        const m = data.metrics;
+        document.getElementById('stat-retained-rev').textContent = `Rs. ${m.retained_revenue.toFixed(0)}`;
+        document.getElementById('stat-refunded-rev').textContent = `Rs. ${m.refunded_amount.toFixed(0)}`;
+        document.getElementById('stat-total-unlocks').textContent = m.total_unlocks;
+        document.getElementById('stat-active-listings').textContent = m.active_listings;
+        document.getElementById('stat-pending-listings-sub').textContent = `${m.pending_listings} pending approval`;
+        document.getElementById('stat-total-users').textContent = m.total_users;
+        document.getElementById('stat-blocked-users-sub').textContent = `${m.blocked_users} blocked`;
+        document.getElementById('stat-pending-reports').textContent = m.pending_reports;
+
+        if (m.pending_reports > 0) {
+            const b = document.getElementById('tab-report-badge');
+            b.textContent = m.pending_reports;
+            b.classList.remove('hidden');
+        }
+
+        document.getElementById('quick-fee-input').value = m.current_unlock_fee;
+        document.getElementById('quick-approval-input').checked = data.settings.require_admin_approval;
+        document.getElementById('setting-full-fee').value = m.current_unlock_fee;
+        document.getElementById('setting-refund-days').value = data.settings.auto_refund_days || 5;
+        document.getElementById('setting-full-approval').checked = data.settings.require_admin_approval;
+        document.getElementById('setting-full-sponsored').checked = data.settings.allow_sponsored_listings;
+
+        // Gateway breakdown bars
+        const gwContainer = document.getElementById('gateway-distribution-bars');
+        if (gwContainer && m.gateway_stats) {
+            const names = { jazzcash: 'JazzCash Mobile', easypaisa: 'Easypaisa Wallet', card_safepay: 'Debit / Card', wallet: 'In-App Wallet' };
+            const colors = { jazzcash: 'bg-red-600', easypaisa: 'bg-emerald-600', card_safepay: 'bg-blue-600', wallet: 'bg-amber-500' };
+            const total = m.total_unlocks || 1;
+            gwContainer.innerHTML = Object.entries(m.gateway_stats).map(([k, v]) => {
+                const pct = Math.round((v.count / total) * 100);
+                return `
+                    <div>
+                        <div class="flex justify-between text-xs font-bold mb-1">
+                            <span class="text-slate-700">${names[k] || k}</span>
+                            <span class="text-slate-900">${v.count} unlocks (Rs. ${v.total_amount.toFixed(0)})</span>
+                        </div>
+                        <div class="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
+                            <div class="${colors[k] || 'bg-slate-600'} h-full rounded-full" style="width: ${pct}%"></div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Listing status breakdown
+        const listContainer = document.getElementById('listing-status-breakdown');
+        if (listContainer) {
+            listContainer.innerHTML = `
+                <div class="flex items-center justify-between p-2 bg-emerald-50 rounded-lg text-xs font-bold text-emerald-900">
+                    <span>Active Listings</span>
+                    <span>${m.active_listings}</span>
+                </div>
+                <div class="flex items-center justify-between p-2 bg-amber-50 rounded-lg text-xs font-bold text-amber-900">
+                    <span>Pending Approval</span>
+                    <span>${m.pending_listings}</span>
+                </div>
+                <div class="flex items-center justify-between p-2 bg-slate-100 rounded-lg text-xs font-bold text-slate-800">
+                    <span>Sold Books</span>
+                    <span>${m.sold_listings}</span>
+                </div>
+                <div class="flex items-center justify-between p-2 bg-slate-50 rounded-lg text-xs font-bold text-slate-600">
+                    <span>Inactive / Paused</span>
+                    <span>${m.inactive_listings}</span>
+                </div>
+            `;
+        }
+
+        // Recent unlocks feed
+        const recBody = document.getElementById('overview-recent-txns-body');
+        if (recBody && data.recent_unlocks) {
+            recBody.innerHTML = data.recent_unlocks.slice(0, 10).map(u => `
+                <tr class="hover:bg-slate-50">
+                    <td class="py-2 px-3 font-mono font-bold text-slate-800">${u.transaction_id.slice(0, 15)}...</td>
+                    <td class="py-2 px-3 font-semibold text-slate-900 truncate max-w-xs">${u.listing_title}</td>
+                    <td class="py-2 px-3">${u.buyer_name}</td>
+                    <td class="py-2 px-3">${u.seller_name}</td>
+                    <td class="py-2 px-3 uppercase text-[10px] font-bold text-slate-600">${u.payment_method}</td>
+                    <td class="py-2 px-3 font-extrabold text-pakistan-700">Rs. ${u.fee_amount}</td>
+                    <td class="py-2 px-3">${getDealBadge(u.deal_status)}</td>
+                </tr>
+            `).join('');
+        }
+    }
+
+    function getDealBadge(status) {
+        const badgeMap = {
+            'deal_made': '<span class="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-bold text-[10px]">Deal Made</span>',
+            'no_deal_refunded': '<span class="px-2 py-0.5 rounded-full bg-blue-100 text-blue-800 font-bold text-[10px]">Refunded</span>',
+            'unlocked_pending': '<span class="px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 font-bold text-[10px]">Pending</span>',
+            'disputed': '<span class="px-2 py-0.5 rounded-full bg-rose-100 text-rose-800 font-bold text-[10px]">Disputed</span>'
+        };
+        return badgeMap[status] || `<span class="px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 text-[10px]">${status}</span>`;
+    }
+
+    // -------------------------------------------------------------
+    // 2. USER MANAGEMENT
+    // -------------------------------------------------------------
+    async function fetchAdminUsers() {
+        try {
+            const res = await fetch('/api/admin/users/', { headers: getAdminHeaders() });
+            const data = await res.json();
+            ADMIN_CACHE.users = data.users || [];
+            renderUsersTable(ADMIN_CACHE.users);
+        } catch (e) {
+            console.error(e);
+        }
+    }
+
+    function filterAdminUsers() {
+        const q = (document.getElementById('user-search-input')?.value || '').toLowerCase().trim();
+        const status = document.getElementById('user-status-filter')?.value || 'all';
+        const role = document.getElementById('user-role-filter')?.value || 'all';
+
+        let filtered = ADMIN_CACHE.users.filter(u => {
+            const matchQ = !q || (
+                (u.full_name && u.full_name.toLowerCase().includes(q)) ||
+                (u.phone_number && u.phone_number.includes(q)) ||
+                (u.city && u.city.toLowerCase().includes(q)) ||
+                (u.campus_or_area && u.campus_or_area.toLowerCase().includes(q))
+            );
+            const matchStatus = status === 'all' || (status === 'blocked' ? u.is_blocked : !u.is_blocked);
+            const matchRole = role === 'all' || u.user_type === role;
+            return matchQ && matchStatus && matchRole;
+        });
+
+        renderUsersTable(filtered);
+    }
+
+    function renderUsersTable(users) {
+        const tbody = document.getElementById('admin-users-table-body');
+        const empty = document.getElementById('users-empty-state');
+        const count = document.getElementById('user-count-display');
+        if (count) count.textContent = users.length;
+        if (!tbody) return;
+
+        if (users.length === 0) {
+            tbody.innerHTML = '';
+            if (empty) empty.classList.remove('hidden');
+            return;
+        }
+        if (empty) empty.classList.add('hidden');
+
+        tbody.innerHTML = users.map(u => `
+            <tr class="hover:bg-slate-50">
+                <td class="py-2.5 px-3 font-mono text-slate-500">#${u.id}</td>
+                <td class="py-2.5 px-3">
+                    <span class="font-extrabold text-slate-900 block">${u.full_name}</span>
+                    <span class="text-[11px] font-mono text-slate-500">${u.phone_number}</span>
+                </td>
+                <td class="py-2.5 px-3 text-slate-700">${u.city} <span class="text-[10px] text-slate-400 block">${u.campus_or_area || 'Campus'}</span></td>
+                <td class="py-2.5 px-3 uppercase text-[10px] font-bold text-slate-600">${u.user_type}</td>
+                <td class="py-2.5 px-3 font-semibold text-amber-500">★ ${u.rating} <span class="text-[10px] text-slate-400">(${u.total_reviews})</span></td>
+                <td class="py-2.5 px-3 font-extrabold text-pakistan-700">Rs. ${parseFloat(u.wallet_balance).toFixed(0)}</td>
+                <td class="py-2.5 px-3 text-slate-600">
+                    <span class="text-emerald-700 font-bold">${u.sold_listings_count || 0} sold</span> / ${u.active_listings_count || 0} active
+                </td>
+                <td class="py-2.5 px-3">
+                    <span class="px-2 py-0.5 rounded-full text-[10px] font-extrabold ${u.is_blocked ? 'bg-red-100 text-red-800' : 'bg-emerald-100 text-emerald-800'}">
+                        ${u.is_blocked ? 'BLOCKED' : 'ACTIVE'}
+                    </span>
+                </td>
+                <td class="py-2.5 px-3 text-right space-x-1 whitespace-nowrap">
+                    <button onclick="viewUserDetail(${u.id})" class="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-[10px] font-bold">
+                        <i class="fa-solid fa-eye"></i> Activity
+                    </button>
+                    <button onclick="toggleUserBlock(${u.id})" class="px-2.5 py-1 rounded-lg text-[10px] font-bold ${u.is_blocked ? 'bg-emerald-600 text-white hover:bg-emerald-700' : 'bg-red-600 text-white hover:bg-red-700'}">
+                        ${u.is_blocked ? 'Unblock' : 'Block'}
+                    </button>
+                </td>
+            </tr>
+        `).join('');
+    }
+
+    async function toggleUserBlock(userId) {
+        try {
+            const res = await fetch(`/api/admin/users/${userId}/toggle_block/`, { 
+                method: 'POST',
+                headers: getAdminHeaders()
+            });
+            const data = await res.json();
+            showToast(data.message, data.is_blocked ? 'error' : 'success');
+            await fetchAdminUsers();
+            await fetchAdminSellers();
+        } catch (e) {
+            showToast("Failed to toggle block status.", "error");
+        }
+    }
+
+    async function viewUserDetail(userId) {
+        try {
+            const res = await fetch(`/api/admin/users/${userId}/detail/`, { headers: getAdminHeaders() });
+            const data = await res.json();
+            const u = data.user;
+
+            document.getElementById('udm-name').textContent = u.full_name;
+            document.getElementById('udm-contact').textContent = `${u.phone_number} • ${u.city} (${u.campus_or_area || 'Campus'}) • Role: ${u.user_type.toUpperCase()}`;
+            document.getElementById('udm-wallet').textContent = `Rs. ${parseFloat(u.wallet_balance).toFixed(0)}`;
+            document.getElementById('udm-listings').textContent = data.listings.length;
+            document.getElementById('udm-sales').textContent = u.sold_listings_count || 0;
+            document.getElementById('udm-rating').textContent = `★ ${u.rating}`;
+
+            const blockBtn = document.getElementById('udm-block-btn');
+            blockBtn.textContent = u.is_blocked ? 'Unblock User' : 'Block User';
+            blockBtn.className = `px-4 py-2 ${u.is_blocked ? 'bg-emerald-600' : 'bg-red-600'} text-white rounded-xl text-xs font-bold`;
+            blockBtn.onclick = async () => {
+                await toggleUserBlock(u.id);
+                closeModal('user-detail-modal');
+            };
+
+            const lCont = document.getElementById('udm-listings-container');
+            if (data.listings.length === 0) {
+                lCont.innerHTML = '<p class="text-slate-400">No book listings uploaded by this user.</p>';
+            } else {
+                lCont.innerHTML = data.listings.map(l => `
+                    <div class="flex items-center justify-between p-2 bg-slate-50 rounded-lg">
+                        <span class="font-bold text-slate-800 truncate max-w-xs">${l.book.title} (Rs. ${l.price})</span>
+                        <span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase ${l.status === 'active' ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-200 text-slate-600'}">${l.status}</span>
+                    </div>
+                `).join('');
+            }
+
+            document.getElementById('user-detail-modal').classList.remove('hidden');
+        } catch (e) {
+            showToast("Error loading user profile.", "error");
+        }
+    }
+
+    // -------------------------------------------------------------
+    // 3. LISTINGS MODERATION
+    // -------------------------------------------------------------
+    async function fetchAdminListings() {
+        try {
+            const res = await fetch('/api/admin/listings/', { headers: getAdminHeaders() });
+            const data = await res.json();
+            ADMIN_CACHE.listings = data.listings || [];
+            renderListingsTable(ADMIN_CACHE.listings);
+        } catch (e) {
+            console.error(e);
+        }
+    }
+
+    function filterAdminListings() {
+        const q = (document.getElementById('listing-search-input')?.value || '').toLowerCase().trim();
+        const status = document.getElementById('listing-status-filter')?.value || 'all';
+        const cond = document.getElementById('listing-condition-filter')?.value || 'all';
+
+        let filtered = ADMIN_CACHE.listings.filter(l => {
+            const matchQ = !q || (
+                (l.book.title && l.book.title.toLowerCase().includes(q)) ||
+                (l.book.author && l.book.author.toLowerCase().includes(q)) ||
+                (l.book.isbn && l.book.isbn.includes(q)) ||
+                (l.seller_name && l.seller_name.toLowerCase().includes(q))
+            );
+            const matchStatus = status === 'all' || l.status === status;
+            const matchCond = cond === 'all' || l.condition === cond;
+            return matchQ && matchStatus && matchCond;
+        });
+
+        renderListingsTable(filtered);
+    }
+
+    function renderListingsTable(listings) {
+        const tbody = document.getElementById('admin-listings-table-body');
+        const empty = document.getElementById('listings-empty-state');
+        const count = document.getElementById('listing-count-display');
+        if (count) count.textContent = listings.length;
+        if (!tbody) return;
+
+        if (listings.length === 0) {
+            tbody.innerHTML = '';
+            if (empty) empty.classList.remove('hidden');
+            return;
+        }
+        if (empty) empty.classList.add('hidden');
+
+        tbody.innerHTML = listings.map(l => `
+            <tr class="hover:bg-slate-50">
+                <td class="py-2.5 px-3 font-mono text-slate-500">#${l.id}</td>
+                <td class="py-2.5 px-3">
+                    <span class="font-extrabold text-slate-900 block truncate max-w-xs">${l.book.title}</span>
+                    <span class="text-[10px] text-slate-400 font-mono">ISBN: ${l.book.isbn} • ${l.book.author}</span>
+                </td>
+                <td class="py-2.5 px-3 font-medium text-slate-800">${l.seller_name}</td>
+                <td class="py-2.5 px-3">${l.city}</td>
+                <td class="py-2.5 px-3"><span class="bg-slate-100 text-slate-700 px-2 py-0.5 rounded font-bold text-[10px]">${l.condition}</span></td>
+                <td class="py-2.5 px-3 font-black text-pakistan-700">Rs. ${parseFloat(l.price).toFixed(0)}</td>
+                <td class="py-2.5 px-3">
+                    <span class="px-2 py-0.5 rounded-full text-[10px] font-extrabold uppercase ${l.status === 'active' ? 'bg-emerald-100 text-emerald-800' : l.status === 'pending' ? 'bg-amber-100 text-amber-800' : 'bg-slate-200 text-slate-600'}">
+                        ${l.status}
+                    </span>
+                </td>
+                <td class="py-2.5 px-3">
+                    <button onclick="moderateListing(${l.id}, 'toggle_sponsored')" class="px-2 py-0.5 rounded-lg text-[10px] font-bold ${l.is_sponsored ? 'bg-amber-100 text-amber-800 border border-amber-300' : 'bg-slate-100 text-slate-500'}">
+                        ${l.is_sponsored ? '★ Promoted' : 'Standard'}
+                    </button>
+                </td>
+                <td class="py-2.5 px-3 text-right space-x-1 whitespace-nowrap">
+                    ${l.status !== 'active' ? `
+                        <button onclick="moderateListing(${l.id}, 'approve')" class="px-2 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-[10px] font-bold">Approve</button>
+                    ` : `
+                        <button onclick="moderateListing(${l.id}, 'reject')" class="px-2 py-1 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-lg text-[10px] font-bold">Pause</button>
+                    `}
+                    <button onclick="openAdminEditListing(${l.id})" class="px-2 py-1 bg-blue-100 text-blue-700 hover:bg-blue-200 rounded-lg text-[10px] font-bold">
+                        <i class="fa-solid fa-pen"></i> Edit
+                    </button>
+                    <button onclick="moderateListing(${l.id}, 'delete')" class="px-2 py-1 bg-rose-100 text-rose-700 hover:bg-rose-200 rounded-lg text-[10px] font-bold">
+                        <i class="fa-solid fa-trash"></i>
+                    </button>
+                </td>
+            </tr>
+        `).join('');
+    }
+
+    async function moderateListing(listingId, action) {
+        if (action === 'delete' && !confirm("Are you sure you want to permanently delete this listing?")) return;
+
+        try {
+            const res = await fetch(`/api/admin/listings/${listingId}/moderate/`, {
+                method: 'POST',
+                headers: getAdminHeaders(),
+                body: JSON.stringify({ action: action })
+            });
+            const data = await res.json();
+            showToast(data.message, 'success');
+            await fetchAdminListings();
+        } catch (e) {
+            showToast("Error moderating listing.", "error");
+        }
+    }
+
+    function openAdminEditListing(listingId) {
+        const l = ADMIN_CACHE.listings.find(x => x.id === listingId);
+        if (!l) return;
+        document.getElementById('lem-id').value = l.id;
+        document.getElementById('lem-price').value = l.price;
+        document.getElementById('lem-condition').value = l.condition;
+        document.getElementById('lem-status').value = l.status;
+        document.getElementById('lem-location').value = l.pickup_location || '';
+        document.getElementById('lem-sponsored').checked = l.is_sponsored;
+        document.getElementById('listing-edit-modal').classList.remove('hidden');
+    }
+
+    async function submitAdminEditListing() {
+        const id = document.getElementById('lem-id').value;
+        const payload = {
+            price: document.getElementById('lem-price').value,
+            condition: document.getElementById('lem-condition').value,
+            status: document.getElementById('lem-status').value,
+            pickup_location: document.getElementById('lem-location').value,
+            is_sponsored: document.getElementById('lem-sponsored').checked
+        };
+        try {
+            const res = await fetch(`/api/admin/listings/${id}/edit/`, {
+                method: 'POST',
+                headers: getAdminHeaders(),
+                body: JSON.stringify(payload)
+            });
+            const data = await res.json();
+            showToast(data.message, 'success');
+            closeModal('listing-edit-modal');
+            await fetchAdminListings();
+        } catch (e) {
+            showToast("Failed to edit listing.", "error");
+        }
+    }
+
+    // -------------------------------------------------------------
+    // 4. SELLER PERFORMANCE
+    // -------------------------------------------------------------
+    async function fetchAdminSellers() {
+        try {
+            const res = await fetch('/api/admin/sellers/', { headers: getAdminHeaders() });
+            const data = await res.json();
+            ADMIN_CACHE.sellers = data.sellers || [];
+            renderSellersTable(ADMIN_CACHE.sellers);
+        } catch (e) {
+            console.error(e);
+        }
+    }
+
+    function renderSellersTable(sellers) {
+        const tbody = document.getElementById('admin-sellers-table-body');
+        const badge = document.getElementById('seller-total-badge');
+        if (badge) badge.textContent = `${sellers.length} Active Sellers`;
+        if (!tbody) return;
+
+        tbody.innerHTML = sellers.map(s => `
+            <tr class="hover:bg-slate-50">
+                <td class="py-2.5 px-3 font-extrabold text-slate-900">${s.full_name}</td>
+                <td class="py-2.5 px-3 font-mono text-slate-700">${s.phone_number}</td>
+                <td class="py-2.5 px-3">${s.city} <span class="text-[10px] text-slate-400 block">${s.campus_or_area || 'Campus'}</span></td>
+                <td class="py-2.5 px-3 font-bold text-amber-500">★ ${s.rating.toFixed(1)} <span class="text-[10px] text-slate-400">(${s.total_reviews})</span></td>
+                <td class="py-2.5 px-3 font-bold text-slate-800">${s.active_listings} books</td>
+                <td class="py-2.5 px-3 font-extrabold text-emerald-700">${s.sold_listings} sold</td>
+                <td class="py-2.5 px-3 font-bold text-pakistan-700">${s.unlocks_received} unlocked</td>
+                <td class="py-2.5 px-3">
+                    <span class="px-2 py-0.5 rounded-full text-[10px] font-extrabold ${s.is_blocked ? 'bg-red-100 text-red-800' : 'bg-emerald-100 text-emerald-800'}">
+                        ${s.is_blocked ? 'BLOCKED' : 'VERIFIED'}
+                    </span>
+                </td>
+                <td class="py-2.5 px-3 text-right">
+                    <button onclick="viewUserDetail(${s.id})" class="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-[10px] font-bold">
+                        Inspect Profile
+                    </button>
+                </td>
+            </tr>
+        `).join('');
+    }
+
+    // -------------------------------------------------------------
+    // 5. PAYMENT TRANSACTIONS & UNLOCKS LEDGER
+    // -------------------------------------------------------------
+    async function fetchAdminTransactions() {
+        try {
+            const res = await fetch('/api/admin/unlocks/', { headers: getAdminHeaders() });
+            const data = await res.json();
+            ADMIN_CACHE.unlocks = data.unlocks || [];
+            renderUnlocksLedger(ADMIN_CACHE.unlocks);
+        } catch (e) {
+            console.error(e);
+        }
+    }
+
+    function filterAdminTransactions() {
+        const q = (document.getElementById('txn-search-input')?.value || '').toLowerCase().trim();
+        const gw = document.getElementById('txn-gateway-filter')?.value || 'all';
+        const deal = document.getElementById('txn-status-filter')?.value || 'all';
+
+        let filtered = ADMIN_CACHE.unlocks.filter(u => {
+            const matchQ = !q || (
+                (u.transaction_id && u.transaction_id.toLowerCase().includes(q)) ||
+                (u.buyer_name && u.buyer_name.toLowerCase().includes(q)) ||
+                (u.seller_name && u.seller_name.toLowerCase().includes(q)) ||
+                (u.listing_title && u.listing_title.toLowerCase().includes(q))
+            );
+            const matchGw = gw === 'all' || u.payment_method === gw;
+            const matchDeal = deal === 'all' || u.deal_status === deal;
+            return matchQ && matchGw && matchDeal;
+        });
+
+        renderUnlocksLedger(filtered);
+    }
+
+    function renderUnlocksLedger(unlocks) {
+        const tbody = document.getElementById('admin-unlocks-table-body');
+        const count = document.getElementById('txn-count-display');
+        if (count) count.textContent = unlocks.length;
+        if (!tbody) return;
+
+        tbody.innerHTML = unlocks.map(u => `
+            <tr class="hover:bg-slate-50">
+                <td class="py-2.5 px-3 font-mono font-bold text-slate-800">${u.transaction_id.slice(0, 16)}...</td>
+                <td class="py-2.5 px-3 font-semibold text-slate-900 max-w-xs truncate">${u.listing_title}</td>
+                <td class="py-2.5 px-3">${u.buyer_name} <span class="text-[10px] text-slate-400 block">${u.buyer_phone}</span></td>
+                <td class="py-2.5 px-3">${u.seller_name} <span class="text-[10px] text-slate-400 block">${u.seller_phone}</span></td>
+                <td class="py-2.5 px-3 uppercase font-bold text-[10px] text-slate-600">${u.payment_method}</td>
+                <td class="py-2.5 px-3 font-black text-pakistan-700">Rs. ${u.fee_amount}</td>
+                <td class="py-2.5 px-3">${getDealBadge(u.deal_status)}</td>
+                <td class="py-2.5 px-3 font-mono text-slate-500">${u.refund_transaction_id || '-'}</td>
+                <td class="py-2.5 px-3 text-right">
+                    ${u.deal_status !== 'no_deal_refunded' ? `
+                        <button onclick="adminForceRefund('${u.unlock_id}')" class="px-2 py-1 bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200 rounded text-[10px] font-bold">
+                            Force Refund
+                        </button>
+                    ` : '<span class="text-[10px] text-slate-400 font-bold">Refunded</span>'}
+                </td>
+            </tr>
+        `).join('');
+    }
+
+    async function adminForceRefund(unlockId) {
+        const reason = prompt("Enter reason for admin forced refund to buyer wallet:");
+        if (!reason) return;
+
+        try {
+            const res = await fetch(`/api/admin/unlocks/${unlockId}/force_refund/`, {
+                method: 'POST',
+                headers: getAdminHeaders(),
+                body: JSON.stringify({ reason: reason })
+            });
+            const data = await res.json();
+            if (res.ok) {
+                showToast(data.message, 'success');
+                await fetchAdminTransactions();
+                await loadAllAdminData();
+            } else {
+                showToast(data.error || "Failed to refund.", 'error');
+            }
+        } catch (e) {
+            showToast("Refund network error.", 'error');
+        }
+    }
+
+    // -------------------------------------------------------------
+    // 6. REPORTS & COMPLAINTS
+    // -------------------------------------------------------------
+    async function fetchAdminReports() {
+        try {
+            const res = await fetch('/api/admin/reports/', { headers: getAdminHeaders() });
+            const data = await res.json();
+            ADMIN_CACHE.reports = data.reports || [];
+            renderReportsTable(ADMIN_CACHE.reports);
+        } catch (e) {
+            console.error(e);
+        }
+    }
+
+    function filterAdminReports() {
+        const status = document.getElementById('report-status-filter')?.value || 'all';
+        const type = document.getElementById('report-type-filter')?.value || 'all';
+
+        let filtered = ADMIN_CACHE.reports.filter(r => {
+            const matchStatus = status === 'all' || r.status === status;
+            const matchType = type === 'all' || r.report_type === type;
+            return matchStatus && matchType;
+        });
+
+        renderReportsTable(filtered);
+    }
+
+    function renderReportsTable(reports) {
+        const tbody = document.getElementById('admin-reports-table-body');
+        const empty = document.getElementById('reports-empty-state');
+        const count = document.getElementById('report-count-display');
+        if (count) count.textContent = reports.length;
+        if (!tbody) return;
+
+        if (reports.length === 0) {
+            tbody.innerHTML = '';
+            if (empty) empty.classList.remove('hidden');
+            return;
+        }
+        if (empty) empty.classList.add('hidden');
+
+        tbody.innerHTML = reports.map(r => `
+            <tr class="hover:bg-slate-50">
+                <td class="py-2.5 px-3 font-mono text-slate-500">#${r.id}</td>
+                <td class="py-2.5 px-3">
+                    <span class="font-bold text-slate-900 block">${r.reporter_name}</span>
+                    <span class="text-[10px] text-slate-400 font-mono">${r.reporter_phone}</span>
+                </td>
+                <td class="py-2.5 px-3">
+                    <span class="font-bold text-slate-900 block truncate max-w-xs">${r.listing_title || r.reported_user_name || 'General Platform'}</span>
+                    <span class="text-[10px] text-slate-500">${r.reported_user_name ? 'Seller: ' + r.reported_user_name : ''}</span>
+                </td>
+                <td class="py-2.5 px-3"><span class="px-2 py-0.5 rounded font-bold text-[10px] bg-rose-50 text-rose-800 border border-rose-200">${r.report_type_display}</span></td>
+                <td class="py-2.5 px-3 text-slate-700 max-w-xs truncate" title="${r.description}">${r.description}</td>
+                <td class="py-2.5 px-3">
+                    <span class="px-2 py-0.5 rounded-full text-[10px] font-extrabold uppercase ${r.status === 'pending' ? 'bg-rose-100 text-rose-800' : r.status === 'resolved' ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-100 text-slate-700'}">
+                        ${r.status}
+                    </span>
+                </td>
+                <td class="py-2.5 px-3 text-slate-400 text-[10px]">${new Date(r.created_at).toLocaleDateString()}</td>
+                <td class="py-2.5 px-3 text-right">
+                    <button onclick="openResolveReportModal(${r.id})" class="px-2.5 py-1 bg-slate-900 hover:bg-slate-800 text-white rounded-lg text-[10px] font-bold">
+                        Review / Resolve
+                    </button>
+                </td>
+            </tr>
+        `).join('');
+    }
+
+    function openResolveReportModal(reportId) {
+        const r = ADMIN_CACHE.reports.find(x => x.id === reportId);
+        if (!r) return;
+        document.getElementById('rrm-id').value = r.id;
+        document.getElementById('rrm-type').textContent = `${r.report_type_display} (Reported by: ${r.reporter_name})`;
+        document.getElementById('rrm-desc').textContent = r.description;
+        document.getElementById('rrm-status').value = r.status === 'pending' ? 'resolved' : r.status;
+        document.getElementById('rrm-notes').value = r.admin_notes || '';
+        document.getElementById('rrm-block-user').checked = false;
+        document.getElementById('rrm-deactivate-listing').checked = false;
+        document.getElementById('report-resolve-modal').classList.remove('hidden');
+    }
+
+    async function submitReportResolution() {
+        const id = document.getElementById('rrm-id').value;
+        const block = document.getElementById('rrm-block-user').checked;
+        const deact = document.getElementById('rrm-deactivate-listing').checked;
+        let action = '';
+        if (block) action = 'block_user';
+        else if (deact) action = 'deactivate_listing';
+
+        const payload = {
+            status: document.getElementById('rrm-status').value,
+            admin_notes: document.getElementById('rrm-notes').value,
+            action: action
+        };
+
+        try {
+            const res = await fetch(`/api/admin/reports/${id}/resolve/`, {
+                method: 'POST',
+                headers: getAdminHeaders(),
+                body: JSON.stringify(payload)
+            });
+            const data = await res.json();
+            showToast(data.message, 'success');
+            closeModal('report-resolve-modal');
+            await fetchAdminReports();
+            await fetchAdminUsers();
+        } catch (e) {
+            showToast("Failed to resolve report.", 'error');
+        }
+    }
+
+    // -------------------------------------------------------------
+    // 7. ADVERTISEMENTS
+    // -------------------------------------------------------------
+    async function fetchAdminAds() {
+        try {
+            const res = await fetch('/api/admin/ads/', { headers: getAdminHeaders() });
+            const data = await res.json();
+            ADMIN_CACHE.ads = data.ads || [];
+            renderAdsTable(ADMIN_CACHE.ads);
+        } catch (e) {
+            console.error(e);
+        }
+    }
+
+    function renderAdsTable(ads) {
+        const tbody = document.getElementById('admin-ads-table-body');
+        if (!tbody) return;
+
+        tbody.innerHTML = ads.map(a => `
+            <tr class="hover:bg-slate-50">
+                <td class="py-2.5 px-3 font-mono text-slate-500">#${a.id}</td>
+                <td class="py-2.5 px-3">
+                    <span class="font-extrabold text-slate-900 block">${a.title}</span>
+                    <span class="text-[11px] text-slate-500">${a.headline}</span>
+                </td>
+                <td class="py-2.5 px-3 font-semibold text-slate-700">${a.sponsor_name}</td>
+                <td class="py-2.5 px-3 uppercase text-[10px] font-bold text-slate-600">${a.ad_type}</td>
+                <td class="py-2.5 px-3 font-bold text-slate-800">${a.impressions}</td>
+                <td class="py-2.5 px-3 font-extrabold text-emerald-700">${a.clicks}</td>
+                <td class="py-2.5 px-3 font-black text-pakistan-700">${a.ctr}%</td>
+                <td class="py-2.5 px-3">
+                    <button onclick="toggleAdminAd(${a.id})" class="px-2 py-0.5 rounded-full text-[10px] font-extrabold ${a.is_active ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-100 text-slate-500'}">
+                        ${a.is_active ? 'ACTIVE' : 'PAUSED'}
+                    </button>
+                </td>
+                <td class="py-2.5 px-3 text-right space-x-1">
+                    <button onclick="openEditAdModal(${a.id})" class="px-2 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded text-[10px] font-bold">
+                        Edit
+                    </button>
+                    <button onclick="deleteAdminAd(${a.id})" class="px-2 py-1 bg-rose-100 hover:bg-rose-200 text-rose-700 rounded text-[10px] font-bold">
+                        Delete
+                    </button>
+                </td>
+            </tr>
+        `).join('');
+    }
+
+    function openCreateAdModal() {
+        document.getElementById('afm-title').textContent = 'Create New Advertisement';
+        document.getElementById('afm-id').value = '';
+        document.getElementById('afm-campaign-title').value = '';
+        document.getElementById('afm-sponsor').value = '';
+        document.getElementById('afm-headline').value = '';
+        document.getElementById('afm-url').value = '#';
+        document.getElementById('afm-active').checked = true;
+        document.getElementById('ad-form-modal').classList.remove('hidden');
+    }
+
+    function openEditAdModal(adId) {
+        const a = ADMIN_CACHE.ads.find(x => x.id === adId);
+        if (!a) return;
+        document.getElementById('afm-title').textContent = 'Edit Advertisement';
+        document.getElementById('afm-id').value = a.id;
+        document.getElementById('afm-campaign-title').value = a.title;
+        document.getElementById('afm-sponsor').value = a.sponsor_name;
+        document.getElementById('afm-type').value = a.ad_type;
+        document.getElementById('afm-headline').value = a.headline;
+        document.getElementById('afm-url').value = a.target_url;
+        document.getElementById('afm-active').checked = a.is_active;
+        document.getElementById('ad-form-modal').classList.remove('hidden');
+    }
+
+    async function submitAdForm() {
+        const id = document.getElementById('afm-id').value;
+        const payload = {
+            title: document.getElementById('afm-campaign-title').value,
+            sponsor_name: document.getElementById('afm-sponsor').value,
+            ad_type: document.getElementById('afm-type').value,
+            headline: document.getElementById('afm-headline').value,
+            target_url: document.getElementById('afm-url').value,
+            is_active: document.getElementById('afm-active').checked
+        };
+        const url = id ? `/api/admin/ads/${id}/edit/` : '/api/admin/ads/create/';
+        try {
+            const res = await fetch(url, {
+                method: 'POST',
+                headers: getAdminHeaders(),
+                body: JSON.stringify(payload)
+            });
+            const data = await res.json();
+            showToast(data.message, 'success');
+            closeModal('ad-form-modal');
+            await fetchAdminAds();
+        } catch (e) {
+            showToast("Failed to save advertisement.", 'error');
+        }
+    }
+
+    async function toggleAdminAd(adId) {
+        try {
+            const res = await fetch(`/api/admin/ads/${adId}/toggle/`, {
+                method: 'POST',
+                headers: getAdminHeaders()
+            });
+            const data = await res.json();
+            showToast(data.message, 'success');
+            await fetchAdminAds();
+        } catch (e) {
+            showToast("Failed to toggle ad status.", 'error');
+        }
+    }
+
+    async function deleteAdminAd(adId) {
+        if (!confirm("Are you sure you want to delete this ad?")) return;
+        try {
+            const res = await fetch(`/api/admin/ads/${adId}/delete/`, {
+                method: 'POST',
+                headers: getAdminHeaders()
+            });
+            const data = await res.json();
+            showToast(data.message, 'success');
+            await fetchAdminAds();
+        } catch (e) {
+            showToast("Failed to delete ad.", 'error');
+        }
+    }
+
+    // -------------------------------------------------------------
+    // 8. PLATFORM SETTINGS
+    // -------------------------------------------------------------
+    async function saveQuickSettings() {
+        const fee = document.getElementById('quick-fee-input').value;
+        const approval = document.getElementById('quick-approval-input').checked;
+        await sendSettingsUpdate({ contact_unlock_fee: fee, require_admin_approval: approval });
+    }
+
+    async function saveFullPlatformSettings() {
+        const payload = {
+            contact_unlock_fee: document.getElementById('setting-full-fee').value,
+            auto_refund_days: document.getElementById('setting-refund-days').value,
+            require_admin_approval: document.getElementById('setting-full-approval').checked,
+            allow_sponsored_listings: document.getElementById('setting-full-sponsored').checked
+        };
+        await sendSettingsUpdate(payload);
+    }
+
+    async function sendSettingsUpdate(payload) {
+        try {
+            const res = await fetch('/api/admin/settings/', {
+                method: 'POST',
+                headers: getAdminHeaders(),
+                body: JSON.stringify(payload)
+            });
+            const data = await res.json();
+            showToast(data.message, 'success');
+            await loadAllAdminData();
+        } catch (e) {
+            showToast("Error updating settings.", 'error');
+        }
+    }
+
+    // -------------------------------------------------------------
+    // TAB SWITCHING
+    // -------------------------------------------------------------
+    function switchAdminTab(tabName) {
+        document.querySelectorAll('.admin-sec').forEach(s => s.classList.add('hidden'));
+        document.querySelectorAll('.admin-tab').forEach(b => {
+            b.classList.remove('active', 'text-pakistan-700', 'border-b-2', 'border-pakistan-700');
+            b.classList.add('text-slate-600');
+        });
+
+        const targetSec = document.getElementById(`admin-sec-${tabName}`);
+        const targetBtn = document.getElementById(`tabbtn-${tabName}`);
+        if (targetSec) targetSec.classList.remove('hidden');
+        if (targetBtn) {
+            targetBtn.classList.add('active', 'text-pakistan-700', 'border-b-2', 'border-pakistan-700');
+            targetBtn.classList.remove('text-slate-600');
+        }
+    }
+</script>
+{% endblock %}

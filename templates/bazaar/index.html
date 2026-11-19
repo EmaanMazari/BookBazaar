@@ -1,0 +1,981 @@
+{% extends 'bazaar/base.html' %}
+
+{% block title %}BookBazaar - Used Books Marketplace Pakistan{% endblock %}
+
+{% block content %}
+<!-- Top Global Controller Bar (For FYP Evaluation, User Switcher, Language & Frame toggle) -->
+<header class="bg-slate-900 text-white border-b border-slate-800 text-xs py-2 px-4 sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-3">
+        <!-- University & Platform Branding -->
+        <div class="flex items-center gap-2.5">
+            <div class="w-7 h-7 bg-emerald-600 rounded-lg flex items-center justify-center font-bold text-white shadow-xs">
+                BB
+            </div>
+            <div>
+                <span class="font-extrabold text-sm tracking-tight text-emerald-400" data-i18n="brand_name">BookBazaar</span>
+                <span class="text-[10px] text-slate-400 hidden sm:inline ml-2" data-i18n="brand_tagline">
+                    Pakistan's Academic & Used Books Marketplace
+                </span>
+            </div>
+        </div>
+
+        <!-- Controls: User Switcher, Auth, Language Toggle, View Mode, Admin Link -->
+        <div class="flex items-center gap-2.5">
+            <!-- Active User Quick Switcher -->
+            <div class="flex items-center gap-1.5 bg-slate-800 px-2 py-1 rounded-lg border border-slate-700">
+                <i class="fa-solid fa-user-gear text-emerald-400 text-xs"></i>
+                <select id="user-selector" class="bg-transparent text-white text-xs border-0 focus:ring-0 cursor-pointer max-w-[150px] sm:max-w-xs truncate">
+                    <!-- Populated dynamically -->
+                </select>
+            </div>
+
+            <!-- Login / Register Button -->
+            <button onclick="openAuthModal()" class="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-lg font-bold text-slate-300 transition-colors flex items-center gap-1">
+                <i class="fa-solid fa-right-to-bracket text-emerald-400"></i> <span id="auth-btn-label">Sign In</span>
+            </button>
+
+            <!-- Language Switcher -->
+            <button id="lang-toggle-btn" onclick="toggleLanguage()" class="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-lg font-bold text-emerald-400 transition-colors">
+                اردو
+            </button>
+
+            <!-- Screen View Mode Toggle -->
+            <button id="view-mode-btn" onclick="toggleViewMode()" class="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-lg text-slate-300 font-semibold transition-colors flex items-center">
+                <i class="fa-solid fa-desktop mr-1.5"></i> <span data-i18n="view_toggle_full">Full Screen</span>
+            </button>
+
+            <!-- Admin Link -->
+            <a href="/admin-panel/" class="px-2.5 py-1 bg-emerald-700 hover:bg-emerald-600 text-white rounded-lg font-bold transition-colors flex items-center gap-1 shadow-xs">
+                <i class="fa-solid fa-gauge-high text-xs"></i> Admin
+            </a>
+        </div>
+    </div>
+</header>
+
+<!-- Main App Wrapper (Can be mobile phone mockup or full width) -->
+<main class="flex-1 flex items-center justify-center p-0 sm:p-4">
+    <div id="app-wrapper" class="mobile-device-frame">
+        
+        <!-- Mobile Notch & Speaker Simulator -->
+        <div id="mobile-notch" class="mobile-notch">
+            <div class="mobile-notch-speaker"></div>
+            <div class="mobile-notch-camera"></div>
+        </div>
+
+        <!-- Mobile App Status Bar -->
+        <div class="bg-pakistan-800 text-white px-5 pt-8 pb-2 flex items-center justify-between text-[11px] font-medium z-10 flex-shrink-0">
+            <span id="live-time">09:41</span>
+            <div class="flex items-center gap-2 text-xs">
+                <i class="fa-solid fa-signal text-[10px]"></i>
+                <i class="fa-solid fa-wifi text-[10px]"></i>
+                <i class="fa-solid fa-battery-full text-sm"></i>
+            </div>
+        </div>
+
+        <!-- App Main Header -->
+        <div class="bg-gradient-to-r from-pakistan-800 via-pakistan-700 to-pakistan-800 text-white px-4 py-3 flex items-center justify-between shadow-sm z-10 flex-shrink-0">
+            <div class="flex items-center gap-2">
+                <div class="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-emerald-300">
+                    <i class="fa-solid fa-book-open-reader text-base"></i>
+                </div>
+                <div>
+                    <h1 class="text-base font-extrabold tracking-tight" data-i18n="brand_name">BookBazaar</h1>
+                    <p class="text-[10px] text-emerald-200">Pakistan's Used Books Marketplace</p>
+                </div>
+            </div>
+            
+            <!-- User Balance Pill -->
+            <div onclick="switchTab('profile')" class="cursor-pointer bg-white/10 hover:bg-white/20 border border-white/20 px-2.5 py-1 rounded-full flex items-center gap-1.5 transition-all">
+                <i class="fa-solid fa-wallet text-amber-300 text-xs"></i>
+                <span id="current-user-balance" class="text-xs font-bold">Rs. 0</span>
+            </div>
+        </div>
+
+        <!-- Scrollable Tab Content Container -->
+        <div class="flex-1 overflow-y-auto bg-slate-100 p-3 sm:p-4 pb-20 relative">
+
+            <!-- ============================================== -->
+            <!-- TAB 1: HOME & BROWSE -->
+            <!-- ============================================== -->
+            <section id="tab-home" class="tab-page">
+                <!-- Top Sponsor Banner Ad -->
+                <div id="banner-top-ad"></div>
+
+                <!-- Hero Section -->
+                <div class="bg-gradient-to-br from-pakistan-800 to-pakistan-900 rounded-2xl p-4 text-white shadow-md mb-4 relative overflow-hidden">
+                    <div class="relative z-10">
+                        <span class="inline-block bg-emerald-500/20 text-emerald-300 text-[10px] font-bold px-2 py-0.5 rounded-full mb-1 border border-emerald-400/30">
+                            Pakistan Used Books Marketplace
+                        </span>
+                        <h2 class="text-base font-extrabold leading-tight" data-i18n="hero_title">
+                            Buy & Sell Used Textbooks Across Pakistan
+                        </h2>
+                        <p class="text-xs text-emerald-100/90 mt-1" data-i18n="hero_subtitle">
+                            Scan any book barcode to compare prices or sell your used books in seconds.
+                        </p>
+
+                        <!-- Hero CTA Buttons -->
+                        <div class="flex gap-2 mt-3">
+                            <button onclick="switchTab('scan')" class="flex-1 py-2 bg-emerald-500 hover:bg-emerald-600 text-slate-900 rounded-xl text-xs font-bold shadow-xs flex items-center justify-center gap-1.5">
+                                <i class="fa-solid fa-barcode text-sm"></i> <span data-i18n="scan_now_btn">Scan Barcode</span>
+                            </button>
+                            <button onclick="switchTab('sell')" class="flex-1 py-2 bg-white/15 hover:bg-white/25 text-white border border-white/25 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5">
+                                <i class="fa-solid fa-plus-circle text-sm"></i> <span data-i18n="sell_now_btn">Sell a Book</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Search & Filters -->
+                <div class="space-y-2 mb-3">
+                    <div class="relative">
+                        <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-3 text-slate-400 text-xs"></i>
+                        <input type="text" id="search-input" placeholder="Search title, author, subject, class, board or ISBN..." 
+                               class="w-full pl-9 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl text-xs shadow-xs focus:ring-2 focus:ring-pakistan-600 focus:outline-none">
+                    </div>
+
+                    <!-- Filter Toggle & View Favorites Switch -->
+                    <div class="flex items-center justify-between text-xs py-1">
+                        <button onclick="toggleAdvancedFilters()" class="text-slate-600 font-semibold hover:text-pakistan-700 flex items-center gap-1">
+                            <i class="fa-solid fa-sliders text-xs text-pakistan-700"></i>
+                            <span id="filter-toggle-label">Filters (Class, Board, City, Price)</span>
+                        </button>
+                        <button onclick="toggleFavoritesFilter()" id="favorites-filter-btn" class="px-2.5 py-1 bg-white border border-slate-200 hover:border-rose-300 text-slate-700 hover:text-rose-600 rounded-lg text-xs font-bold flex items-center gap-1 transition-all">
+                            <i class="fa-solid fa-heart text-xs text-rose-500"></i>
+                            <span id="fav-filter-text">Favourites</span>
+                        </button>
+                    </div>
+
+                    <!-- Advanced Filter Bar (Collapsible / Dynamic) -->
+                    <div id="advanced-filters-box" class="grid grid-cols-2 sm:grid-cols-3 gap-1.5 text-xs bg-white p-3 rounded-xl border border-slate-200 shadow-xs">
+                        <div>
+                            <label class="block text-[10px] font-bold text-slate-500 mb-0.5">Education Board</label>
+                            <select id="filter-board" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-1.5 text-slate-700 text-[11px] font-medium">
+                                <option value="All">All Boards</option>
+                                {% for b in boards %}
+                                    <option value="{{ b }}">{{ b }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div>
+                            <label class="block text-[10px] font-bold text-slate-500 mb-0.5">Class / Level</label>
+                            <select id="filter-class" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-1.5 text-slate-700 text-[11px] font-medium">
+                                <option value="All">All Classes</option>
+                                {% for k in classes %}
+                                    <option value="{{ k }}">{{ k }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div>
+                            <label class="block text-[10px] font-bold text-slate-500 mb-0.5">Category</label>
+                            <select id="filter-category" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-1.5 text-slate-700 text-[11px] font-medium">
+                                <option value="All">All Categories</option>
+                                {% for c in categories %}
+                                    <option value="{{ c }}">{{ c }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div>
+                            <label class="block text-[10px] font-bold text-slate-500 mb-0.5">City</label>
+                            <select id="filter-city" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-1.5 text-slate-700 text-[11px] font-medium">
+                                <option value="All">All Cities</option>
+                                {% for city in cities %}
+                                    <option value="{{ city }}">{{ city }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div>
+                            <label class="block text-[10px] font-bold text-slate-500 mb-0.5">Condition</label>
+                            <select id="filter-condition" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-1.5 text-slate-700 text-[11px] font-medium">
+                                <option value="All">All Conditions</option>
+                                {% for cond in conditions %}
+                                    <option value="{{ cond }}">{{ cond }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div>
+                            <label class="block text-[10px] font-bold text-slate-500 mb-0.5">Sort By</label>
+                            <select id="filter-sort" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-1.5 text-slate-700 text-[11px] font-medium">
+                                <option value="cheapest">Price: Lowest First</option>
+                                <option value="expensive">Price: Highest First</option>
+                                <option value="rating">Top Rated Sellers</option>
+                                <option value="newest">Newly Listed</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Listings Feed Section Header -->
+                <div class="flex items-center justify-between mb-2">
+                    <h3 class="text-xs font-bold uppercase tracking-wider text-slate-600" id="listings-feed-title">
+                        Available Book Offers
+                    </h3>
+                    <span class="text-[11px] text-emerald-700 font-semibold bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
+                        Rs. 50 Refundable Unlock Fee
+                    </span>
+                </div>
+
+                <!-- Listings Container -->
+                <div id="listings-container" class="space-y-3">
+                    <!-- Populated by JavaScript -->
+                </div>
+
+                <!-- Bottom Sticky Partner Banner Ad -->
+                <div id="banner-bottom-ad" class="mt-4"></div>
+            </section>
+
+            <!-- ============================================== -->
+            <!-- TAB 2: BARCODE (ISBN) SCANNER & PRICE COMPARISON -->
+            <!-- ============================================== -->
+            <section id="tab-scan" class="tab-page hidden">
+                <div class="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm mb-4">
+                    <div class="flex items-center justify-between mb-3">
+                        <div>
+                            <h2 class="text-sm font-extrabold text-slate-900 flex items-center gap-1.5" data-i18n="scan_title">
+                                <i class="fa-solid fa-barcode text-pakistan-700"></i> Scan Book Barcode
+                            </h2>
+                            <p class="text-[11px] text-slate-500 mt-0.5" data-i18n="scan_desc">
+                                Point camera at the ISBN barcode on the back of any textbook.
+                            </p>
+                        </div>
+                        <button id="torch-btn" onclick="toggleTorch()" class="p-2 bg-slate-100 hover:bg-slate-200 rounded-lg text-slate-700 text-xs font-semibold" title="Flashlight Torch">
+                            <i class="fa-solid fa-lightbulb"></i>
+                        </button>
+                    </div>
+
+                    <!-- Camera Scanner Viewport Simulator -->
+                    <div class="scanner-container bg-slate-900 rounded-xl h-52 relative flex items-center justify-center overflow-hidden border-2 border-slate-800">
+                        <video id="scanner-video" autoplay playsinline class="w-full h-full object-cover"></video>
+                        <div class="scanner-laser"></div>
+                        
+                        <!-- Target Box Corners -->
+                        <div class="absolute inset-x-8 inset-y-6 border-2 border-emerald-400/80 rounded-lg pointer-events-none flex flex-col justify-between p-2">
+                            <div class="flex justify-between">
+                                <span class="w-4 h-4 border-t-2 border-l-2 border-emerald-400"></span>
+                                <span class="w-4 h-4 border-t-2 border-r-2 border-emerald-400"></span>
+                            </div>
+                            <p class="text-center text-[10px] text-emerald-300 font-mono bg-black/50 py-0.5 rounded px-2 self-center">
+                                ALIGN ISBN-13 BARCODE
+                            </p>
+                            <div class="flex justify-between">
+                                <span class="w-4 h-4 border-b-2 border-l-2 border-emerald-400"></span>
+                                <span class="w-4 h-4 border-b-2 border-r-2 border-emerald-400"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Camera Control Button -->
+                    <div class="mt-2.5 flex items-center justify-between">
+                        <button onclick="toggleCameraScanner()" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-white rounded-lg text-xs font-semibold flex items-center gap-1.5">
+                            <i class="fa-solid fa-camera"></i> Toggle Live Camera
+                        </button>
+                        <span id="scanner-status" class="text-[11px] text-slate-500 italic">Click quick test buttons below for instant scan</span>
+                    </div>
+
+                    <!-- Manual ISBN Entry -->
+                    <div class="mt-4 pt-3 border-t border-slate-100">
+                        <label class="block text-xs font-bold text-slate-700 mb-1" data-i18n="manual_entry">
+                            Or Enter ISBN Number Manually
+                        </label>
+                        <div class="flex gap-2">
+                            <input type="text" id="manual-isbn-input" placeholder="e.g. 9780132350884" 
+                                   class="flex-1 px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs font-mono focus:ring-2 focus:ring-pakistan-600 focus:outline-none">
+                            <button onclick="scanIsbnQuery(document.getElementById('manual-isbn-input').value)" 
+                                    class="px-4 py-2 bg-pakistan-700 hover:bg-pakistan-800 text-white rounded-xl text-xs font-bold shadow-xs">
+                                Lookup
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Quick Test Barcodes for FYP Evaluator -->
+                    <div class="mt-4 pt-3 border-t border-slate-100">
+                        <span class="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-2">
+                            <i class="fa-solid fa-wand-magic-sparkles text-amber-500 mr-1"></i> Quick Test Barcodes (Click to Scan):
+                        </span>
+                        <div class="grid grid-cols-2 gap-1.5">
+                            <button onclick="scanIsbnQuery('9780132350884')" class="text-left p-2 bg-emerald-50 hover:bg-emerald-100 rounded-lg border border-emerald-200 text-xs">
+                                <span class="font-bold text-emerald-900 block truncate">Clean Code (Agile)</span>
+                                <span class="text-[10px] text-emerald-700 font-mono">9780132350884</span>
+                            </button>
+                            <button onclick="scanIsbnQuery('9780078022128')" class="text-left p-2 bg-emerald-50 hover:bg-emerald-100 rounded-lg border border-emerald-200 text-xs">
+                                <span class="font-bold text-emerald-900 block truncate">Software Eng. (Pressman)</span>
+                                <span class="text-[10px] text-emerald-700 font-mono">9780078022128</span>
+                            </button>
+                            <button onclick="scanIsbnQuery('9781118063330')" class="text-left p-2 bg-emerald-50 hover:bg-emerald-100 rounded-lg border border-emerald-200 text-xs">
+                                <span class="font-bold text-emerald-900 block truncate">Operating Systems (Silb.)</span>
+                                <span class="text-[10px] text-emerald-700 font-mono">9781118063330</span>
+                            </button>
+                            <button onclick="scanIsbnQuery('9780262033848')" class="text-left p-2 bg-emerald-50 hover:bg-emerald-100 rounded-lg border border-emerald-200 text-xs">
+                                <span class="font-bold text-emerald-900 block truncate">Algorithms (CLRS)</span>
+                                <span class="text-[10px] text-emerald-700 font-mono">9780262033848</span>
+                            </button>
+                            <button onclick="scanIsbnQuery('9789694370002')" class="text-left p-2 bg-blue-50 hover:bg-blue-100 rounded-lg border border-blue-200 text-xs">
+                                <span class="font-bold text-blue-900 block truncate">Peer-e-Kamil (Novel)</span>
+                                <span class="text-[10px] text-blue-700 font-mono">9789694370002</span>
+                            </button>
+                            <button onclick="scanIsbnQuery('9789695840123')" class="text-left p-2 bg-blue-50 hover:bg-blue-100 rounded-lg border border-blue-200 text-xs">
+                                <span class="font-bold text-blue-900 block truncate">ICS Computer Class 12 PTB</span>
+                                <span class="text-[10px] text-blue-700 font-mono">9789695840123</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Scanner Loading Spinner -->
+                <div id="scan-loader" class="hidden text-center py-6">
+                    <i class="fa-solid fa-spinner fa-spin text-2xl text-pakistan-700"></i>
+                    <p class="text-xs text-slate-600 mt-2 font-medium">Fetching book metadata & comparing seller offers...</p>
+                </div>
+
+                <!-- Dynamic Scan & Price Comparison Results -->
+                <div id="scan-result-container" class="hidden">
+                    <!-- Populated by JavaScript -->
+                </div>
+            </section>
+
+            <!-- ============================================== -->
+            <!-- TAB 3: SELL BOOK (EASY SELLING & ACTUAL IMAGE UPLOAD) -->
+            <!-- ============================================== -->
+            <section id="tab-sell" class="tab-page hidden">
+                <div class="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm">
+                    <div class="flex items-center gap-2 mb-3 pb-2 border-b border-slate-100">
+                        <div class="w-8 h-8 rounded-lg bg-emerald-100 text-pakistan-700 flex items-center justify-center font-bold">
+                            <i class="fa-solid fa-camera text-sm"></i>
+                        </div>
+                        <div>
+                            <h2 class="text-sm font-extrabold text-slate-900" data-i18n="nav_sell">Sell a Used Book</h2>
+                            <p class="text-[11px] text-slate-500" data-i18n="sell_step1">Scan ISBN or enter details to list in 60 seconds.</p>
+                        </div>
+                    </div>
+
+                    <!-- Step 1: ISBN Quick Scan helper -->
+                    <div class="bg-emerald-50 border border-emerald-200 rounded-xl p-3 mb-4">
+                        <label class="block text-xs font-bold text-emerald-900 mb-1">
+                            ISBN-13 / ISBN-10 (Auto-Fetch Details)
+                        </label>
+                        <div class="flex gap-2">
+                            <input type="text" id="sell-isbn-input" placeholder="e.g. 9780132350884" 
+                                   class="flex-1 px-3 py-1.5 bg-white border border-emerald-300 rounded-lg text-xs font-mono">
+                            <button type="button" onclick="autoFetchBookForSell(document.getElementById('sell-isbn-input').value)" 
+                                    class="px-3 py-1.5 bg-pakistan-700 text-white rounded-lg text-xs font-bold">
+                                Auto-Fill
+                            </button>
+                        </div>
+                        <p class="text-[10px] text-emerald-700 mt-1">Leave blank if the book has no barcode (old/local manuscript).</p>
+                    </div>
+
+                    <!-- Listing Form -->
+                    <form id="sell-book-form" class="space-y-3">
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">Book Title *</label>
+                            <input type="text" id="sell-title-input" required placeholder="Full title of the book" 
+                                   class="w-full text-xs p-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-pakistan-600 focus:outline-none">
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-2">
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-700 mb-1">Author *</label>
+                                <input type="text" id="sell-author-input" required placeholder="Author name" 
+                                       class="w-full text-xs p-2.5 rounded-lg border border-slate-300">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-700 mb-1">Subject / Discipline</label>
+                                <input type="text" id="sell-subject-input" placeholder="e.g. Data Structures, Physics" 
+                                       class="w-full text-xs p-2.5 rounded-lg border border-slate-300">
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-2">
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-700 mb-1">Education Board</label>
+                                <select id="sell-board-select" class="w-full text-xs p-2.5 rounded-lg border border-slate-300">
+                                    {% for b in boards %}
+                                        <option value="{{ b }}">{{ b }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-700 mb-1">Class / Grade Level</label>
+                                <select id="sell-class-select" class="w-full text-xs p-2.5 rounded-lg border border-slate-300 font-medium">
+                                    {% for k in classes %}
+                                        <option value="{{ k }}">{{ k }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-2">
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-700 mb-1">Category</label>
+                                <select id="sell-category-select" class="w-full text-xs p-2.5 rounded-lg border border-slate-300">
+                                    {% for c in categories %}
+                                        <option value="{{ c }}">{{ c }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-700 mb-1">Book Condition *</label>
+                                <select id="sell-condition-select" class="w-full text-xs p-2.5 rounded-lg border border-slate-300 font-medium">
+                                    {% for cond in conditions %}
+                                        <option value="{{ cond }}">{{ cond }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Price (PKR) - Seller decides price -->
+                        <div class="bg-amber-50 border border-amber-200 rounded-xl p-3">
+                            <div class="flex items-center justify-between mb-1">
+                                <label class="block text-xs font-extrabold text-amber-900">Your Selling Price (PKR) *</label>
+                                <span class="text-[10px] text-amber-700">You keep 100% of this amount</span>
+                            </div>
+                            <div class="relative">
+                                <span class="absolute left-3 top-2.5 text-xs font-bold text-slate-500">Rs.</span>
+                                <input type="number" id="sell-price-input" required placeholder="500" min="50" max="50000"
+                                       class="w-full text-sm font-extrabold pl-9 pr-3 py-2 rounded-lg border border-amber-300 focus:ring-2 focus:ring-amber-500">
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-2">
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-700 mb-1">City *</label>
+                                <select id="sell-city-select" class="w-full text-xs p-2.5 rounded-lg border border-slate-300">
+                                    {% for city in cities %}
+                                        <option value="{{ city }}">{{ city }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-700 mb-1">Campus / Pickup Location</label>
+                                <input type="text" id="sell-pickup-input" placeholder="e.g. Campus Library / Student Center / Main Gate" 
+                                       class="w-full text-xs p-2.5 rounded-lg border border-slate-300">
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">Condition Notes</label>
+                            <textarea id="sell-desc-input" rows="2" placeholder="e.g. Clean pages, no highlighting, used in semester 4..." 
+                                      class="w-full text-xs p-2.5 rounded-lg border border-slate-300"></textarea>
+                        </div>
+
+                        <!-- Actual Book Image File Upload -->
+                        <div class="bg-slate-50 border border-slate-200 rounded-xl p-3">
+                            <label class="block text-xs font-bold text-slate-800 mb-1 flex items-center gap-1.5">
+                                <i class="fa-solid fa-camera text-emerald-600"></i> Actual Book Photo (File Upload)
+                            </label>
+                            <input type="file" id="sell-image-file" accept="image/*" class="w-full text-xs text-slate-500 file:mr-2.5 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-emerald-600 file:text-white hover:file:bg-emerald-700 cursor-pointer">
+                            <div id="sell-image-preview" class="hidden mt-2 flex items-center gap-2">
+                                <img id="sell-preview-img" class="w-16 h-20 object-cover rounded-lg border border-slate-200">
+                                <span class="text-[11px] text-slate-500">Photo ready for upload</span>
+                            </div>
+                            <input type="hidden" id="sell-photo-input">
+                        </div>
+
+                        <button type="submit" class="w-full py-3 bg-pakistan-700 hover:bg-pakistan-800 text-white rounded-xl text-xs font-extrabold shadow-md flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-cloud-arrow-up"></i> <span data-i18n="sell_btn">Publish Book for Sale</span>
+                        </button>
+                    </form>
+                </div>
+            </section>
+
+            <!-- ============================================== -->
+            <!-- TAB 4: MY DEALS & UNLOCKS (PAID UNLOCK SYSTEM) -->
+            <!-- ============================================== -->
+            <section id="tab-deals" class="tab-page hidden">
+                <div class="bg-gradient-to-r from-emerald-800 to-pakistan-800 text-white rounded-2xl p-4 shadow-sm mb-4">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h2 class="text-sm font-extrabold" data-i18n="nav_deals">My Unlocks & Deals</h2>
+                            <p class="text-[11px] text-emerald-100 mt-0.5">Contact info, direct call, deal confirmation & refunds.</p>
+                        </div>
+                        <div class="w-9 h-9 rounded-full bg-white/10 flex items-center justify-center text-emerald-300">
+                            <i class="fa-solid fa-handshake"></i>
+                        </div>
+                    </div>
+
+                    <!-- Guarantee Card -->
+                    <div class="bg-white/10 border border-white/20 rounded-xl p-2.5 mt-3 text-[11px]">
+                        <p class="font-bold text-amber-300 flex items-center gap-1">
+                            <i class="fa-solid fa-shield-check"></i> 100% Refundable Guarantee
+                        </p>
+                        <p class="text-emerald-100 text-[10px] mt-0.5">
+                            If the seller is unreachable or no deal is made, click "No Deal" to immediately receive your full Rs. 50 refund!
+                        </p>
+                    </div>
+                </div>
+
+                <!-- User Unlocks Feed Container -->
+                <div id="user-deals-container" class="space-y-3">
+                    <!-- Populated dynamically -->
+                </div>
+            </section>
+
+            <!-- ============================================== -->
+            <!-- TAB 5: PROFILE, WALLET & SELLER DASHBOARD -->
+            <!-- ============================================== -->
+            <section id="tab-profile" class="tab-page hidden">
+                <!-- User Profile Header -->
+                <div class="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm mb-4 text-center relative">
+                    <div class="w-16 h-16 rounded-full bg-pakistan-100 text-pakistan-700 flex items-center justify-center text-2xl font-bold mx-auto mb-2 border-2 border-pakistan-300 overflow-hidden">
+                        <img id="profile-tab-avatar" class="w-full h-full object-cover hidden">
+                        <i id="profile-tab-icon" class="fa-solid fa-user-graduate"></i>
+                    </div>
+                    <h3 id="profile-tab-name" class="font-extrabold text-slate-900 text-base">Student User</h3>
+                    <p id="profile-tab-phone" class="text-xs text-slate-500 font-mono">0301-xxxxxxx</p>
+                    <p id="profile-tab-city" class="text-xs text-slate-600 mt-0.5">Pakistan</p>
+                    
+                    <div class="flex items-center justify-center gap-1 text-amber-500 text-xs font-bold mt-1" id="profile-tab-rating">
+                        ★ 5.0 (0 reviews)
+                    </div>
+
+                    <!-- Wallet Card -->
+                    <div class="mt-4 p-3 bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-200 rounded-xl text-left flex items-center justify-between">
+                        <div>
+                            <span class="text-[10px] text-emerald-800 font-bold uppercase tracking-wider block">Refund & Wallet Balance</span>
+                            <span id="profile-tab-wallet" class="text-lg font-black text-pakistan-800">Rs. 0.00</span>
+                        </div>
+                        <span class="text-[10px] bg-emerald-600 text-white font-bold px-2 py-1 rounded-md">
+                            Instant Credit
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Seller Management: "My Book Listings" Dashboard -->
+                <div class="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm mb-4">
+                    <div class="flex items-center justify-between pb-2 border-b border-slate-100 mb-3">
+                        <h4 class="text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
+                            <i class="fa-solid fa-boxes-stacked text-pakistan-700"></i> My Published Book Listings
+                        </h4>
+                        <button onclick="loadMySellerListings()" class="text-xs text-emerald-700 font-bold hover:underline">
+                            <i class="fa-solid fa-rotate text-[10px]"></i> Refresh
+                        </button>
+                    </div>
+
+                    <!-- Seller Listings Feed -->
+                    <div id="seller-my-listings-container" class="space-y-2.5">
+                        <div class="p-4 text-center text-slate-400 text-xs">
+                            Loading your listings...
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Account & Authentication Card -->
+                <div class="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm">
+                    <h4 class="text-xs font-bold text-slate-800 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                        <i class="fa-solid fa-id-badge text-pakistan-700"></i> Account Authentication
+                    </h4>
+                    <p class="text-[11px] text-slate-500 mb-3">Sign in with password or use the Quick User Switcher above.</p>
+                    <div class="flex gap-2">
+                        <button onclick="openAuthModal('login')" class="flex-1 py-2 bg-slate-900 hover:bg-black text-white rounded-xl text-xs font-bold">
+                            Account Sign In
+                        </button>
+                        <button onclick="openAuthModal('register')" class="flex-1 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold">
+                            Create Account
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+        </div>
+
+        <!-- Mobile Bottom Navigation Bar -->
+        <nav class="bg-white border-t border-slate-200 px-2 py-2 flex items-center justify-around z-20 flex-shrink-0 absolute bottom-0 inset-x-0 shadow-lg">
+            <button onclick="switchTab('home')" class="nav-tab active flex flex-col items-center justify-center flex-1 py-1 text-pakistan-700" data-tab="home">
+                <i class="fa-solid fa-house text-base"></i>
+                <span class="text-[10px] mt-0.5" data-i18n="nav_home">Home</span>
+            </button>
+            <button onclick="switchTab('scan')" class="nav-tab flex flex-col items-center justify-center flex-1 py-1 text-slate-400" data-tab="scan">
+                <i class="fa-solid fa-barcode text-base"></i>
+                <span class="text-[10px] mt-0.5" data-i18n="nav_scan">Scan</span>
+            </button>
+            <button onclick="switchTab('sell')" class="nav-tab flex flex-col items-center justify-center flex-1 py-1 text-slate-400" data-tab="sell">
+                <div class="w-8 h-8 rounded-full bg-pakistan-700 text-white flex items-center justify-center shadow-md -mt-3 border-2 border-white">
+                    <i class="fa-solid fa-plus text-sm"></i>
+                </div>
+                <span class="text-[10px] mt-0.5" data-i18n="nav_sell">Sell</span>
+            </button>
+            <button onclick="switchTab('deals')" class="nav-tab flex flex-col items-center justify-center flex-1 py-1 text-slate-400" data-tab="deals">
+                <i class="fa-solid fa-handshake text-base"></i>
+                <span class="text-[10px] mt-0.5" data-i18n="nav_deals">Unlocks</span>
+            </button>
+            <button onclick="switchTab('profile')" class="nav-tab flex flex-col items-center justify-center flex-1 py-1 text-slate-400" data-tab="profile">
+                <i class="fa-solid fa-user text-base"></i>
+                <span class="text-[10px] mt-0.5" data-i18n="nav_profile">Profile</span>
+            </button>
+        </nav>
+
+    </div>
+</main>
+
+<!-- ============================================== -->
+<!-- MODAL: PAID CONTACT UNLOCK (Phase 1 Sandbox) -->
+<!-- ============================================== -->
+<div id="unlock-modal" class="fixed inset-0 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 z-50 hidden">
+    <div class="bg-white rounded-3xl max-w-sm w-full p-5 shadow-2xl relative max-h-[92vh] overflow-y-auto">
+        <!-- Close button -->
+        <button onclick="closeUnlockModal()" class="absolute top-4 right-4 w-7 h-7 bg-slate-100 hover:bg-slate-200 rounded-full flex items-center justify-center text-slate-600 text-xs">
+            <i class="fa-solid fa-xmark"></i>
+        </button>
+
+        <div id="unlock-payment-section">
+            <div class="text-center pb-3 border-b border-slate-100">
+                <div class="w-10 h-10 rounded-full bg-emerald-100 text-pakistan-700 flex items-center justify-center mx-auto mb-2 text-base font-bold">
+                    <i class="fa-solid fa-lock"></i>
+                </div>
+                <h3 class="font-extrabold text-slate-900 text-sm">Unlock Seller Contact</h3>
+                <p class="text-[11px] text-slate-500 mt-0.5">Pay platform contact fee to reveal phone number & WhatsApp.</p>
+            </div>
+
+            <!-- Target Book & Seller Summary -->
+            <div class="bg-slate-50 border border-slate-200 rounded-xl p-3 my-3">
+                <h4 id="modal-book-title" class="font-bold text-xs text-slate-900 truncate">Book Title</h4>
+                <div class="flex items-center justify-between text-xs mt-1">
+                    <span class="text-slate-500">Book Price: <strong id="modal-book-price" class="text-pakistan-700">Rs. 0</strong></span>
+                    <span class="text-slate-500">Seller: <strong id="modal-seller-name" class="text-slate-800">Seller</strong></span>
+                </div>
+                <p id="modal-seller-city" class="text-[10px] text-slate-400 mt-0.5 truncate">City</p>
+            </div>
+
+            <!-- 100% Refundable Guarantee Banner -->
+            <div class="bg-emerald-50 border border-emerald-200 rounded-xl p-2.5 mb-3 flex items-start gap-2">
+                <i class="fa-solid fa-shield-halved text-emerald-600 text-sm mt-0.5"></i>
+                <div class="text-[11px] text-emerald-900">
+                    <strong class="block" data-i18n="refund_guarantee_badge">100% Refundable Contact Fee (Rs. 50)</strong>
+                    <span class="text-[10px] text-emerald-800" data-i18n="refund_guarantee_text">
+                        If no deal is finalized with the seller, your Rs. 50 fee is refunded immediately!
+                    </span>
+                </div>
+            </div>
+
+            <!-- Gateway Mode Indicator Banner -->
+            <div id="gateway-mode-indicator" class="bg-blue-50 border border-blue-200 rounded-xl p-2.5 mb-3 text-[11px] text-blue-900 flex items-start gap-2">
+                <i class="fa-solid fa-shield-check text-blue-600 text-sm mt-0.5"></i>
+                <div>
+                    <div class="flex items-center gap-1.5 font-bold">
+                        <span>Payment Gateway:</span>
+                        <span class="px-1.5 py-0.2 bg-blue-200 text-blue-800 rounded text-[9px] uppercase tracking-wider font-extrabold">Sandbox Active</span>
+                    </div>
+                    <p class="text-[10px] text-blue-700 mt-0.5">
+                        HMAC-SHA256 signature verification enabled. Simulated test wallets allow end-to-end checkout without real bank charges.
+                    </p>
+                </div>
+            </div>
+
+            <!-- In-Modal Error Alert (Hidden by default) -->
+            <div id="unlock-error-banner" class="hidden bg-rose-50 border border-rose-200 text-rose-800 rounded-xl p-2.5 mb-3 text-xs flex items-center gap-2">
+                <i class="fa-solid fa-circle-exclamation text-rose-600 text-sm"></i>
+                <span id="unlock-error-message" class="text-[11px] font-semibold">Payment error occurred.</span>
+            </div>
+
+            <!-- Payment Method Selector (JazzCash, Easypaisa, Card, Wallet) -->
+            <label class="block text-xs font-bold text-slate-700 mb-1.5" data-i18n="select_payment_method">
+                Select Local Payment Method:
+            </label>
+            <div class="grid grid-cols-2 gap-1.5 mb-3">
+                <button type="button" onclick="selectPaymentMethod('jazzcash')" data-method="jazzcash" 
+                        class="pay-tab p-2 rounded-xl border border-pakistan-600 bg-emerald-50 text-pakistan-800 text-xs font-bold flex items-center gap-1.5 transition-all">
+                    <span class="w-3.5 h-3.5 rounded-full bg-red-600 text-white text-[8px] flex items-center justify-center font-black">J</span>
+                    <span>JazzCash</span>
+                </button>
+                <button type="button" onclick="selectPaymentMethod('easypaisa')" data-method="easypaisa" 
+                        class="pay-tab p-2 rounded-xl border border-slate-200 bg-white text-slate-600 text-xs font-bold flex items-center gap-1.5 transition-all">
+                    <span class="w-3.5 h-3.5 rounded-full bg-emerald-600 text-white text-[8px] flex items-center justify-center font-black">E</span>
+                    <span>Easypaisa</span>
+                </button>
+                <button type="button" onclick="selectPaymentMethod('card_safepay')" data-method="card_safepay" 
+                        class="pay-tab p-2 rounded-xl border border-slate-200 bg-white text-slate-600 text-xs font-bold flex items-center gap-1.5 transition-all">
+                    <i class="fa-solid fa-credit-card text-blue-600 text-xs"></i>
+                    <span>Debit/Card</span>
+                </button>
+                <button type="button" onclick="selectPaymentMethod('wallet')" data-method="wallet" 
+                        class="pay-tab p-2 rounded-xl border border-slate-200 bg-white text-slate-600 text-xs font-bold flex items-center gap-1.5 transition-all">
+                    <i class="fa-solid fa-wallet text-amber-500 text-xs"></i>
+                    <span>In-App Wallet</span>
+                </button>
+            </div>
+
+            <!-- Payment Input Container -->
+            <div id="payment-method-details" class="mb-4">
+                <!-- Injected via selectPaymentMethod -->
+            </div>
+
+            <!-- Submit Pay Button -->
+            <button id="pay-submit-btn" onclick="submitPaymentUnlock()" 
+                    class="w-full py-3 bg-pakistan-700 hover:bg-pakistan-800 text-white rounded-xl text-xs font-extrabold shadow-md flex items-center justify-center gap-2">
+                <i class="fa-solid fa-lock-open"></i> Pay <span id="modal-fee-display">Rs. 50</span> & Unlock Contact
+            </button>
+        </div>
+
+        <!-- Success Result Section (Hidden until paid) -->
+        <div id="unlock-result-section" class="hidden">
+            <!-- Rendered by JavaScript -->
+        </div>
+    </div>
+</div>
+
+<!-- ============================================== -->
+<!-- MODAL: EDIT LISTING (Seller Dashboard Feature) -->
+<!-- ============================================== -->
+<div id="edit-listing-modal" class="fixed inset-0 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 z-50 hidden">
+    <div class="bg-white rounded-3xl max-w-sm w-full p-5 shadow-2xl relative">
+        <button onclick="closeEditListingModal()" class="absolute top-4 right-4 w-7 h-7 bg-slate-100 rounded-full flex items-center justify-center text-slate-600 text-xs">
+            <i class="fa-solid fa-xmark"></i>
+        </button>
+
+        <h3 class="font-extrabold text-slate-900 text-sm mb-1">Edit Your Book Listing</h3>
+        <p class="text-xs text-slate-500 mb-3" id="edit-modal-title">Book Title</p>
+
+        <input type="hidden" id="edit-listing-id">
+
+        <div class="space-y-3 text-xs">
+            <div>
+                <label class="block font-semibold text-slate-700 mb-1">Selling Price (PKR) *</label>
+                <input type="number" id="edit-price-input" min="50" class="w-full p-2 border border-slate-300 rounded-lg font-bold">
+            </div>
+
+            <div>
+                <label class="block font-semibold text-slate-700 mb-1">Condition</label>
+                <select id="edit-condition-select" class="w-full p-2 border border-slate-300 rounded-lg">
+                    {% for cond in conditions %}
+                        <option value="{{ cond }}">{{ cond }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div>
+                <label class="block font-semibold text-slate-700 mb-1">Pickup / Campus Location</label>
+                <input type="text" id="edit-pickup-input" class="w-full p-2 border border-slate-300 rounded-lg">
+            </div>
+
+            <div>
+                <label class="block font-semibold text-slate-700 mb-1">Description / Notes</label>
+                <textarea id="edit-desc-input" rows="2" class="w-full p-2 border border-slate-300 rounded-lg"></textarea>
+            </div>
+
+            <div>
+                <label class="block font-semibold text-slate-700 mb-1">Status</label>
+                <select id="edit-status-select" class="w-full p-2 border border-slate-300 rounded-lg font-bold">
+                    <option value="active">Active (Available for Sale)</option>
+                    <option value="sold">Sold / Handed Over</option>
+                    <option value="inactive">Paused / Inactive</option>
+                </select>
+            </div>
+
+            <button onclick="submitEditListing()" class="w-full py-2.5 bg-pakistan-700 hover:bg-pakistan-800 text-white rounded-xl text-xs font-bold">
+                Save Changes
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- ============================================== -->
+<!-- MODAL: USER AUTHENTICATION (Sign In / Register) -->
+<!-- ============================================== -->
+<div id="auth-modal" class="fixed inset-0 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 z-50 hidden">
+    <div class="bg-white rounded-3xl max-w-sm w-full p-5 shadow-2xl relative">
+        <button onclick="closeAuthModal()" class="absolute top-4 right-4 w-7 h-7 bg-slate-100 rounded-full flex items-center justify-center text-slate-600 text-xs">
+            <i class="fa-solid fa-xmark"></i>
+        </button>
+
+        <div class="flex border-b border-slate-200 mb-4 text-xs font-bold">
+            <button onclick="switchAuthTab('login')" id="auth-tab-login" class="flex-1 py-2 text-pakistan-700 border-b-2 border-pakistan-700">
+                Sign In
+            </button>
+            <button onclick="switchAuthTab('register')" id="auth-tab-register" class="flex-1 py-2 text-slate-400">
+                Create Account
+            </button>
+        </div>
+
+        <!-- Login Form -->
+        <form id="auth-login-form" onsubmit="handleAuthLogin(event)" class="space-y-3 text-xs">
+            <div>
+                <label class="block font-semibold text-slate-700 mb-1">Mobile Number or Username</label>
+                <input type="text" id="login-identifier" required placeholder="03001234567 or username" 
+                       class="w-full p-2.5 border border-slate-300 rounded-lg">
+            </div>
+            <div>
+                <label class="block font-semibold text-slate-700 mb-1">Password</label>
+                <input type="password" id="login-password" required placeholder="••••••••" 
+                       class="w-full p-2.5 border border-slate-300 rounded-lg">
+            </div>
+            <button type="submit" class="w-full py-2.5 bg-pakistan-700 hover:bg-pakistan-800 text-white rounded-xl font-bold">
+                Sign In to BookBazaar
+            </button>
+        </form>
+
+        <!-- Register Form -->
+        <form id="auth-register-form" onsubmit="handleAuthRegister(event)" class="space-y-2.5 text-xs hidden">
+            <div>
+                <label class="block font-semibold text-slate-700 mb-1">Full Name *</label>
+                <input type="text" id="reg-fullname" required placeholder="Ali Khan" 
+                       class="w-full p-2 border border-slate-300 rounded-lg">
+            </div>
+            <div>
+                <label class="block font-semibold text-slate-700 mb-1">Mobile Number (Pakistan 03XX-XXXXXXX) *</label>
+                <input type="text" id="reg-phone" required placeholder="03001234567" 
+                       class="w-full p-2 border border-slate-300 rounded-lg font-mono">
+            </div>
+            <div>
+                <label class="block font-semibold text-slate-700 mb-1">City *</label>
+                <select id="reg-city" class="w-full p-2 border border-slate-300 rounded-lg">
+                    {% for city in cities %}
+                        <option value="{{ city }}">{{ city }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div>
+                <label class="block font-semibold text-slate-700 mb-1">Password *</label>
+                <input type="password" id="reg-password" required minlength="4" placeholder="Minimum 4 characters" 
+                       class="w-full p-2 border border-slate-300 rounded-lg">
+            </div>
+            <button type="submit" class="w-full py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold">
+                Complete Registration
+            </button>
+        </form>
+    </div>
+</div>
+
+<!-- ============================================== -->
+<!-- MODAL: INTERSTITIAL AD (Section 7 of Proposal) -->
+<!-- ============================================== -->
+<div id="interstitial-ad-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 z-50 hidden">
+    <div class="bg-white rounded-3xl max-w-sm w-full p-5 shadow-2xl text-center relative overflow-hidden">
+        <span class="inline-block bg-amber-500 text-white text-[10px] uppercase font-black px-2 py-0.5 rounded mb-2">
+            Sponsored Offer
+        </span>
+        <h4 id="ad-sponsor-name" class="font-extrabold text-slate-900 text-sm">Sponsor Name</h4>
+        <p id="ad-headline" class="text-xs text-slate-600 mt-1 line-clamp-2">Discount offer</p>
+
+        <img id="ad-image" src="" class="w-full h-44 object-cover rounded-xl my-3 shadow-xs">
+
+        <button id="ad-close-btn" onclick="closeInterstitialAd()" 
+                class="w-full py-2.5 bg-slate-900 hover:bg-black text-white rounded-xl text-xs font-bold transition-all disabled:opacity-50">
+            Skip Ad in 3s
+        </button>
+    </div>
+</div>
+
+<!-- ============================================== -->
+<!-- MODAL: SELLER REVIEW -->
+<!-- ============================================== -->
+<div id="review-modal" class="fixed inset-0 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 z-50 hidden">
+    <div class="bg-white rounded-3xl max-w-sm w-full p-5 shadow-2xl relative">
+        <button onclick="closeReviewModal()" class="absolute top-4 right-4 w-7 h-7 bg-slate-100 rounded-full flex items-center justify-center text-slate-600 text-xs">
+            <i class="fa-solid fa-xmark"></i>
+        </button>
+
+        <h3 class="font-extrabold text-slate-900 text-sm mb-1">Rate Your Seller</h3>
+        <p class="text-xs text-slate-500 mb-3">How was your book exchange with <strong id="review-seller-name">Seller</strong>?</p>
+
+        <input type="hidden" id="review-unlock-id">
+
+        <div class="space-y-3">
+            <div>
+                <label class="block text-xs font-semibold text-slate-700 mb-1">Star Rating</label>
+                <select id="review-rating-select" class="w-full text-xs p-2.5 rounded-lg border border-slate-300 font-bold text-amber-500">
+                    <option value="5">★★★★★ (5 - Excellent)</option>
+                    <option value="4">★★★★☆ (4 - Good)</option>
+                    <option value="3">★★★☆☆ (3 - Average)</option>
+                    <option value="2">★★☆☆☆ (2 - Below Average)</option>
+                    <option value="1">★☆☆☆☆ (1 - Poor)</option>
+                </select>
+            </div>
+
+            <div>
+                <label class="block text-xs font-semibold text-slate-700 mb-1">Comment / Feedback</label>
+                <textarea id="review-comment-input" rows="3" placeholder="Book condition, punctuality, polite communication..." 
+                          class="w-full text-xs p-2.5 rounded-lg border border-slate-300"></textarea>
+            </div>
+
+            <button onclick="submitReview()" class="w-full py-2.5 bg-amber-500 hover:bg-amber-600 text-white rounded-xl text-xs font-bold">
+                Submit Review
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- ============================================== -->
+<!-- MODAL: REPORT LISTING / USER (Safety & Trust) -->
+<!-- ============================================== -->
+<div id="report-issue-modal" class="fixed inset-0 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 z-50 hidden">
+    <div class="bg-white rounded-3xl max-w-sm w-full p-5 shadow-2xl relative">
+        <button onclick="closeReportModal()" class="absolute top-4 right-4 w-7 h-7 bg-slate-100 rounded-full flex items-center justify-center text-slate-600 text-xs">
+            <i class="fa-solid fa-xmark"></i>
+        </button>
+
+        <h3 class="font-extrabold text-slate-900 text-sm mb-1 flex items-center gap-1.5 text-rose-700">
+            <i class="fa-solid fa-flag"></i> Report Listing or Seller
+        </h3>
+        <p class="text-xs text-slate-500 mb-3" id="report-target-title">Select violation reason</p>
+
+        <input type="hidden" id="report-listing-id">
+
+        <form onsubmit="submitReportForm(event)" class="space-y-3 text-xs">
+            <div>
+                <label class="block font-bold text-slate-700 mb-1">Violation Category *</label>
+                <select id="report-type-select" required class="w-full p-2 border border-slate-300 rounded-lg bg-white">
+                    <option value="fraud_scam">Fraud / Fake Listing</option>
+                    <option value="wrong_price">Misleading / Wrong Price</option>
+                    <option value="fake_condition">Book Condition Not As Described</option>
+                    <option value="unresponsive_seller">Seller Unresponsive After Unlock</option>
+                    <option value="abusive_behavior">Abusive / Inappropriate Behavior</option>
+                    <option value="copyright_piracy">Pirated / Unauthorized Copy</option>
+                    <option value="other">Other Violation</option>
+                </select>
+            </div>
+
+            <div>
+                <label class="block font-bold text-slate-700 mb-1">Detailed Explanation *</label>
+                <textarea id="report-description-text" required rows="3" placeholder="Please provide specific details so moderators can investigate..." class="w-full p-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-rose-500 focus:outline-none"></textarea>
+            </div>
+
+            <div class="pt-2 flex justify-end gap-2">
+                <button type="button" onclick="closeReportModal()" class="px-4 py-2 bg-slate-100 text-slate-700 rounded-xl font-bold">
+                    Cancel
+                </button>
+                <button type="submit" id="report-submit-btn" class="px-4 py-2 bg-rose-700 hover:bg-rose-800 text-white rounded-xl font-bold shadow-xs">
+                    Submit Report
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Clock updater script for simulator status bar -->
+<script>
+    function updateClock() {
+        const now = new Date();
+        const hrs = String(now.getHours()).padStart(2, '0');
+        const mins = String(now.getMinutes()).padStart(2, '0');
+        const el = document.getElementById('live-time');
+        if (el) el.textContent = `${hrs}:${mins}`;
+    }
+    setInterval(updateClock, 1000);
+    updateClock();
+
+    // Image preview for actual file upload
+    const imageInput = document.getElementById('sell-image-file');
+    if (imageInput) {
+        imageInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(evt) {
+                    const preview = document.getElementById('sell-image-preview');
+                    const img = document.getElementById('sell-preview-img');
+                    if (preview && img) {
+                        img.src = evt.target.result;
+                        preview.classList.remove('hidden');
+                    }
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+    }
+</script>
+{% endblock %}

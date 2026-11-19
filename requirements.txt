@@ -1,0 +1,27 @@
+# ========================================================
+# BookBazaar Pakistan - Python Dependencies
+# Final Year Project (FYP) & Commercial Marketplace Initiative
+# Used Books Marketplace Platform (Pakistan)
+# ========================================================
+
+# Core Web Framework & REST API
+Django>=6.1.2,<6.2.0
+djangorestframework>=3.18.3,<3.19.0
+djangorestframework-simplejwt>=5.5.1
+django-cors-headers>=4.9.0
+
+# Database Driver (PostgreSQL 18+)
+psycopg2-binary>=2.9.13
+
+# Static File & Media Serving for Production
+whitenoise>=6.12.0
+pillow>=13.0.0
+
+# Environment & Utilities
+python-dotenv>=1.2.4
+sqlparse>=0.6.0
+asgiref>=3.13.0
+tzdata>=2026.6
+
+# Production WSGI Server (for Linux production deployment)
+gunicorn>=22.0.0; sys_platform != "win32"

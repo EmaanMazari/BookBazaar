@@ -1,0 +1,88 @@
+# ========================================================
+# BookBazaar Pakistan - .gitignore
+# Prevents sensitive credentials, database files, bytecode,
+# local logs, and temporary caches from being committed.
+# ========================================================
+
+# Environment Variables & Secrets (CRITICAL)
+.env
+*.env
+!.env.example
+!deploy/production.env.example
+*.pem
+*.key
+*.cert
+
+# Python & Django Bytecode Cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Databases & Backups (PostgreSQL is used; exclude local sqlite / dumps)
+*.sqlite3
+*.sqlite3-journal
+*.sqlite3.backup*
+db.sqlite3*
+datadump_*.json
+
+# Logs & Debug Data
+logs/
+*.log
+*.pot
+
+# Django Collected Static & User Uploaded Media
+staticfiles/
+media/*
+!media/listings/.gitkeep
+!media/profiles/.gitkeep
+
+# Browser Automation & Temp Profiles
+chrome_tmp_profile/
+test_cdp.js
+test_cdp_shot.png
+test_home.png
+test_cover.jpg
+admin_panel_shot.png
+marketplace_shot.png
+
+# Unrelated Course / Local Quiz Files
+*quiz*
+*mcq*
+enrich_questions.py
+generate_quiz_html.py
+run_quiz.bat
+
+# Operating System Files
+.DS_Store
+Thumbs.db
+desktop.ini
+$RECYCLE.BIN/
+
+# Large Generated HTML Docs (Source .md and .pdf are preserved)
+BookBazaar_SDD_v2.0.html
+BookBazaar_SRS_v2.0.html
+
+# IDE / Code Editors
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+*.swp
+*.swo
