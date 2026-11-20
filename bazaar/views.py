@@ -91,11 +91,6 @@ def admin_view(request):
     return render(request, 'bazaar/admin.html', context)
 
 
-def quiz_view(request):
-    """University CS Exam Preparation & Mistake Diary Portal (Cloud Computing & Web Engineering)"""
-    return render(request, 'bazaar/quiz.html')
-
-
 # ==========================================
 # AUTHENTICATION & PROFILES API
 # ==========================================

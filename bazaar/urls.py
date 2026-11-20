@@ -5,7 +5,6 @@ urlpatterns = [
     # Web views
     path('', views.index_view, name='index'),
     path('admin-panel/', views.admin_view, name='admin_panel'),
-    path('quiz/', views.quiz_view, name='quiz_portal'),
 
     # Auth & Profile APIs (Phase 1 & Phase 2)
     path('api/auth/register/', views.register_user, name='api_register'),
