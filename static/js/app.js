@@ -212,9 +212,11 @@ function updateUserUI() {
     if (!STATE.currentUser) return;
     const nameEl = document.getElementById('current-user-name');
     const balEl = document.getElementById('current-user-balance');
+    const topBal = document.getElementById('top-user-balance');
 
     if (nameEl) nameEl.textContent = STATE.currentUser.full_name;
     if (balEl) balEl.textContent = `Rs. ${parseFloat(STATE.currentUser.wallet_balance).toFixed(0)}`;
+    if (topBal) topBal.textContent = `Rs. ${parseFloat(STATE.currentUser.wallet_balance).toFixed(0)}`;
 
     const profileName = document.getElementById('profile-tab-name');
     const profilePhone = document.getElementById('profile-tab-phone');
@@ -222,6 +224,9 @@ function updateUserUI() {
     const profileRating = document.getElementById('profile-tab-rating');
     const profileWallet = document.getElementById('profile-tab-wallet');
     const authBtnLabel = document.getElementById('auth-btn-label');
+    const dropName = document.getElementById('dropdown-user-name');
+    const dropPhone = document.getElementById('dropdown-user-phone');
+    const dropBal = document.getElementById('dropdown-user-balance');
 
     if (profileName) profileName.textContent = STATE.currentUser.full_name;
     if (profilePhone) profilePhone.textContent = STATE.currentUser.phone_number;
@@ -229,9 +234,32 @@ function updateUserUI() {
     if (profileRating) profileRating.textContent = `★ ${STATE.currentUser.rating} (${STATE.currentUser.total_reviews} reviews)`;
     if (profileWallet) profileWallet.textContent = `Rs. ${parseFloat(STATE.currentUser.wallet_balance).toFixed(2)}`;
     if (authBtnLabel) authBtnLabel.textContent = STATE.currentUser.full_name.split(' ')[0];
+    if (dropName) dropName.textContent = STATE.currentUser.full_name;
+    if (dropPhone) dropPhone.textContent = STATE.currentUser.phone_number;
+    if (dropBal) dropBal.textContent = `Rs. ${parseFloat(STATE.currentUser.wallet_balance).toFixed(2)}`;
 
     loadMySellerListings();
 }
+
+// User Profile & Navigation Dropdown Controls (Fixes Top-Right Menu Visibility & Interaction)
+function toggleUserDropdown() {
+    const dropdown = document.getElementById('user-profile-dropdown');
+    if (dropdown) dropdown.classList.toggle('hidden');
+}
+
+function closeUserDropdown() {
+    const dropdown = document.getElementById('user-profile-dropdown');
+    if (dropdown) dropdown.classList.add('hidden');
+}
+
+// Close User Dropdown on Click Outside
+document.addEventListener('click', (e) => {
+    const container = document.getElementById('user-menu-container');
+    const dropdown = document.getElementById('user-profile-dropdown');
+    if (container && dropdown && !container.contains(e.target)) {
+        dropdown.classList.add('hidden');
+    }
+});
 
 // Language Switching (English / Urdu)
 function toggleLanguage() {
@@ -288,10 +316,10 @@ function switchTab(tabId) {
 
     document.querySelectorAll('.nav-tab').forEach(tab => {
         if (tab.getAttribute('data-tab') === tabId) {
-            tab.classList.add('active', 'text-pakistan-700');
+            tab.classList.add('active', 'text-blue-700');
             tab.classList.remove('text-slate-400');
         } else {
-            tab.classList.remove('active', 'text-pakistan-700');
+            tab.classList.remove('active', 'text-blue-700');
             tab.classList.add('text-slate-400');
         }
     });
@@ -313,7 +341,7 @@ function renderListings(listings) {
             <div class="p-8 text-center bg-white rounded-2xl border border-dashed border-slate-300">
                 <i class="fa-solid fa-book-open text-4xl text-slate-300 mb-3"></i>
                 <p class="text-slate-600 font-medium">No book listings match your filter.</p>
-                <button onclick="resetFilters()" class="mt-3 px-4 py-2 bg-pakistan-600 text-white rounded-lg text-xs font-semibold">Clear Filters</button>
+                <button onclick="resetFilters()" class="mt-3 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold">Clear Filters</button>
             </div>
         `;
         return;
@@ -343,9 +371,9 @@ function renderListings(listings) {
         }
 
         const conditionColors = {
-            'Brand New': 'bg-emerald-100 text-emerald-800 border-emerald-300',
-            'Like New': 'bg-blue-100 text-blue-800 border-blue-300',
-            'Good': 'bg-amber-100 text-amber-800 border-amber-300',
+            'Brand New': 'bg-blue-100 text-blue-800 border-blue-300',
+            'Like New': 'bg-sky-100 text-sky-800 border-sky-300',
+            'Good': 'bg-indigo-50 text-indigo-800 border-indigo-200',
             'Fair': 'bg-slate-100 text-slate-700 border-slate-300',
         };
 
@@ -354,7 +382,7 @@ function renderListings(listings) {
         const isFav = item.is_favorited;
 
         html += `
-            <div class="bg-white rounded-xl border border-slate-200 p-3.5 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden mb-3">
+            <div class="bg-white rounded-2xl border border-blue-100 p-4 shadow-sm hover:shadow-md hover:border-blue-300 transition-all relative overflow-hidden mb-3.5">
                 ${item.is_sponsored ? `
                     <div class="absolute top-0 right-0 bg-gradient-to-l from-amber-500 to-amber-600 text-white text-[10px] font-bold px-3 py-0.5 rounded-bl-lg shadow-xs flex items-center gap-1">
                         <i class="fa-solid fa-star text-[8px]"></i> Sponsored
@@ -379,7 +407,7 @@ function renderListings(listings) {
                                     ${item.condition}
                                 </span>
                                 <span class="text-[11px] text-slate-500">
-                                    <i class="fa-solid fa-location-dot text-pakistan-600 mr-0.5"></i> ${item.city}
+                                    <i class="fa-solid fa-location-dot text-blue-600 mr-0.5"></i> ${item.city}
                                 </span>
                                 ${item.book.education_board && item.book.education_board !== 'General / None' ? `
                                     <span class="text-[9px] bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded">
@@ -388,24 +416,24 @@ function renderListings(listings) {
                                 ` : ''}
                             </div>
 
-                            <h3 class="font-bold text-slate-900 text-sm leading-snug line-clamp-2 cursor-pointer hover:text-pakistan-700"
+                            <h3 class="font-bold text-slate-900 text-sm leading-snug line-clamp-2 cursor-pointer hover:text-blue-700"
                                 onclick="quickCompareBook('${item.book.isbn}')">
                                 ${item.book.title}
                             </h3>
                             <p class="text-xs text-slate-500 line-clamp-1 mt-0.5">${item.book.author}</p>
-                            ${item.book.subject ? `<p class="text-[10px] text-emerald-700 font-semibold">${item.book.subject}</p>` : ''}
+                            ${item.book.subject ? `<p class="text-[10px] text-blue-700 font-semibold">${item.book.subject}</p>` : ''}
                         </div>
 
                         <div class="mt-2 pt-2 border-t border-slate-100 flex items-center justify-between">
                             <div>
                                 <div class="flex items-baseline gap-1.5">
-                                    <span class="text-base font-extrabold text-pakistan-700">Rs. ${parseFloat(item.price).toFixed(0)}</span>
+                                    <span class="text-base font-black text-blue-800">Rs. ${parseFloat(item.price).toFixed(0)}</span>
                                     ${item.book.original_retail_price ? `
                                         <span class="text-xs text-slate-400 line-through">Rs. ${parseFloat(item.book.original_retail_price).toFixed(0)}</span>
                                     ` : ''}
                                 </div>
                                 ${item.savings_percentage > 0 ? `
-                                    <span class="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-1 rounded">
+                                    <span class="text-[10px] font-bold text-blue-700 bg-blue-50 px-1.5 py-0.2 rounded border border-blue-100">
                                         Save ${item.savings_percentage}%
                                     </span>
                                 ` : ''}
@@ -415,7 +443,7 @@ function renderListings(listings) {
                                 <button onclick="quickCompareBook('${item.book.isbn}')" class="px-2.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-semibold flex items-center gap-1" title="Compare Prices">
                                     <i class="fa-solid fa-code-compare"></i> Compare
                                 </button>
-                                <button onclick="openUnlockModal(${item.id})" class="px-3 py-1.5 bg-pakistan-700 hover:bg-pakistan-800 text-white rounded-lg text-xs font-bold shadow-xs flex items-center gap-1">
+                                <button onclick="openUnlockModal(${item.id})" class="px-3 py-1.5 bg-gradient-to-r from-blue-700 to-blue-600 hover:from-blue-800 hover:to-blue-700 text-white rounded-xl text-xs font-bold shadow-sm flex items-center gap-1 px-3 py-1.5 transition-all">
                                     <i class="fa-solid fa-lock-open text-[10px]"></i> Contact (Rs. 50)
                                 </button>
                             </div>
@@ -513,15 +541,15 @@ function renderAds() {
 
     if (topContainer && topAd) {
         topContainer.innerHTML = `
-            <div class="bg-gradient-to-r from-emerald-800 to-pakistan-800 text-white p-2.5 rounded-xl shadow-xs flex items-center justify-between mb-3">
+            <div class="bg-gradient-to-r from-blue-900 to-indigo-900 text-white p-2.5 rounded-xl shadow-xs flex items-center justify-between mb-3">
                 <div class="flex items-center gap-2.5">
                     <span class="bg-emerald-500 text-[9px] uppercase font-extrabold px-1.5 py-0.5 rounded text-white tracking-wider">Ad</span>
                     <div>
                         <p class="text-xs font-bold leading-tight">${topAd.title}</p>
-                        <p class="text-[11px] text-emerald-100 line-clamp-1">${topAd.headline}</p>
+                        <p class="text-[11px] text-blue-100 line-clamp-1">${topAd.headline}</p>
                     </div>
                 </div>
-                <button onclick="trackAdClick(${topAd.id})" class="px-2.5 py-1 bg-white text-pakistan-800 text-xs font-bold rounded-lg hover:bg-emerald-50">Explore</button>
+                <button onclick="trackAdClick(${topAd.id})" class="px-2.5 py-1 bg-white text-blue-900 text-xs font-bold rounded-lg hover:bg-blue-50">Explore</button>
             </div>
         `;
     }
@@ -586,10 +614,10 @@ function renderScanResult(data) {
     resultBox.innerHTML = `
         <div class="bg-white rounded-2xl border border-slate-200 p-4 shadow-md">
             <div class="flex items-center justify-between pb-3 border-b border-slate-100 mb-3">
-                <span class="text-xs font-bold text-pakistan-700 uppercase tracking-wide flex items-center gap-1.5">
+                <span class="text-xs font-bold text-blue-700 uppercase tracking-wide flex items-center gap-1.5">
                     <i class="fa-solid fa-barcode text-sm"></i> Barcode Verified: ${book.isbn}
                 </span>
-                <span class="text-[11px] bg-emerald-50 text-emerald-700 font-semibold px-2 py-0.5 rounded-full">
+                <span class="text-[11px] bg-blue-50 text-blue-700 font-semibold px-2 py-0.5 rounded-full border border-blue-200">
                     ${data.found_in_catalog ? 'Catalog Match' : 'Manual Entry'}
                 </span>
             </div>
@@ -604,14 +632,14 @@ function renderScanResult(data) {
                     <p class="text-xs text-slate-500 mt-0.5"><span class="font-semibold">Category:</span> ${book.category}</p>
 
                     ${stats.lowest_price ? `
-                        <div class="mt-3 bg-emerald-50 border border-emerald-200 rounded-xl p-2.5">
+                        <div class="mt-3 bg-blue-50 border border-blue-200 rounded-xl p-3">
                             <div class="flex items-center justify-between">
-                                <span class="text-xs text-emerald-800 font-bold">Lowest Used Offer:</span>
-                                <span class="text-base font-extrabold text-pakistan-800">Rs. ${stats.lowest_price}</span>
+                                <span class="text-xs text-blue-900 font-bold">Lowest Used Offer:</span>
+                                <span class="text-base font-black text-blue-900">Rs. ${stats.lowest_price}</span>
                             </div>
                             <div class="flex items-center justify-between text-[11px] text-slate-500 mt-0.5">
                                 <span>New Retail: Rs. ${stats.retail_price}</span>
-                                <span class="font-bold text-emerald-700">Save ${stats.max_savings_percent}%</span>
+                                <span class="font-bold text-blue-700">Save ${stats.max_savings_percent}%</span>
                             </div>
                         </div>
                     ` : `
@@ -626,7 +654,7 @@ function renderScanResult(data) {
             <div class="mt-4 pt-4 border-t border-slate-100">
                 <div class="flex items-center justify-between mb-2.5">
                     <h4 class="font-bold text-xs uppercase tracking-wider text-slate-700">
-                        <i class="fa-solid fa-users text-pakistan-700 mr-1"></i> Available Seller Offers (${listings.length})
+                        <i class="fa-solid fa-users text-blue-700 mr-1"></i> Available Seller Offers (${listings.length})
                     </h4>
                     <span class="text-[11px] text-slate-400">Sorted by lowest price</span>
                 </div>
@@ -642,15 +670,15 @@ function renderScanResult(data) {
                                         <span class="text-[10px] bg-slate-200 text-slate-700 px-1.5 py-0.2 rounded font-medium">${l.condition}</span>
                                     </div>
                                     <p class="text-[11px] text-slate-500 mt-0.5">
-                                        <i class="fa-solid fa-location-dot text-pakistan-600"></i> ${l.city} (${l.pickup_location})
+                                        <i class="fa-solid fa-location-dot text-blue-600"></i> ${l.city} (${l.pickup_location})
                                     </p>
                                 </div>
                                 <div class="text-right flex items-center gap-2">
                                     <div class="text-right mr-1">
-                                        <span class="block text-sm font-extrabold text-pakistan-700">Rs. ${parseFloat(l.price).toFixed(0)}</span>
+                                        <span class="block text-sm font-black text-blue-800">Rs. ${parseFloat(l.price).toFixed(0)}</span>
                                         <span class="text-[10px] text-slate-400">${l.seller_reviews_count} sales</span>
                                     </div>
-                                    <button onclick="openUnlockModal(${l.id})" class="px-3 py-1.5 bg-pakistan-700 hover:bg-pakistan-800 text-white rounded-lg text-xs font-bold shadow-xs">
+                                    <button onclick="openUnlockModal(${l.id})" class="px-3.5 py-1.5 bg-gradient-to-r from-blue-700 to-blue-600 hover:from-blue-800 hover:to-blue-700 text-white rounded-xl text-xs font-bold shadow-sm transition-all">
                                         Unlock Contact (Rs. 50)
                                     </button>
                                 </div>
@@ -658,7 +686,7 @@ function renderScanResult(data) {
                         `).join('')}
                     </div>
                 ` : `
-                    <button onclick="prefillSellForm('${book.isbn}')" class="w-full py-2 bg-pakistan-600 text-white rounded-xl text-xs font-bold hover:bg-pakistan-700">
+                    <button onclick="prefillSellForm('${book.isbn}')" class="w-full py-2 bg-blue-600 text-white rounded-xl text-xs font-bold hover:bg-blue-700">
                         List This Book For Sale Now
                     </button>
                 `}
@@ -755,10 +783,10 @@ function selectPaymentMethod(method) {
     STATE.selectedPaymentMethod = method;
     document.querySelectorAll('.pay-tab').forEach(t => {
         if (t.getAttribute('data-method') === method) {
-            t.classList.add('border-pakistan-600', 'bg-emerald-50', 'text-pakistan-800');
+            t.classList.add('border-blue-600', 'bg-blue-50', 'text-blue-800');
             t.classList.remove('border-slate-200', 'bg-white', 'text-slate-600');
         } else {
-            t.classList.remove('border-pakistan-600', 'bg-emerald-50', 'text-pakistan-800');
+            t.classList.remove('border-blue-600', 'bg-blue-50', 'text-blue-800');
             t.classList.add('border-slate-200', 'bg-white', 'text-slate-600');
         }
     });
@@ -808,10 +836,10 @@ function selectPaymentMethod(method) {
             <div class="p-3 bg-slate-50 border border-slate-200 rounded-lg text-xs">
                 <div class="flex justify-between items-center mb-1">
                     <span class="text-slate-600 font-semibold">Available Wallet Balance:</span>
-                    <span class="font-bold text-pakistan-700">Rs. ${bal.toFixed(2)}</span>
+                    <span class="font-bold text-blue-900">Rs. ${bal.toFixed(2)}</span>
                 </div>
                 ${bal >= STATE.platformFee ? `
-                    <p class="text-emerald-700 text-[11px] font-semibold">Sufficient balance. Instant deduction with zero gateway surcharge.</p>
+                    <p class="text-blue-700 text-[11px] font-semibold">Sufficient balance. Instant deduction with zero gateway surcharge.</p>
                 ` : `
                     <p class="text-red-600 text-[11px] font-semibold">Insufficient wallet balance. Please choose JazzCash or Easypaisa.</p>
                 `}
@@ -891,31 +919,31 @@ function showUnlockedContactResult(data) {
 
     resultSec.innerHTML = `
         <div class="text-center py-2">
-            <div class="w-12 h-12 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-2 text-xl shadow-xs">
+            <div class="w-12 h-12 bg-blue-100 text-blue-700 rounded-full flex items-center justify-center mx-auto mb-2 text-xl shadow-xs">
                 <i class="fa-solid fa-check"></i>
             </div>
             <h4 class="font-extrabold text-slate-900 text-base">Contact Unlocked!</h4>
             <p class="text-xs text-slate-500 mt-0.5">Fee: Rs. ${unlock.fee_amount} (${unlock.payment_method.toUpperCase()}) • Ref: ${unlock.transaction_id}</p>
         </div>
 
-        <div class="bg-emerald-50 border border-emerald-200 rounded-2xl p-4 my-3 text-left">
-            <div class="flex items-center justify-between pb-2 border-b border-emerald-100">
-                <span class="text-xs text-emerald-800 font-bold">Seller Name</span>
+        <div class="bg-blue-50 border border-blue-200 rounded-2xl p-4 my-3 text-left">
+            <div class="flex items-center justify-between pb-2 border-b border-blue-100">
+                <span class="text-xs text-blue-900 font-bold">Seller Name</span>
                 <span class="text-sm font-extrabold text-slate-900">${sc.full_name}</span>
             </div>
-            <div class="flex items-center justify-between py-2 border-b border-emerald-100">
-                <span class="text-xs text-emerald-800 font-bold">Direct Phone</span>
-                <span class="text-base font-extrabold text-pakistan-800 tracking-wider">${sc.phone_number}</span>
+            <div class="flex items-center justify-between py-2 border-b border-blue-100">
+                <span class="text-xs text-blue-900 font-bold">Direct Phone</span>
+                <span class="text-base font-black text-blue-900 tracking-wider">${sc.phone_number}</span>
             </div>
             <div class="flex items-center justify-between pt-2">
-                <span class="text-xs text-emerald-800 font-bold">Location</span>
+                <span class="text-xs text-blue-900 font-bold">Location</span>
                 <span class="text-xs font-semibold text-slate-700">${sc.city} - ${sc.campus_or_area}</span>
             </div>
         </div>
 
         <!-- Direct Contact Action Buttons -->
         <div class="grid grid-cols-2 gap-2.5 my-3">
-            <a href="tel:${sc.phone_number}" class="py-2.5 bg-pakistan-700 hover:bg-pakistan-800 text-white rounded-xl text-xs font-bold text-center flex items-center justify-center gap-1.5 shadow-sm">
+            <a href="tel:${sc.phone_number}" class="py-2.5 bg-blue-700 hover:bg-blue-800 text-white rounded-xl text-xs font-bold text-center flex items-center justify-center gap-1.5 shadow-sm">
                 <i class="fa-solid fa-phone"></i> Call Seller
             </a>
             <a href="${sc.whatsapp_link}" target="_blank" class="py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold text-center flex items-center justify-center gap-1.5 shadow-sm">
@@ -966,7 +994,7 @@ function renderDealsList(data) {
                 <i class="fa-solid fa-handshake text-3xl text-slate-300 mb-2"></i>
                 <p class="text-sm font-semibold text-slate-700">No Contact Unlocks Yet</p>
                 <p class="text-xs text-slate-500 mt-1">Unlocked seller contacts will appear here.</p>
-                <button onclick="switchTab('home')" class="mt-3 px-4 py-2 bg-pakistan-700 text-white text-xs font-bold rounded-lg">Browse Books</button>
+                <button onclick="switchTab('home')" class="mt-3 px-4 py-2 bg-blue-700 text-white text-xs font-bold rounded-xl">Browse Books</button>
             </div>
         `;
         return;
@@ -1017,7 +1045,7 @@ function generateDealCard(u, role) {
                 </div>
                 <div>
                     <span class="text-[10px] text-slate-400 block">Phone / WhatsApp</span>
-                    <span class="font-mono font-bold text-pakistan-700">${otherPhone}</span>
+                    <span class="font-mono font-bold text-blue-700">${otherPhone}</span>
                 </div>
                 <div>
                     <span class="text-[10px] text-slate-400 block">Book Listed Price</span>
@@ -1038,7 +1066,7 @@ function generateDealCard(u, role) {
             <!-- Action buttons for pending deal -->
             ${isPending ? `
                 <div class="pt-2 border-t border-slate-100 flex gap-2">
-                    <button onclick="confirmDeal('${u.unlock_id}')" class="flex-1 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold shadow-xs">
+                    <button onclick="confirmDeal('${u.unlock_id}')" class="flex-1 py-2 bg-blue-700 hover:bg-blue-800 text-white rounded-xl text-xs font-bold shadow-sm">
                         <i class="fa-solid fa-check mr-1"></i> Deal Completed
                     </button>
                     <button onclick="cancelDealRefundPrompt('${u.unlock_id}')" class="flex-1 py-2 bg-slate-100 hover:bg-rose-50 hover:text-rose-700 text-slate-700 rounded-lg text-xs font-bold border border-slate-300">
@@ -1129,7 +1157,7 @@ async function loadMySellerListings() {
                     <div>
                         <h5 class="font-bold text-slate-900 line-clamp-1">${l.book.title}</h5>
                         <p class="text-[11px] text-slate-500">Rs. ${l.price} • ${l.condition}</p>
-                        <span class="inline-block mt-0.5 px-1.5 py-0.2 rounded text-[10px] font-bold ${l.status === 'active' ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-200 text-slate-700'}">
+                        <span class="inline-block mt-0.5 px-1.5 py-0.2 rounded text-[10px] font-bold ${l.status === 'active' ? 'bg-blue-100 text-blue-800' : 'bg-slate-200 text-slate-700'}">
                             ${l.status === 'active' ? 'Available' : 'Sold'}
                         </span>
                     </div>
@@ -1139,7 +1167,7 @@ async function loadMySellerListings() {
                     <button onclick="toggleListingStatusAction(${l.id})" class="px-2 py-1 bg-white border border-slate-300 hover:bg-slate-100 rounded text-[11px] font-semibold text-slate-700" title="Toggle Available / Sold">
                         ${l.status === 'active' ? 'Mark Sold' : 'Reactivate'}
                     </button>
-                    <button onclick="openEditListingModal(${l.id})" class="px-2 py-1 bg-pakistan-700 text-white rounded text-[11px] font-semibold" title="Edit Price/Condition">
+                    <button onclick="openEditListingModal(${l.id})" class="px-2.5 py-1 bg-blue-700 hover:bg-blue-800 text-white rounded-lg text-[11px] font-bold" title="Edit Price/Condition">
                         Edit
                     </button>
                     <button onclick="deleteListingAction(${l.id})" class="p-1 text-red-500 hover:text-red-700" title="Delete">
@@ -1255,16 +1283,16 @@ function switchAuthTab(mode) {
     if (mode === 'login') {
         loginForm.classList.remove('hidden');
         regForm.classList.add('hidden');
-        loginTab.classList.add('text-pakistan-700', 'border-b-2', 'border-pakistan-700');
+        loginTab.classList.add('text-blue-700', 'border-b-2', 'border-blue-700');
         loginTab.classList.remove('text-slate-400');
-        regTab.classList.remove('text-pakistan-700', 'border-b-2', 'border-pakistan-700');
+        regTab.classList.remove('text-blue-700', 'border-b-2', 'border-blue-700');
         regTab.classList.add('text-slate-400');
     } else {
         loginForm.classList.add('hidden');
         regForm.classList.remove('hidden');
-        regTab.classList.add('text-pakistan-700', 'border-b-2', 'border-pakistan-700');
+        regTab.classList.add('text-blue-700', 'border-b-2', 'border-blue-700');
         regTab.classList.remove('text-slate-400');
-        loginTab.classList.remove('text-pakistan-700', 'border-b-2', 'border-pakistan-700');
+        loginTab.classList.remove('text-blue-700', 'border-b-2', 'border-blue-700');
         loginTab.classList.add('text-slate-400');
     }
 }

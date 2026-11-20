@@ -1,15 +1,25 @@
-/* BookBazaar Custom Stylesheet */
+/* BookBazaar Blue & White Modern Theme Stylesheet */
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Noto+Nastaliq+Urdu:wght@400;700&display=swap');
 
 :root {
-    --primary: #047857;
-    --primary-dark: #064e3b;
-    --primary-light: #10b981;
-    --accent: #f59e0b;
+    --primary: #1d4ed8;       /* Royal Blue */
+    --primary-dark: #1e3a8a;  /* Deep Navy */
+    --primary-light: #2563eb; /* Ocean Blue */
+    --primary-soft: #eff6ff;  /* Ice Blue */
+    --accent: #0284c7;        /* Sky Blue */
+    --surface: #ffffff;       /* Pure White */
+    --background: #f8fafc;    /* Clean Slate/Ice Background */
+    --text-main: #0f172a;     /* High-Contrast Dark Slate */
+    --text-muted: #64748b;    /* Secondary Muted Text */
+    --border-color: #e2e8f0;
+    --border-blue: #bfdbfe;
+    --shadow-subtle: 0 4px 20px -2px rgba(29, 78, 216, 0.06);
 }
 
 body {
     font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+    background-color: var(--background);
+    color: var(--text-main);
 }
 
 .urdu-text {
@@ -19,6 +29,74 @@ body {
     text-align: right;
 }
 
+/* ===================================================
+   CRITICAL CONTRAST & DROPDOWN VISIBILITY FIXES
+   Ensures ALL selects, native popups, and dropdown items
+   have dark/blue text on clean white surfaces with high z-index.
+   =================================================== */
+select {
+    color: #0f172a !important;
+    background-color: #ffffff !important;
+}
+
+select option {
+    background-color: #ffffff !important;
+    color: #0f172a !important;
+    padding: 8px 12px !important;
+    font-weight: 500;
+}
+
+select option:checked {
+    background: #eff6ff !important;
+    color: #1d4ed8 !important;
+    font-weight: 700;
+}
+
+/* Top-Right Navbar Active & Contrast Fixes */
+.top-navbar-btn {
+    color: #0f172a !important;
+    background-color: #ffffff !important;
+    border: 1px solid #cbd5e1 !important;
+    font-weight: 700 !important;
+    transition: all 0.2s ease;
+}
+
+.top-navbar-btn:hover {
+    background-color: #eff6ff !important;
+    border-color: #93c5fd !important;
+    color: #1d4ed8 !important;
+}
+
+/* Dropdown Menus: Clean White Surface, High Contrast Dark/Blue Text, Z-Index, Crisp Borders */
+.navbar-dropdown-panel {
+    background-color: #ffffff !important;
+    color: #0f172a !important;
+    border: 1px solid #e2e8f0 !important;
+    box-shadow: 0 20px 25px -5px rgba(15, 23, 42, 0.12), 0 8px 10px -6px rgba(15, 23, 42, 0.08) !important;
+    z-index: 110 !important;
+}
+
+.navbar-dropdown-item {
+    color: #0f172a !important;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+    padding: 0.625rem 0.875rem;
+    border-radius: 0.5rem;
+    transition: all 0.15s ease-in-out;
+}
+
+.navbar-dropdown-item:hover {
+    background-color: #eff6ff !important;
+    color: #1d4ed8 !important;
+}
+
+.navbar-dropdown-item i {
+    color: #2563eb !important;
+    font-size: 0.875rem;
+}
+
 /* Mobile App Simulator Mockup Frame */
 .mobile-device-frame {
     width: 100%;
@@ -26,13 +104,14 @@ body {
     height: 900px;
     max-height: 92vh;
     border-radius: 46px;
-    box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.35), 0 0 0 12px #1e293b, 0 0 0 14px #0f172a;
+    box-shadow: 0 25px 60px -15px rgba(29, 78, 216, 0.18), 0 0 0 10px #0f172a, 0 0 0 13px #1e293b;
     background: #ffffff;
     display: flex;
     flex-direction: column;
     overflow: hidden;
     position: relative;
     margin: 1rem auto;
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .mobile-notch {
@@ -67,7 +146,7 @@ body {
     background: #334155;
 }
 
-/* Scanner Animation Beam */
+/* Scanner Animation Beam (Royal Blue / Cyan) */
 .scanner-container {
     position: relative;
     overflow: hidden;
@@ -77,8 +156,8 @@ body {
     position: absolute;
     width: 100%;
     height: 3px;
-    background: linear-gradient(90deg, transparent, #ef4444, #dc2626, transparent);
-    box-shadow: 0 0 12px #ef4444, 0 0 24px #dc2626;
+    background: linear-gradient(90deg, transparent, #38bdf8, #2563eb, transparent);
+    box-shadow: 0 0 12px #38bdf8, 0 0 24px #2563eb;
     animation: scanAnimation 2s ease-in-out infinite alternate;
 }
 
@@ -91,38 +170,52 @@ body {
     }
 }
 
-/* Pulse badge */
-.pulse-green {
-    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
-    animation: pulseG 1.8s infinite;
+/* Pulse badge (Blue Glow) */
+.pulse-blue {
+    box-shadow: 0 0 0 0 rgba(37, 99, 235, 0.7);
+    animation: pulseB 1.8s infinite;
 }
 
-@keyframes pulseG {
+@keyframes pulseB {
     0% {
         transform: scale(0.98);
-        box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+        box-shadow: 0 0 0 0 rgba(37, 99, 235, 0.7);
     }
     70% {
         transform: scale(1);
-        box-shadow: 0 0 0 10px rgba(16, 185, 129, 0);
+        box-shadow: 0 0 0 10px rgba(37, 99, 235, 0);
     }
     100% {
         transform: scale(0.98);
-        box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
+        box-shadow: 0 0 0 0 rgba(37, 99, 235, 0);
     }
 }
 
 /* Bottom Nav Indicator */
 .nav-tab.active {
-    color: #047857;
+    color: #1d4ed8 !important;
     font-weight: 700;
 }
 
 .nav-tab.active svg,
 .nav-tab.active i {
-    color: #047857;
+    color: #1d4ed8 !important;
     transform: translateY(-2px);
     transition: transform 0.2s ease;
+}
+
+/* Clean Cards & Subtle Blue Shadows */
+.card-clean {
+    background-color: #ffffff;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 1px 3px 0 rgba(15, 23, 42, 0.05);
+    border-radius: 1rem;
+    transition: all 0.2s ease-in-out;
+}
+
+.card-clean:hover {
+    border-color: #bfdbfe;
+    box-shadow: 0 10px 25px -5px rgba(29, 78, 216, 0.08);
 }
 
 /* Custom Scrollbar */
@@ -131,12 +224,12 @@ body {
     height: 6px;
 }
 ::-webkit-scrollbar-track {
-    background: #f1f5f9;
+    background: #f8fafc;
 }
 ::-webkit-scrollbar-thumb {
     background: #cbd5e1;
     border-radius: 4px;
 }
 ::-webkit-scrollbar-thumb:hover {
-    background: #94a3b8;
+    background: #93c5fd;
 }

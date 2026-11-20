@@ -5,16 +5,16 @@
 {% block content %}
 <div class="min-h-screen bg-slate-100 flex flex-col font-sans pb-16">
     <!-- Top Admin Header -->
-    <header class="bg-slate-900 text-white py-3.5 px-4 sm:px-6 border-b border-slate-800 sticky top-0 z-40 shadow-md">
+    <header class="bg-gradient-to-r from-slate-900 via-blue-950 to-slate-900 text-white py-3.5 px-4 sm:px-6 border-b border-blue-900/40 sticky top-0 z-40 shadow-md">
         <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-3">
             <div class="flex items-center gap-3">
-                <a href="/" class="w-9 h-9 rounded-xl bg-pakistan-600 flex items-center justify-center font-black text-white text-sm shadow-md">
+                <a href="/" class="w-9 h-9 rounded-xl bg-blue-600 flex items-center justify-center font-black text-white text-sm shadow-md ring-2 ring-blue-400/30">
                     BB
                 </a>
                 <div>
-                    <h1 class="text-base font-extrabold text-emerald-400 flex items-center gap-2">
+                    <h1 class="text-base font-extrabold text-blue-400 flex items-center gap-2">
                         <span>BookBazaar Operations & Admin Dashboard</span>
-                        <span class="text-[10px] bg-emerald-950 text-emerald-300 font-bold px-2.5 py-0.5 rounded-full border border-emerald-700">
+                        <span class="text-[10px] bg-blue-950 text-blue-200 font-bold px-2.5 py-0.5 rounded-full border border-blue-600">
                             Phase 4 Complete System
                         </span>
                     </h1>
@@ -23,15 +23,15 @@
             </div>
 
             <div class="flex items-center gap-3">
-                <span class="hidden md:inline-flex items-center gap-1.5 px-3 py-1 bg-slate-800 text-emerald-400 rounded-lg text-xs font-semibold border border-slate-700">
-                    <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                <span class="hidden md:inline-flex items-center gap-1.5 px-3 py-1 bg-blue-950/70 text-blue-300 rounded-xl text-xs font-semibold border border-blue-800">
+                    <span class="w-2 h-2 rounded-full bg-blue-400 animate-pulse"></span>
                     PostgreSQL 18 Connected
                 </span>
 
                 <!-- Notification Bell & Dropdown -->
                 <div class="relative" id="admin-notification-container">
                     <button id="admin-notif-bell-btn" onclick="toggleAdminNotifications()" 
-                            class="relative px-3 py-1.5 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-lg text-xs font-bold text-slate-200 flex items-center gap-1.5 transition-colors focus:outline-none">
+                            class="relative px-3 py-1.5 bg-white/10 hover:bg-white text-white hover:text-blue-900 border border-white/20 hover:border-white rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all focus:outline-none shadow-xs">
                         <i class="fa-solid fa-bell text-amber-400"></i>
                         <span class="hidden sm:inline">Alerts</span>
                         <span id="admin-notif-badge" class="hidden px-1.5 py-0.2 bg-rose-500 text-white text-[10px] font-black rounded-full min-w-[18px] text-center">0</span>
@@ -39,13 +39,13 @@
 
                     <!-- Notifications Dropdown Panel -->
                     <div id="admin-notif-dropdown" class="hidden absolute right-0 mt-2 w-80 sm:w-96 bg-white rounded-2xl shadow-2xl border border-slate-200 z-50 overflow-hidden text-slate-800">
-                        <div class="p-3.5 bg-slate-900 text-white flex items-center justify-between border-b border-slate-800">
+                        <div class="p-3.5 bg-gradient-to-r from-blue-900 via-blue-800 to-indigo-900 text-white flex items-center justify-between border-b border-blue-900">
                             <div class="flex items-center gap-2">
                                 <i class="fa-solid fa-bell text-amber-400 text-sm"></i>
                                 <span class="font-extrabold text-xs">Admin Notifications</span>
                                 <span id="admin-notif-count-label" class="text-[10px] bg-slate-800 text-slate-300 font-bold px-2 py-0.5 rounded-full border border-slate-700">0 unread</span>
                             </div>
-                            <button onclick="markAllNotificationsRead()" class="text-[10px] text-emerald-400 hover:text-emerald-300 font-bold hover:underline">
+                            <button onclick="markAllNotificationsRead()" class="text-[10px] text-blue-300 hover:text-white font-bold hover:underline">
                                 Mark all read
                             </button>
                         </div>
@@ -57,14 +57,14 @@
                         </div>
                         <div class="p-2.5 bg-slate-50 border-t border-slate-100 text-center text-[10px] text-slate-500 font-semibold flex items-center justify-between">
                             <span>Payment & Deal Lifecycle Activity</span>
-                            <button onclick="fetchAdminNotifications(true)" class="text-emerald-700 hover:underline flex items-center gap-1 font-bold">
+                            <button onclick="fetchAdminNotifications(true)" class="text-blue-700 hover:underline flex items-center gap-1 font-bold">
                                 <i class="fa-solid fa-rotate text-[9px]"></i> Refresh
                             </button>
                         </div>
                     </div>
                 </div>
 
-                <a href="/" class="px-3.5 py-1.5 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-lg text-xs font-bold text-slate-200 flex items-center gap-1.5 transition-colors">
+                <a href="/" class="px-3.5 py-1.5 bg-white hover:bg-blue-50 text-blue-900 border border-blue-200 rounded-xl text-xs font-extrabold flex items-center gap-1.5 transition-all shadow-xs">
                     <i class="fa-solid fa-arrow-left"></i> Marketplace Front
                 </a>
             </div>
@@ -80,10 +80,10 @@
             <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-xs">
                 <div class="flex items-center justify-between text-xs text-slate-500 mb-1">
                     <span class="font-semibold">Retained Rev</span>
-                    <i class="fa-solid fa-coins text-emerald-600"></i>
+                    <i class="fa-solid fa-coins text-blue-600"></i>
                 </div>
-                <div class="text-xl font-black text-pakistan-800" id="stat-retained-rev">Rs. 0</div>
-                <span class="text-[10px] text-emerald-700 font-bold bg-emerald-50 px-1.5 py-0.5 rounded mt-1 inline-block">
+                <div class="text-xl font-black text-blue-900" id="stat-retained-rev">Rs. 0</div>
+                <span class="text-[10px] text-blue-700 font-bold bg-blue-50 px-1.5 py-0.5 rounded mt-1 inline-block border border-blue-200">
                     Fee on Confirmed Deals
                 </span>
             </div>
@@ -114,7 +114,7 @@
             <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-xs">
                 <div class="flex items-center justify-between text-xs text-slate-500 mb-1">
                     <span class="font-semibold">Active Listings</span>
-                    <i class="fa-solid fa-book text-pakistan-600"></i>
+                    <i class="fa-solid fa-book text-blue-600"></i>
                 </div>
                 <div class="text-xl font-black text-slate-900" id="stat-active-listings">0</div>
                 <span class="text-[10px] text-slate-500 mt-1 block" id="stat-pending-listings-sub">0 pending approval</span>
@@ -145,7 +145,7 @@
 
         <!-- Navigation Tabs Bar -->
         <div class="flex overflow-x-auto border-b border-slate-200 gap-1 text-xs font-bold bg-white px-2 py-1.5 rounded-2xl shadow-xs">
-            <button onclick="switchAdminTab('overview')" id="tabbtn-overview" class="admin-tab active py-2.5 px-4 text-pakistan-700 border-b-2 border-pakistan-700 rounded-lg flex items-center gap-1.5 whitespace-nowrap">
+            <button onclick="switchAdminTab('overview')" id="tabbtn-overview" class="admin-tab active py-2.5 px-4 text-blue-700 border-b-2 border-blue-700 rounded-lg flex items-center gap-1.5 whitespace-nowrap">
                 <i class="fa-solid fa-chart-pie"></i> Analytics & Overview
             </button>
             <button onclick="switchAdminTab('users')" id="tabbtn-users" class="admin-tab py-2.5 px-4 text-slate-600 hover:text-slate-900 rounded-lg flex items-center gap-1.5 whitespace-nowrap">
@@ -217,9 +217,9 @@
                         </div>
                         <div class="flex items-center justify-between pt-1">
                             <span class="text-xs font-semibold text-slate-700">Moderate New Listings:</span>
-                            <input type="checkbox" id="quick-approval-input" class="w-4 h-4 text-pakistan-700 rounded">
+                            <input type="checkbox" id="quick-approval-input" class="w-4 h-4 text-blue-700 rounded">
                         </div>
-                        <button onclick="saveQuickSettings()" class="w-full py-2 bg-pakistan-700 hover:bg-pakistan-800 text-white rounded-lg text-xs font-bold transition-all shadow-xs">
+                        <button onclick="saveQuickSettings()" class="w-full py-2 bg-blue-700 hover:bg-blue-800 text-white rounded-xl text-xs font-bold transition-all shadow-xs">
                             Apply Platform Rules
                         </button>
                     </div>
@@ -266,7 +266,7 @@
                         <i class="fa-solid fa-magnifying-glass absolute left-3 top-3 text-slate-400 text-xs"></i>
                         <input type="text" id="user-search-input" oninput="debounce(filterAdminUsers, 300)()" 
                                placeholder="Search name, phone, city, campus..." 
-                               class="w-full pl-8 pr-3 py-2 text-xs border border-slate-300 rounded-xl focus:ring-2 focus:ring-pakistan-600 focus:outline-none">
+                               class="w-full pl-8 pr-3 py-2 text-xs border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none">
                     </div>
                     <select id="user-status-filter" onchange="filterAdminUsers()" class="text-xs p-2 border border-slate-300 rounded-xl bg-white">
                         <option value="all">All User Statuses</option>
@@ -322,7 +322,7 @@
                         <i class="fa-solid fa-magnifying-glass absolute left-3 top-3 text-slate-400 text-xs"></i>
                         <input type="text" id="listing-search-input" oninput="debounce(filterAdminListings, 300)()" 
                                placeholder="Search book title, ISBN, author, seller..." 
-                               class="w-full pl-8 pr-3 py-2 text-xs border border-slate-300 rounded-xl focus:ring-2 focus:ring-pakistan-600 focus:outline-none">
+                               class="w-full pl-8 pr-3 py-2 text-xs border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none">
                     </div>
                     <select id="listing-status-filter" onchange="filterAdminListings()" class="text-xs p-2 border border-slate-300 rounded-xl bg-white">
                         <option value="all">All Statuses</option>
@@ -419,7 +419,7 @@
                         <i class="fa-solid fa-magnifying-glass absolute left-3 top-3 text-slate-400 text-xs"></i>
                         <input type="text" id="txn-search-input" oninput="debounce(filterAdminTransactions, 300)()" 
                                placeholder="Search transaction ref, buyer, seller..." 
-                               class="w-full pl-8 pr-3 py-2 text-xs border border-slate-300 rounded-xl focus:ring-2 focus:ring-pakistan-600 focus:outline-none">
+                               class="w-full pl-8 pr-3 py-2 text-xs border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none">
                     </div>
                     <select id="txn-gateway-filter" onchange="filterAdminTransactions()" class="text-xs p-2 border border-slate-300 rounded-xl bg-white">
                         <option value="all">All Gateways</option>
@@ -527,7 +527,7 @@
                     </h3>
                     <p class="text-[11px] text-slate-500">Manage stationery sponsor banners, native in-feed cards, and track CTR performance.</p>
                 </div>
-                <button onclick="openCreateAdModal()" class="px-3.5 py-2 bg-pakistan-700 hover:bg-pakistan-800 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-sm">
+                <button onclick="openCreateAdModal()" class="px-3.5 py-2 bg-blue-700 hover:bg-blue-800 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-sm">
                     <i class="fa-solid fa-plus"></i> Create New Ad
                 </button>
             </div>
@@ -561,7 +561,7 @@
         <div id="admin-sec-settings" class="admin-sec hidden space-y-4">
             <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs max-w-3xl space-y-5">
                 <h3 class="text-sm font-extrabold text-slate-900 border-b border-slate-100 pb-3 flex items-center gap-2">
-                    <i class="fa-solid fa-shield-halved text-pakistan-700"></i> Platform Economics & Safety Policies
+                    <i class="fa-solid fa-shield-halved text-blue-700"></i> Platform Economics & Safety Policies
                 </h3>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
@@ -587,7 +587,7 @@
 
                 <div class="space-y-3 pt-3 border-t border-slate-100">
                     <label class="flex items-center gap-3 cursor-pointer">
-                        <input type="checkbox" id="setting-full-approval" class="w-4 h-4 text-pakistan-700 rounded">
+                        <input type="checkbox" id="setting-full-approval" class="w-4 h-4 text-blue-700 rounded">
                         <div>
                             <span class="block text-xs font-bold text-slate-800">Require Admin Approval For New Book Listings</span>
                             <span class="block text-[11px] text-slate-500">When enabled, newly uploaded listings remain pending until approved by a moderator.</span>
@@ -595,7 +595,7 @@
                     </label>
 
                     <label class="flex items-center gap-3 cursor-pointer">
-                        <input type="checkbox" id="setting-full-sponsored" class="w-4 h-4 text-pakistan-700 rounded">
+                        <input type="checkbox" id="setting-full-sponsored" class="w-4 h-4 text-blue-700 rounded">
                         <div>
                             <span class="block text-xs font-bold text-slate-800">Enable Sponsored Listings Promotion</span>
                             <span class="block text-[11px] text-slate-500">Allows promoted books to appear highlighted at the top of category feeds.</span>
@@ -604,7 +604,7 @@
                 </div>
 
                 <div class="pt-4 border-t border-slate-100 flex justify-end">
-                    <button onclick="saveFullPlatformSettings()" class="px-6 py-2.5 bg-pakistan-700 hover:bg-pakistan-800 text-white rounded-xl text-xs font-bold shadow-md transition-all">
+                    <button onclick="saveFullPlatformSettings()" class="px-6 py-2.5 bg-blue-700 hover:bg-blue-800 text-white rounded-xl text-xs font-bold shadow-md transition-all">
                         Save Platform Configuration
                     </button>
                 </div>
@@ -631,7 +631,7 @@
         <div class="grid grid-cols-4 gap-2 text-center">
             <div class="p-2.5 bg-slate-50 border border-slate-200 rounded-xl">
                 <span class="block text-[10px] text-slate-400 uppercase font-bold">Wallet</span>
-                <strong class="text-sm font-extrabold text-pakistan-700" id="udm-wallet">Rs. 0</strong>
+                <strong class="text-sm font-extrabold text-blue-700" id="udm-wallet">Rs. 0</strong>
             </div>
             <div class="p-2.5 bg-slate-50 border border-slate-200 rounded-xl">
                 <span class="block text-[10px] text-slate-400 uppercase font-bold">Listings</span>
@@ -705,14 +705,14 @@
                 <input type="text" id="lem-location" class="w-full p-2 border border-slate-300 rounded-lg">
             </div>
             <label class="flex items-center gap-2 pt-1 cursor-pointer">
-                <input type="checkbox" id="lem-sponsored" class="w-4 h-4 text-pakistan-700 rounded">
+                <input type="checkbox" id="lem-sponsored" class="w-4 h-4 text-blue-700 rounded">
                 <span class="font-bold text-slate-800">Promoted / Sponsored Listing</span>
             </label>
         </div>
 
         <div class="pt-3 border-t border-slate-100 flex justify-end gap-2">
             <button onclick="closeModal('listing-edit-modal')" class="px-4 py-2 bg-slate-100 text-slate-700 rounded-xl text-xs font-bold">Cancel</button>
-            <button onclick="submitAdminEditListing()" class="px-4 py-2 bg-pakistan-700 text-white rounded-xl text-xs font-bold">Save Changes</button>
+            <button onclick="submitAdminEditListing()" class="px-4 py-2 bg-blue-700 text-white rounded-xl text-xs font-bold">Save Changes</button>
         </div>
     </div>
 </div>
@@ -808,14 +808,14 @@
                 <input type="text" id="afm-url" placeholder="https://..." class="w-full p-2 border border-slate-300 rounded-lg">
             </div>
             <label class="flex items-center gap-2 pt-1 cursor-pointer">
-                <input type="checkbox" id="afm-active" checked class="w-4 h-4 text-pakistan-700 rounded">
+                <input type="checkbox" id="afm-active" checked class="w-4 h-4 text-blue-700 rounded">
                 <span class="font-bold text-slate-800">Publish Immediately (Active)</span>
             </label>
         </div>
 
         <div class="pt-3 border-t border-slate-100 flex justify-end gap-2">
             <button onclick="closeModal('ad-form-modal')" class="px-4 py-2 bg-slate-100 text-slate-700 rounded-xl text-xs font-bold">Cancel</button>
-            <button onclick="submitAdForm()" class="px-4 py-2 bg-pakistan-700 text-white rounded-xl text-xs font-bold">Save Campaign</button>
+            <button onclick="submitAdForm()" class="px-4 py-2 bg-blue-700 text-white rounded-xl text-xs font-bold">Save Campaign</button>
         </div>
     </div>
 </div>
@@ -1003,7 +1003,7 @@
 
         list.innerHTML = notifications.map(n => {
             const isUnread = !n.is_read;
-            const bgClass = isUnread ? 'bg-emerald-50/70 hover:bg-emerald-50' : 'bg-white hover:bg-slate-50';
+            const bgClass = isUnread ? 'bg-blue-50/70 hover:bg-blue-50' : 'bg-white hover:bg-slate-50';
             
             let iconHtml = '<i class="fa-solid fa-bell text-blue-500"></i>';
             let typeBadge = '<span class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-slate-100 text-slate-600">ALERT</span>';
@@ -1011,7 +1011,7 @@
 
             if (n.notification_type === 'PAYMENT_RECEIVED') {
                 iconHtml = '<i class="fa-solid fa-money-bill-wave text-emerald-600 text-sm"></i>';
-                typeBadge = '<span class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800">PAYMENT</span>';
+                typeBadge = '<span class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-blue-100 text-blue-800">PAYMENT</span>';
             } else if (n.notification_type === 'PAYMENT_FAILED') {
                 iconHtml = '<i class="fa-solid fa-circle-xmark text-rose-600 text-sm"></i>';
                 typeBadge = '<span class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-rose-100 text-rose-800">FAILED</span>';
@@ -1020,14 +1020,14 @@
                 typeBadge = '<span class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-teal-100 text-teal-800">DEAL MADE</span>';
             } else if (n.notification_type === 'REFUND_PROCESSED') {
                 iconHtml = '<i class="fa-solid fa-circle-check text-emerald-600 text-sm"></i>';
-                typeBadge = '<span class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800">REFUND PROCESSED</span>';
+                typeBadge = '<span class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-blue-100 text-blue-800">REFUND PROCESSED</span>';
             } else if (n.notification_type === 'DEAL_FAILED_REFUND_REQ') {
                 iconHtml = '<i class="fa-solid fa-triangle-exclamation text-amber-600 text-sm"></i>';
                 typeBadge = '<span class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-rose-100 text-rose-800">REFUND REQUIRED</span>';
                 
                 if (n.is_resolved || n.unlock_deal_status === 'no_deal_refunded') {
                     actionHtml = `
-                        <div class="mt-2 flex items-center gap-1.5 text-[10px] text-emerald-700 font-bold bg-emerald-100/70 px-2 py-1 rounded-lg">
+                        <div class="mt-2 flex items-center gap-1.5 text-[10px] text-blue-700 font-bold bg-blue-100/70 px-2 py-1 rounded-lg">
                             <i class="fa-solid fa-check"></i> Refunded (Rs. ${n.fee_amount || '50'})
                         </div>
                     `;
@@ -1127,7 +1127,7 @@
             if (res.ok) {
                 showToast(data.message || "Refund processed successfully!", "success");
                 btn.parentElement.innerHTML = `
-                    <div class="flex items-center gap-1.5 text-[10px] text-emerald-700 font-bold bg-emerald-100/70 px-2 py-1 rounded-lg">
+                    <div class="flex items-center gap-1.5 text-[10px] text-blue-700 font-bold bg-blue-100/70 px-2 py-1 rounded-lg">
                         <i class="fa-solid fa-check"></i> Refunded (${data.refund_transaction_id})
                     </div>
                 `;
@@ -1199,7 +1199,7 @@
         const listContainer = document.getElementById('listing-status-breakdown');
         if (listContainer) {
             listContainer.innerHTML = `
-                <div class="flex items-center justify-between p-2 bg-emerald-50 rounded-lg text-xs font-bold text-emerald-900">
+                <div class="flex items-center justify-between p-2 bg-blue-50 rounded-lg text-xs font-bold text-emerald-900">
                     <span>Active Listings</span>
                     <span>${m.active_listings}</span>
                 </div>
@@ -1228,7 +1228,7 @@
                     <td class="py-2 px-3">${u.buyer_name}</td>
                     <td class="py-2 px-3">${u.seller_name}</td>
                     <td class="py-2 px-3 uppercase text-[10px] font-bold text-slate-600">${u.payment_method}</td>
-                    <td class="py-2 px-3 font-extrabold text-pakistan-700">Rs. ${u.fee_amount}</td>
+                    <td class="py-2 px-3 font-extrabold text-blue-700">Rs. ${u.fee_amount}</td>
                     <td class="py-2 px-3">${getDealBadge(u.deal_status)}</td>
                 </tr>
             `).join('');
@@ -1237,7 +1237,7 @@
 
     function getDealBadge(status) {
         const badgeMap = {
-            'deal_made': '<span class="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-bold text-[10px]">Deal Made</span>',
+            'deal_made': '<span class="px-2 py-0.5 rounded-full bg-blue-100 text-blue-800 font-bold text-[10px]">Deal Made</span>',
             'no_deal_refunded': '<span class="px-2 py-0.5 rounded-full bg-blue-100 text-blue-800 font-bold text-[10px]">Refunded</span>',
             'unlocked_pending': '<span class="px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 font-bold text-[10px]">Pending</span>',
             'disputed': '<span class="px-2 py-0.5 rounded-full bg-rose-100 text-rose-800 font-bold text-[10px]">Disputed</span>'
@@ -1303,12 +1303,12 @@
                 <td class="py-2.5 px-3 text-slate-700">${u.city} <span class="text-[10px] text-slate-400 block">${u.campus_or_area || 'Campus'}</span></td>
                 <td class="py-2.5 px-3 uppercase text-[10px] font-bold text-slate-600">${u.user_type}</td>
                 <td class="py-2.5 px-3 font-semibold text-amber-500">★ ${u.rating} <span class="text-[10px] text-slate-400">(${u.total_reviews})</span></td>
-                <td class="py-2.5 px-3 font-extrabold text-pakistan-700">Rs. ${parseFloat(u.wallet_balance).toFixed(0)}</td>
+                <td class="py-2.5 px-3 font-extrabold text-blue-700">Rs. ${parseFloat(u.wallet_balance).toFixed(0)}</td>
                 <td class="py-2.5 px-3 text-slate-600">
-                    <span class="text-emerald-700 font-bold">${u.sold_listings_count || 0} sold</span> / ${u.active_listings_count || 0} active
+                    <span class="text-blue-700 font-bold">${u.sold_listings_count || 0} sold</span> / ${u.active_listings_count || 0} active
                 </td>
                 <td class="py-2.5 px-3">
-                    <span class="px-2 py-0.5 rounded-full text-[10px] font-extrabold ${u.is_blocked ? 'bg-red-100 text-red-800' : 'bg-emerald-100 text-emerald-800'}">
+                    <span class="px-2 py-0.5 rounded-full text-[10px] font-extrabold ${u.is_blocked ? 'bg-red-100 text-red-800' : 'bg-blue-100 text-blue-800'}">
                         ${u.is_blocked ? 'BLOCKED' : 'ACTIVE'}
                     </span>
                 </td>
@@ -1367,7 +1367,7 @@
                 lCont.innerHTML = data.listings.map(l => `
                     <div class="flex items-center justify-between p-2 bg-slate-50 rounded-lg">
                         <span class="font-bold text-slate-800 truncate max-w-xs">${l.book.title} (Rs. ${l.price})</span>
-                        <span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase ${l.status === 'active' ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-200 text-slate-600'}">${l.status}</span>
+                        <span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase ${l.status === 'active' ? 'bg-blue-100 text-blue-800' : 'bg-slate-200 text-slate-600'}">${l.status}</span>
                     </div>
                 `).join('');
             }
@@ -1436,9 +1436,9 @@
                 <td class="py-2.5 px-3 font-medium text-slate-800">${l.seller_name}</td>
                 <td class="py-2.5 px-3">${l.city}</td>
                 <td class="py-2.5 px-3"><span class="bg-slate-100 text-slate-700 px-2 py-0.5 rounded font-bold text-[10px]">${l.condition}</span></td>
-                <td class="py-2.5 px-3 font-black text-pakistan-700">Rs. ${parseFloat(l.price).toFixed(0)}</td>
+                <td class="py-2.5 px-3 font-black text-blue-700">Rs. ${parseFloat(l.price).toFixed(0)}</td>
                 <td class="py-2.5 px-3">
-                    <span class="px-2 py-0.5 rounded-full text-[10px] font-extrabold uppercase ${l.status === 'active' ? 'bg-emerald-100 text-emerald-800' : l.status === 'pending' ? 'bg-amber-100 text-amber-800' : 'bg-slate-200 text-slate-600'}">
+                    <span class="px-2 py-0.5 rounded-full text-[10px] font-extrabold uppercase ${l.status === 'active' ? 'bg-blue-100 text-blue-800' : l.status === 'pending' ? 'bg-amber-100 text-amber-800' : 'bg-slate-200 text-slate-600'}">
                         ${l.status}
                     </span>
                 </td>
@@ -1544,10 +1544,10 @@
                 <td class="py-2.5 px-3">${s.city} <span class="text-[10px] text-slate-400 block">${s.campus_or_area || 'Campus'}</span></td>
                 <td class="py-2.5 px-3 font-bold text-amber-500">★ ${s.rating.toFixed(1)} <span class="text-[10px] text-slate-400">(${s.total_reviews})</span></td>
                 <td class="py-2.5 px-3 font-bold text-slate-800">${s.active_listings} books</td>
-                <td class="py-2.5 px-3 font-extrabold text-emerald-700">${s.sold_listings} sold</td>
-                <td class="py-2.5 px-3 font-bold text-pakistan-700">${s.unlocks_received} unlocked</td>
+                <td class="py-2.5 px-3 font-extrabold text-blue-700">${s.sold_listings} sold</td>
+                <td class="py-2.5 px-3 font-bold text-blue-700">${s.unlocks_received} unlocked</td>
                 <td class="py-2.5 px-3">
-                    <span class="px-2 py-0.5 rounded-full text-[10px] font-extrabold ${s.is_blocked ? 'bg-red-100 text-red-800' : 'bg-emerald-100 text-emerald-800'}">
+                    <span class="px-2 py-0.5 rounded-full text-[10px] font-extrabold ${s.is_blocked ? 'bg-red-100 text-red-800' : 'bg-blue-100 text-blue-800'}">
                         ${s.is_blocked ? 'BLOCKED' : 'VERIFIED'}
                     </span>
                 </td>
@@ -1607,7 +1607,7 @@
                 <td class="py-2.5 px-3">${u.buyer_name} <span class="text-[10px] text-slate-400 block">${u.buyer_phone}</span></td>
                 <td class="py-2.5 px-3">${u.seller_name} <span class="text-[10px] text-slate-400 block">${u.seller_phone}</span></td>
                 <td class="py-2.5 px-3 uppercase font-bold text-[10px] text-slate-600">${u.payment_method}</td>
-                <td class="py-2.5 px-3 font-black text-pakistan-700">Rs. ${u.fee_amount}</td>
+                <td class="py-2.5 px-3 font-black text-blue-700">Rs. ${u.fee_amount}</td>
                 <td class="py-2.5 px-3">${getDealBadge(u.deal_status)}</td>
                 <td class="py-2.5 px-3 font-mono text-slate-500">${u.refund_transaction_id || '-'}</td>
                 <td class="py-2.5 px-3 text-right">
@@ -1699,7 +1699,7 @@
                 <td class="py-2.5 px-3"><span class="px-2 py-0.5 rounded font-bold text-[10px] bg-rose-50 text-rose-800 border border-rose-200">${r.report_type_display}</span></td>
                 <td class="py-2.5 px-3 text-slate-700 max-w-xs truncate" title="${r.description}">${r.description}</td>
                 <td class="py-2.5 px-3">
-                    <span class="px-2 py-0.5 rounded-full text-[10px] font-extrabold uppercase ${r.status === 'pending' ? 'bg-rose-100 text-rose-800' : r.status === 'resolved' ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-100 text-slate-700'}">
+                    <span class="px-2 py-0.5 rounded-full text-[10px] font-extrabold uppercase ${r.status === 'pending' ? 'bg-rose-100 text-rose-800' : r.status === 'resolved' ? 'bg-blue-100 text-blue-800' : 'bg-slate-100 text-slate-700'}">
                         ${r.status}
                     </span>
                 </td>
@@ -1784,10 +1784,10 @@
                 <td class="py-2.5 px-3 font-semibold text-slate-700">${a.sponsor_name}</td>
                 <td class="py-2.5 px-3 uppercase text-[10px] font-bold text-slate-600">${a.ad_type}</td>
                 <td class="py-2.5 px-3 font-bold text-slate-800">${a.impressions}</td>
-                <td class="py-2.5 px-3 font-extrabold text-emerald-700">${a.clicks}</td>
-                <td class="py-2.5 px-3 font-black text-pakistan-700">${a.ctr}%</td>
+                <td class="py-2.5 px-3 font-extrabold text-blue-700">${a.clicks}</td>
+                <td class="py-2.5 px-3 font-black text-blue-700">${a.ctr}%</td>
                 <td class="py-2.5 px-3">
-                    <button onclick="toggleAdminAd(${a.id})" class="px-2 py-0.5 rounded-full text-[10px] font-extrabold ${a.is_active ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-100 text-slate-500'}">
+                    <button onclick="toggleAdminAd(${a.id})" class="px-2 py-0.5 rounded-full text-[10px] font-extrabold ${a.is_active ? 'bg-blue-100 text-blue-800' : 'bg-slate-100 text-slate-500'}">
                         ${a.is_active ? 'ACTIVE' : 'PAUSED'}
                     </button>
                 </td>
@@ -1923,7 +1923,7 @@
     function switchAdminTab(tabName) {
         document.querySelectorAll('.admin-sec').forEach(s => s.classList.add('hidden'));
         document.querySelectorAll('.admin-tab').forEach(b => {
-            b.classList.remove('active', 'text-pakistan-700', 'border-b-2', 'border-pakistan-700');
+            b.classList.remove('active', 'text-blue-700', 'border-b-2', 'border-blue-700');
             b.classList.add('text-slate-600');
         });
 
@@ -1931,7 +1931,7 @@
         const targetBtn = document.getElementById(`tabbtn-${tabName}`);
         if (targetSec) targetSec.classList.remove('hidden');
         if (targetBtn) {
-            targetBtn.classList.add('active', 'text-pakistan-700', 'border-b-2', 'border-pakistan-700');
+            targetBtn.classList.add('active', 'text-blue-700', 'border-b-2', 'border-blue-700');
             targetBtn.classList.remove('text-slate-600');
         }
     }
