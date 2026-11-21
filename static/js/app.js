@@ -397,16 +397,107 @@ function openBarcodeScanner() {
 }
 window.openBarcodeScanner = openBarcodeScanner;
 
+// Open/activate Sell or Donate section, smoothly scroll down and focus book title input
+function openSellSection() {
+    STATE.activeTab = 'sell';
+
+    // Ensure tab-sell is visible
+    const sellSection = document.getElementById('tab-sell');
+    if (sellSection) {
+        sellSection.classList.remove('hidden');
+        sellSection.style.setProperty('display', 'flex', 'important');
+
+        // Smoothly scroll down to the sell section
+        const scrollContainer = sellSection.closest('.overflow-y-auto') || document.querySelector('.app-content.overflow-y-auto');
+        if (scrollContainer) {
+            const topOffset = sellSection.offsetTop - 12;
+            scrollContainer.scrollTo({ top: Math.max(0, topOffset), behavior: 'smooth' });
+        } else {
+            sellSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+    }
+
+    // Highlight bottom nav sell tab
+    document.querySelectorAll('.nav-tab').forEach(tab => {
+        if (tab.getAttribute('data-tab') === 'sell') {
+            tab.classList.add('active', 'text-blue-700');
+            tab.classList.remove('text-slate-400');
+        } else if (tab.getAttribute('data-tab') === 'home') {
+            tab.classList.remove('active', 'text-blue-700');
+            tab.classList.add('text-slate-400');
+        }
+    });
+
+    // Smoothly focus book title input
+    setTimeout(() => {
+        const titleInput = document.getElementById('sell-title-input');
+        if (titleInput) {
+            titleInput.focus();
+        }
+    }, 280);
+}
+window.openSellSection = openSellSection;
+
+// Open/activate My Deals & Unlocks section, smoothly scroll down and fetch deals
+function openDealsSection() {
+    STATE.activeTab = 'deals';
+
+    // Ensure tab-deals is visible
+    const dealsSection = document.getElementById('tab-deals');
+    if (dealsSection) {
+        dealsSection.classList.remove('hidden');
+        dealsSection.style.setProperty('display', 'flex', 'important');
+
+        // Smoothly scroll down to the deals section
+        const scrollContainer = dealsSection.closest('.overflow-y-auto') || document.querySelector('.app-content.overflow-y-auto');
+        if (scrollContainer) {
+            const topOffset = dealsSection.offsetTop - 12;
+            scrollContainer.scrollTo({ top: Math.max(0, topOffset), behavior: 'smooth' });
+        } else {
+            dealsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+    }
+
+    // Highlight bottom nav deals tab
+    document.querySelectorAll('.nav-tab').forEach(tab => {
+        if (tab.getAttribute('data-tab') === 'deals') {
+            tab.classList.add('active', 'text-blue-700');
+            tab.classList.remove('text-slate-400');
+        } else if (tab.getAttribute('data-tab') === 'home') {
+            tab.classList.remove('active', 'text-blue-700');
+            tab.classList.add('text-slate-400');
+        }
+    });
+
+    if (typeof loadUserDeals === 'function') {
+        loadUserDeals();
+    }
+}
+window.openDealsSection = openDealsSection;
+
 // Tab Switching
 function switchTab(tabId) {
     if (tabId === 'scan') {
         openBarcodeScanner();
         return;
     }
+    if (tabId === 'sell') {
+        openSellSection();
+        return;
+    }
+    if (tabId === 'deals') {
+        openDealsSection();
+        return;
+    }
     STATE.activeTab = tabId;
     document.querySelectorAll('.tab-page').forEach(page => page.classList.add('hidden'));
     const targetPage = document.getElementById(`tab-${tabId}`);
     if (targetPage) targetPage.classList.remove('hidden');
+
+    const scrollContainer = document.querySelector('.app-content.overflow-y-auto') || document.querySelector('.overflow-y-auto');
+    if (scrollContainer && (tabId === 'home' || tabId === 'profile')) {
+        scrollContainer.scrollTop = 0;
+    }
 
     document.querySelectorAll('.nav-tab').forEach(tab => {
         if (tab.getAttribute('data-tab') === tabId) {
@@ -418,9 +509,7 @@ function switchTab(tabId) {
         }
     });
 
-    if (tabId === 'deals') {
-        loadUserDeals();
-    } else if (tabId === 'profile') {
+    if (tabId === 'profile') {
         loadMySellerListings();
     }
 }
@@ -1919,7 +2008,7 @@ function setupEventListeners() {
     const sellForm = document.getElementById('sell-book-form');
     if (sellForm) sellForm.addEventListener('submit', handleCreateListingSubmit);
 
-    // Wire top Hero "Scan Book Barcode" and Quick Action "Scan ISBN" buttons
+    // Wire top Hero and Quick Action buttons (Scan, Sell, Deals)
     const heroScanBtn = document.getElementById('hero-scan-btn');
     if (heroScanBtn) {
         heroScanBtn.addEventListener('click', (e) => {
@@ -1928,11 +2017,35 @@ function setupEventListeners() {
         });
     }
 
+    const heroSellBtn = document.getElementById('hero-sell-btn');
+    if (heroSellBtn) {
+        heroSellBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            openSellSection();
+        });
+    }
+
     const quickScanCard = document.getElementById('quick-scan-card');
     if (quickScanCard) {
         quickScanCard.addEventListener('click', (e) => {
             e.preventDefault();
             openBarcodeScanner();
+        });
+    }
+
+    const quickSellCard = document.getElementById('quick-sell-card');
+    if (quickSellCard) {
+        quickSellCard.addEventListener('click', (e) => {
+            e.preventDefault();
+            openSellSection();
+        });
+    }
+
+    const quickDealsCard = document.getElementById('quick-deals-card');
+    if (quickDealsCard) {
+        quickDealsCard.addEventListener('click', (e) => {
+            e.preventDefault();
+            openDealsSection();
         });
     }
 }

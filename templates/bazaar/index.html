@@ -207,7 +207,7 @@
                             <button id="hero-scan-btn" onclick="openBarcodeScanner()" class="flex-1 py-2.5 bg-white hover:bg-blue-50 text-blue-800 rounded-xl text-xs font-black shadow-sm flex items-center justify-center gap-1.5 transition-all">
                                 <i class="fa-solid fa-barcode text-sm"></i> <span data-i18n="scan_now_btn">Scan Barcode</span>
                             </button>
-                            <button onclick="switchTab('sell')" class="flex-1 py-2.5 bg-white/20 hover:bg-white/30 text-white border border-white/30 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all">
+                            <button id="hero-sell-btn" onclick="openSellSection()" class="flex-1 py-2.5 bg-white/20 hover:bg-white/30 text-white border border-white/30 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all">
                                 <i class="fa-solid fa-gift text-sm"></i> <span data-i18n="sell_now_btn">Sell or Donate</span>
                             </button>
                         </div>
@@ -224,7 +224,7 @@
                         <span class="block text-[10px] text-slate-400">Instant lookup</span>
                     </div>
 
-                    <div onclick="switchTab('sell')" class="cursor-pointer bg-white p-2.5 sm:p-3 rounded-2xl border border-blue-100 hover:border-blue-300 shadow-xs hover:shadow-md transition-all text-center group">
+                    <div id="quick-sell-card" onclick="openSellSection()" class="cursor-pointer bg-white p-2.5 sm:p-3 rounded-2xl border border-blue-100 hover:border-blue-300 shadow-xs hover:shadow-md transition-all text-center group">
                         <div class="w-8 h-8 mx-auto rounded-xl bg-blue-50 group-hover:bg-blue-600 text-blue-600 group-hover:text-white flex items-center justify-center text-sm mb-1 transition-colors">
                             <i class="fa-solid fa-hand-holding-heart"></i>
                         </div>
@@ -232,7 +232,7 @@
                         <span class="block text-[10px] text-emerald-600 font-semibold">Free Giveaway</span>
                     </div>
 
-                    <div onclick="switchTab('deals')" class="cursor-pointer bg-white p-2.5 sm:p-3 rounded-2xl border border-blue-100 hover:border-blue-300 shadow-xs hover:shadow-md transition-all text-center group">
+                    <div id="quick-deals-card" onclick="openDealsSection()" class="cursor-pointer bg-white p-2.5 sm:p-3 rounded-2xl border border-blue-100 hover:border-blue-300 shadow-xs hover:shadow-md transition-all text-center group">
                         <div class="w-8 h-8 mx-auto rounded-xl bg-blue-50 group-hover:bg-blue-600 text-blue-600 group-hover:text-white flex items-center justify-center text-sm mb-1 transition-colors">
                             <i class="fa-solid fa-handshake"></i>
                         </div>
