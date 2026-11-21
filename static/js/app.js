@@ -7,9 +7,12 @@ const STATE = {
     currentUser: null,
     allUsers: [],
     currentLang: 'en',
-    viewMode: 'mobile', // 'mobile' or 'full'
+    viewMode: 'full', // Default to clean full-screen responsive layout
     activeTab: 'home',
     listings: [],
+    allListings: [],
+    readerProfile: null,
+    aiRecommendations: [],
     favorites: [],
     favoritesOnly: false,
     ads: [],
@@ -51,8 +54,8 @@ async function syncUserAuthToken(userId) {
 // Bilingual Translations (English & Urdu)
 const I18N = {
     en: {
-        brand_name: "BookBazaar",
-        brand_tagline: "Pakistan's Academic & Used Books Marketplace",
+        brand_name: "BookBazaar AI",
+        brand_tagline: "Smart Used-Books Marketplace & Recommendation System",
         nav_home: "Home",
         nav_scan: "Scan ISBN",
         nav_sell: "Sell Book",
@@ -96,8 +99,8 @@ const I18N = {
         view_toggle_full: "Full Screen"
     },
     ur: {
-        brand_name: "بک بازار",
-        brand_tagline: "پاکستان کی مستعمل و درسی کتب کی مارکیٹ پلیس",
+        brand_name: "بک بازار AI",
+        brand_tagline: "سمارٹ مستعمل و درسی کتب مارکیٹ پلیس اور تجویزاتی نظام",
         nav_home: "ہوم",
         nav_scan: "بارکوڈ اسکین",
         nav_sell: "کتاب بیچیں",
@@ -142,11 +145,25 @@ const I18N = {
     }
 };
 
+// Live Status Bar Clock updater
+function updateLiveClock() {
+    const now = new Date();
+    const hrs = String(now.getHours()).padStart(2, '0');
+    const mins = String(now.getMinutes()).padStart(2, '0');
+    const el = document.getElementById('live-time');
+    if (el) el.textContent = `${hrs}:${mins}`;
+}
+
 // Initialize Application
 document.addEventListener('DOMContentLoaded', async () => {
+    updateLiveClock();
+    setInterval(updateLiveClock, 1000);
+    initReaderProfile();
     await loadInitialData();
     setupEventListeners();
     renderUserSwitcher();
+    setupAiPriceAdvisor();
+    await loadAiRecommendations();
     switchTab('home');
     updateLanguageTexts();
 });
@@ -161,7 +178,8 @@ async function loadInitialData() {
         ]);
 
         STATE.allUsers = await usersRes.json();
-        STATE.listings = await listingsRes.json();
+        STATE.allListings = await listingsRes.json();
+        STATE.listings = STATE.allListings;
         STATE.ads = await adsRes.json();
 
         // Default active user is Demo Buyer or first available user
@@ -172,39 +190,63 @@ async function loadInitialData() {
             STATE.currentUser = STATE.allUsers.find(u => u.username === 'buyer_test') || STATE.allUsers[0];
         }
 
+        // If reader profile doesn't exist yet, populate from currentUser if available
+        if (!getSavedReaderProfile() && STATE.currentUser) {
+            STATE.readerProfile = {
+                name: STATE.currentUser.full_name || 'Ayesha',
+                age_group: STATE.currentUser.age_group || 'teens',
+                city: STATE.currentUser.city || 'Lahore',
+                interests: (STATE.currentUser.reading_interests || 'free_only,ptb_textbooks').split(',').map(s => s.trim())
+            };
+        }
+
         renderAds();
         renderListings(STATE.listings);
         if (STATE.currentUser) {
             await syncUserAuthToken(STATE.currentUser.id);
         }
         updateUserUI();
+        updateReaderHeaderUI();
     } catch (err) {
         console.error("Initialization error:", err);
     }
 }
 
-// User Switcher Setup (For rapid FYP testing)
+// User Switcher Setup (For rapid testing across mobile and desktop)
 function renderUserSwitcher() {
-    const switcher = document.getElementById('user-selector');
-    if (!switcher) return;
+    const switchers = [
+        document.getElementById('user-selector'),
+        document.getElementById('user-selector-mobile')
+    ].filter(Boolean);
 
-    switcher.innerHTML = STATE.allUsers.map(u => `
+    if (!switchers.length) return;
+
+    const optionsHtml = STATE.allUsers.map(u => `
         <option value="${u.id}" ${STATE.currentUser && STATE.currentUser.id === u.id ? 'selected' : ''}>
             ${u.full_name} (${u.user_type === 'admin' ? 'Admin' : u.city})
         </option>
     `).join('');
 
-    switcher.addEventListener('change', async (e) => {
-        const selectedId = e.target.value;
-        STATE.currentUser = STATE.allUsers.find(u => u.id == selectedId);
-        localStorage.setItem('bb_user_id', selectedId);
-        await syncUserAuthToken(selectedId);
-        updateUserUI();
-        if (STATE.activeTab === 'deals') {
-            loadUserDeals();
-        } else if (STATE.activeTab === 'profile') {
-            loadMySellerListings();
-        }
+    switchers.forEach(sw => {
+        sw.innerHTML = optionsHtml;
+        if (STATE.currentUser) sw.value = STATE.currentUser.id;
+
+        sw.addEventListener('change', async (e) => {
+            const selectedId = e.target.value;
+            STATE.currentUser = STATE.allUsers.find(u => u.id == selectedId);
+            localStorage.setItem('bb_user_id', selectedId);
+            switchers.forEach(s => s.value = selectedId);
+            await syncUserAuthToken(selectedId);
+            updateUserUI();
+            if (typeof loadAiRecommendations === 'function') {
+                loadAiRecommendations();
+            }
+            if (STATE.activeTab === 'deals') {
+                loadUserDeals();
+            } else if (STATE.activeTab === 'profile') {
+                loadMySellerListings();
+            }
+        });
     });
 }
 
@@ -238,6 +280,7 @@ function updateUserUI() {
     if (dropPhone) dropPhone.textContent = STATE.currentUser.phone_number;
     if (dropBal) dropBal.textContent = `Rs. ${parseFloat(STATE.currentUser.wallet_balance).toFixed(2)}`;
 
+    updateReaderHeaderUI();
     loadMySellerListings();
 }
 
@@ -292,18 +335,24 @@ function updateLanguageTexts() {
 function toggleViewMode() {
     const wrapper = document.getElementById('app-wrapper');
     const modeBtn = document.getElementById('view-mode-btn');
-    if (STATE.viewMode === 'mobile') {
+    const notch = document.getElementById('mobile-notch');
+    const statusBar = document.getElementById('mobile-status-bar');
+    if (!wrapper) return;
+
+    if (STATE.viewMode === 'full') {
+        STATE.viewMode = 'mobile';
+        wrapper.classList.remove('w-full', 'max-w-6xl', 'mx-auto', 'my-0', 'sm:my-6', 'rounded-none', 'sm:rounded-2xl', 'shadow-none', 'sm:shadow-2xl', 'border-0', 'sm:border', 'border-slate-200');
+        wrapper.classList.add('mobile-device-frame');
+        if (notch) notch.classList.remove('hidden');
+        if (statusBar) statusBar.classList.remove('hidden');
+        if (modeBtn) modeBtn.innerHTML = `<i class="fa-solid fa-desktop mr-1.5"></i> <span data-i18n="view_toggle_full">Full Screen</span>`;
+    } else {
         STATE.viewMode = 'full';
         wrapper.classList.remove('mobile-device-frame');
-        wrapper.classList.add('max-w-6xl', 'mx-auto', 'my-6', 'rounded-2xl', 'shadow-2xl', 'border', 'border-slate-200');
-        document.getElementById('mobile-notch')?.classList.add('hidden');
+        wrapper.classList.add('w-full', 'max-w-6xl', 'mx-auto', 'my-0', 'sm:my-6', 'rounded-none', 'sm:rounded-2xl', 'shadow-none', 'sm:shadow-2xl', 'border-0', 'sm:border', 'border-slate-200');
+        if (notch) notch.classList.add('hidden');
+        if (statusBar) statusBar.classList.add('hidden');
         if (modeBtn) modeBtn.innerHTML = `<i class="fa-solid fa-mobile-screen mr-1.5"></i> <span data-i18n="view_toggle_mobile">Phone View</span>`;
-    } else {
-        STATE.viewMode = 'mobile';
-        wrapper.classList.add('mobile-device-frame');
-        wrapper.classList.remove('max-w-6xl', 'mx-auto', 'my-6', 'rounded-2xl', 'shadow-2xl', 'border', 'border-slate-200');
-        document.getElementById('mobile-notch')?.classList.remove('hidden');
-        if (modeBtn) modeBtn.innerHTML = `<i class="fa-solid fa-desktop mr-1.5"></i> <span data-i18n="view_toggle_full">Full Screen</span>`;
     }
 }
 
@@ -331,10 +380,316 @@ function switchTab(tabId) {
     }
 }
 
+// Dedicated Reusable Book Card Component
+function createBookCardHtml(item, options = {}) {
+    const isFree = Boolean(item.is_free || parseFloat(item.price) === 0);
+    const conditionColors = {
+        'Brand New': 'bg-blue-100 text-blue-800 border-blue-300',
+        'Like New': 'bg-sky-100 text-sky-800 border-sky-300',
+        'Good': 'bg-indigo-50 text-indigo-800 border-indigo-200',
+        'Fair': 'bg-slate-100 text-slate-700 border-slate-300',
+    };
+    const condClass = conditionColors[item.condition] || 'bg-slate-100 text-slate-700 border-slate-300';
+    const displayImg = item.display_image || item.photo_url || (item.book && item.book.cover_image) || 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=300';
+    const isFav = item.is_favorited;
+    const priceNum = parseFloat(item.price || 0);
+    const retailPrice = item.book && item.book.original_retail_price ? parseFloat(item.book.original_retail_price).toFixed(0) : null;
+
+    const cardBgClass = isFree 
+        ? 'bg-gradient-to-br from-white via-white to-emerald-50/50 border-emerald-300 hover:border-emerald-500 shadow-xs' 
+        : 'bg-white border-blue-100 hover:border-blue-300 shadow-sm';
+
+    return `
+        <div class="rounded-2xl border p-3.5 hover:shadow-md transition-all relative overflow-hidden flex flex-col justify-between ${cardBgClass} mb-3.5">
+            ${item.is_sponsored ? `
+                <div class="absolute top-0 right-0 bg-gradient-to-l from-amber-500 to-amber-600 text-white text-[10px] font-bold px-2.5 py-0.5 rounded-bl-lg shadow-xs flex items-center gap-1 z-10">
+                    <i class="fa-solid fa-star text-[8px]"></i> Sponsored
+                </div>
+            ` : ''}
+
+            <!-- Favorite Heart Button -->
+            <button onclick="toggleFavoriteListing(${item.id})" class="absolute top-2 left-2 z-10 w-7 h-7 bg-white/90 hover:bg-white rounded-full flex items-center justify-center shadow-xs transition-transform active:scale-90" title="Add to Favourites">
+                <i class="fa-solid fa-heart text-xs ${isFav ? 'text-rose-600' : 'text-slate-300'}"></i>
+            </button>
+
+            <div>
+                <!-- Top Badges / Tagline -->
+                <div class="flex items-center gap-1.5 flex-wrap mb-2 pl-7 pr-2">
+                    ${isFree ? `
+                        <span class="text-[10px] font-black bg-gradient-to-r from-emerald-600 to-teal-600 text-white px-2 py-0.5 rounded-full shadow-xs flex items-center gap-1">
+                            <i class="fa-solid fa-gift text-[9px]"></i> 🎁 FREE Donation
+                        </span>
+                    ` : ''}
+                    ${item.ai_badge && !isFree ? `
+                        <span class="text-[9px] font-extrabold bg-blue-100 text-blue-800 border border-blue-300 px-2 py-0.5 rounded-full flex items-center gap-1">
+                            ${item.ai_badge}
+                        </span>
+                    ` : ''}
+                    <span class="text-[9px] font-semibold px-2 py-0.5 rounded-full border ${condClass}">
+                        ${item.condition}
+                    </span>
+                    <span class="text-[10px] text-slate-500">
+                        <i class="fa-solid fa-location-dot text-blue-600 mr-0.5"></i> ${item.city}
+                    </span>
+                </div>
+
+                <div class="flex gap-3">
+                    <img src="${displayImg}" 
+                         alt="${item.book ? item.book.title : 'Book'}" 
+                         class="w-16 h-24 sm:w-20 sm:h-28 object-cover rounded-lg shadow-xs flex-shrink-0 cursor-pointer border border-slate-100 hover:scale-105 transition-transform"
+                         onclick="quickCompareBook('${item.book ? item.book.isbn : ''}')">
+                    
+                    <div class="flex-1 min-w-0 flex flex-col justify-between">
+                        <div>
+                            <h3 class="font-extrabold text-slate-900 text-xs sm:text-sm leading-snug line-clamp-2 cursor-pointer hover:text-blue-700"
+                                onclick="quickCompareBook('${item.book ? item.book.isbn : ''}')">
+                                ${item.book ? item.book.title : 'Untitled Book'}
+                            </h3>
+                            <p class="text-[11px] text-slate-500 line-clamp-1 mt-0.5">${item.book ? item.book.author : ''}</p>
+                            
+                            <div class="flex items-center gap-1 flex-wrap mt-1 text-[10px]">
+                                ${item.book && item.book.education_board && item.book.education_board !== 'General / None' ? `
+                                    <span class="bg-blue-50 text-blue-700 font-semibold px-1.5 py-0.2 rounded border border-blue-100 truncate max-w-[120px]">
+                                        ${item.book.education_board.split(' ')[0]}
+                                    </span>
+                                ` : ''}
+                                ${item.book && item.book.grade_class && item.book.grade_class !== 'General / Non-Academic' ? `
+                                    <span class="bg-slate-100 text-slate-600 px-1.5 py-0.2 rounded font-medium">
+                                        ${item.book.grade_class}
+                                    </span>
+                                ` : ''}
+                            </div>
+                        </div>
+
+                        ${item.ai_insight ? `
+                            <p class="text-[10px] text-blue-900 bg-blue-50/90 rounded px-1.5 py-0.5 mt-1 border border-blue-100 truncate">
+                                <i class="fa-solid fa-wand-magic-sparkles text-amber-500 mr-0.5"></i> ${item.ai_insight}
+                            </p>
+                        ` : ''}
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-3 pt-2 border-t border-slate-100 flex items-center justify-between">
+                <div>
+                    <div class="flex items-baseline gap-1.5">
+                        ${isFree ? `
+                            <span class="text-base font-black text-emerald-700">Rs. 0</span>
+                            <span class="text-[9px] font-black uppercase text-emerald-700 bg-emerald-100 px-1.5 py-0.2 rounded border border-emerald-300">100% Free</span>
+                        ` : `
+                            <span class="text-base font-black text-blue-900">Rs. ${priceNum.toFixed(0)}</span>
+                            ${retailPrice ? `<span class="text-[10px] text-slate-400 line-through">Rs. ${retailPrice}</span>` : ''}
+                        `}
+                    </div>
+                    ${item.savings_percentage > 0 && !isFree ? `
+                        <span class="text-[9px] font-bold text-blue-700 bg-blue-50 px-1 py-0.2 rounded">
+                            Save ${item.savings_percentage}%
+                        </span>
+                    ` : ''}
+                </div>
+
+                <div class="flex items-center gap-1.5">
+                    <button onclick="quickCompareBook('${item.book ? item.book.isbn : ''}')" class="px-2.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-semibold flex items-center gap-1" title="Compare Prices">
+                        <i class="fa-solid fa-code-compare text-[10px]"></i> <span class="hidden sm:inline">Compare</span>
+                    </button>
+                    <button onclick="openUnlockModal(${item.id})" class="px-3 py-1.5 ${isFree ? 'bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700' : 'bg-gradient-to-r from-blue-700 to-blue-600 hover:from-blue-800 hover:to-blue-700'} text-white rounded-xl text-xs font-bold shadow-xs flex items-center gap-1 transition-all">
+                        <i class="fa-solid fa-lock-open text-[10px]"></i> <span>${isFree ? 'Claim Free' : 'Contact'}</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+// Render dedicated shelves on the homepage
+function renderShelves(listings) {
+    if (!listings || !listings.length) return;
+
+    // 1. Free Donated Books (Rs. 0 / is_free)
+    const freeContainer = document.getElementById('free-books-container');
+    const freeSection = document.getElementById('free-books-section');
+    if (freeContainer) {
+        const freeItems = listings.filter(item => item.is_free || parseFloat(item.price) === 0);
+        if (freeItems.length > 0) {
+            freeContainer.innerHTML = freeItems.slice(0, 4).map(item => createBookCardHtml(item)).join('');
+            if (freeSection) freeSection.classList.remove('hidden');
+        } else {
+            if (freeSection) freeSection.classList.add('hidden');
+        }
+    }
+
+    // 2. Punjab Textbooks (Class 1 to FSc)
+    renderPtbShelf(listings, CURRENT_PTB_FILTER);
+
+    // 3. Kids & Story Books
+    const kidsContainer = document.getElementById('kids-books-container');
+    const kidsSection = document.getElementById('kids-books-section');
+    if (kidsContainer) {
+        const kidsItems = listings.filter(item => {
+            const cat = item.book?.category || '';
+            const age = item.target_age_group || item.book?.target_age_group || '';
+            const title = (item.book?.title || '').toLowerCase();
+            return cat === 'Story Books' || age === 'kids' || title.includes('kahani') || title.includes('story') || title.includes('bachon') || title.includes('jungle');
+        });
+        if (kidsItems.length > 0) {
+            kidsContainer.innerHTML = kidsItems.slice(0, 4).map(item => createBookCardHtml(item)).join('');
+            if (kidsSection) kidsSection.classList.remove('hidden');
+        } else {
+            if (kidsSection) kidsSection.classList.add('hidden');
+        }
+    }
+
+    // 4. Fiction & Novels
+    const novelsContainer = document.getElementById('fiction-novels-container');
+    const novelsSection = document.getElementById('fiction-novels-section');
+    if (novelsContainer) {
+        const novelItems = listings.filter(item => {
+            const cat = item.book?.category || '';
+            return cat === 'Fiction' || cat === 'Novels';
+        });
+        if (novelItems.length > 0) {
+            novelsContainer.innerHTML = novelItems.slice(0, 4).map(item => createBookCardHtml(item)).join('');
+            if (novelsSection) novelsSection.classList.remove('hidden');
+        } else {
+            if (novelsSection) novelsSection.classList.add('hidden');
+        }
+    }
+
+    // 5. History & Literature
+    const historyContainer = document.getElementById('history-literature-container');
+    const historySection = document.getElementById('history-literature-section');
+    if (historyContainer) {
+        const histItems = listings.filter(item => {
+            const cat = item.book?.category || '';
+            const title = (item.book?.title || '').toLowerCase();
+            const subj = (item.book?.subject || '').toLowerCase();
+            return cat === 'History' || subj.includes('history') || title.includes('history') || title.includes('tareekh') || title.includes('iqbal');
+        });
+        if (histItems.length > 0) {
+            historyContainer.innerHTML = histItems.slice(0, 4).map(item => createBookCardHtml(item)).join('');
+            if (historySection) historySection.classList.remove('hidden');
+        } else {
+            if (historySection) historySection.classList.add('hidden');
+        }
+    }
+}
+
+let CURRENT_PTB_FILTER = 'all';
+
+function filterPtbByClass(classKey, btn) {
+    CURRENT_PTB_FILTER = classKey;
+    if (btn) {
+        document.querySelectorAll('#ptb-filter-pills .ptb-class-pill').forEach(p => {
+            p.classList.remove('active', 'bg-blue-600', 'text-white', 'shadow-xs');
+            p.classList.add('bg-slate-100', 'text-slate-700');
+        });
+        btn.classList.add('active', 'bg-blue-600', 'text-white', 'shadow-xs');
+        btn.classList.remove('bg-slate-100', 'text-slate-700');
+    }
+    renderPtbShelf(STATE.allListings && STATE.allListings.length ? STATE.allListings : STATE.listings, classKey);
+}
+
+function renderPtbShelf(listings, filterClass = 'all') {
+    const container = document.getElementById('ptb-textbooks-container');
+    const section = document.getElementById('ptb-textbooks-section');
+    if (!container || !listings) return;
+
+    // Filter to PTB items
+    const ptbItems = listings.filter(item => {
+        const cat = item.book?.category || '';
+        const board = (item.book?.education_board || '').toLowerCase();
+        const title = (item.book?.title || '').toLowerCase();
+        return cat === 'Punjab Textbooks (Primary to FSc)' || board.includes('punjab') || title.includes('punjab') || title.includes('ptb');
+    });
+
+    if (ptbItems.length === 0) {
+        if (section) section.classList.add('hidden');
+        return;
+    }
+    if (section) section.classList.remove('hidden');
+
+    // Apply class filter
+    let filtered = ptbItems;
+    if (filterClass === 'primary') {
+        filtered = ptbItems.filter(item => {
+            const cls = (item.book?.grade_class || '').toLowerCase();
+            const title = (item.book?.title || '').toLowerCase();
+            return cls.includes('primary') || cls.includes('class 1') || cls.includes('class 2') || cls.includes('class 3') || cls.includes('class 4') || cls.includes('class 5') || title.includes('class 1') || title.includes('class 2') || title.includes('class 3') || title.includes('class 4') || title.includes('class 5') || title.includes('primary');
+        });
+    } else if (filterClass === 'middle') {
+        filtered = ptbItems.filter(item => {
+            const cls = (item.book?.grade_class || '').toLowerCase();
+            const title = (item.book?.title || '').toLowerCase();
+            return cls.includes('middle') || cls.includes('class 6') || cls.includes('class 7') || cls.includes('class 8') || title.includes('class 6') || title.includes('class 7') || title.includes('class 8') || title.includes('middle');
+        });
+    } else if (filterClass === 'matric') {
+        filtered = ptbItems.filter(item => {
+            const cls = (item.book?.grade_class || '').toLowerCase();
+            const title = (item.book?.title || '').toLowerCase();
+            return cls.includes('matric') || cls.includes('class 9') || cls.includes('class 10') || cls.includes('ssc') || title.includes('matric') || title.includes('9th') || title.includes('10th') || title.includes('class 9') || title.includes('class 10');
+        });
+    } else if (filterClass === 'fsc') {
+        filtered = ptbItems.filter(item => {
+            const cls = (item.book?.grade_class || '').toLowerCase();
+            const title = (item.book?.title || '').toLowerCase();
+            return cls.includes('fsc') || cls.includes('class 11') || cls.includes('class 12') || cls.includes('hssc') || cls.includes('intermediate') || title.includes('fsc') || title.includes('11th') || title.includes('12th') || title.includes('part 1') || title.includes('part 2');
+        });
+    }
+
+    if (filtered.length === 0) {
+        container.innerHTML = `
+            <div class="col-span-1 sm:col-span-2 p-6 text-center bg-slate-50 rounded-2xl border border-dashed border-slate-200">
+                <p class="text-xs text-slate-500 font-medium">No Punjab Textbooks listed in this specific class tier yet.</p>
+                <button type="button" onclick="switchTab('sell'); toggleSellFreeDonation(true);" class="mt-2 text-xs font-bold text-blue-700 hover:underline">Donate or Sell One Now</button>
+            </div>
+        `;
+        return;
+    }
+
+    container.innerHTML = filtered.slice(0, 6).map(item => createBookCardHtml(item)).join('');
+}
+
+function filterShelfSection(shelfKey) {
+    const pills = document.querySelectorAll('#shelf-pills-bar .shelf-pill-btn');
+    pills.forEach(p => {
+        p.classList.remove('active', 'bg-blue-600', 'text-white', 'shadow-xs');
+        p.classList.add('bg-white', 'text-slate-700', 'border-slate-200');
+    });
+    const activePill = document.getElementById(`shelf-pill-${shelfKey}`);
+    if (activePill) {
+        activePill.classList.add('active', 'bg-blue-600', 'text-white', 'shadow-xs');
+        activePill.classList.remove('bg-white', 'text-slate-700', 'border-slate-200');
+    }
+
+    const sections = {
+        all: document.querySelectorAll('.shelf-section'),
+        ai: document.getElementById('ai-recommendations-section'),
+        free: document.getElementById('free-books-section'),
+        ptb: document.getElementById('ptb-textbooks-section'),
+        kids: document.getElementById('kids-books-section'),
+        novels: document.getElementById('fiction-novels-section'),
+        history: document.getElementById('history-literature-section')
+    };
+
+    if (shelfKey === 'all') {
+        sections.all.forEach(sec => sec.classList.remove('hidden'));
+    } else {
+        sections.all.forEach(sec => sec.classList.add('hidden'));
+        const target = sections[shelfKey];
+        if (target) {
+            target.classList.remove('hidden');
+            target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+    }
+}
+
 // Render Listings Feed with Image display & Favourites
 function renderListings(listings) {
     const container = document.getElementById('listings-container');
     if (!container) return;
+
+    // Keep shelves synced
+    renderShelves(STATE.allListings && STATE.allListings.length ? STATE.allListings : listings);
 
     if (!listings || listings.length === 0) {
         container.innerHTML = `
@@ -370,101 +725,7 @@ function renderListings(listings) {
             `;
         }
 
-        const conditionColors = {
-            'Brand New': 'bg-blue-100 text-blue-800 border-blue-300',
-            'Like New': 'bg-sky-100 text-sky-800 border-sky-300',
-            'Good': 'bg-indigo-50 text-indigo-800 border-indigo-200',
-            'Fair': 'bg-slate-100 text-slate-700 border-slate-300',
-        };
-
-        const condClass = conditionColors[item.condition] || 'bg-slate-100 text-slate-700';
-        const displayImg = item.display_image || item.photo_url || item.book.cover_image || 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=300';
-        const isFav = item.is_favorited;
-
-        html += `
-            <div class="bg-white rounded-2xl border border-blue-100 p-4 shadow-sm hover:shadow-md hover:border-blue-300 transition-all relative overflow-hidden mb-3.5">
-                ${item.is_sponsored ? `
-                    <div class="absolute top-0 right-0 bg-gradient-to-l from-amber-500 to-amber-600 text-white text-[10px] font-bold px-3 py-0.5 rounded-bl-lg shadow-xs flex items-center gap-1">
-                        <i class="fa-solid fa-star text-[8px]"></i> Sponsored
-                    </div>
-                ` : ''}
-
-                <!-- Favorite Heart Button -->
-                <button onclick="toggleFavoriteListing(${item.id})" class="absolute top-2 left-2 z-10 w-7 h-7 bg-white/90 hover:bg-white rounded-full flex items-center justify-center shadow-xs transition-transform active:scale-90" title="Add to Favourites">
-                    <i class="fa-solid fa-heart text-xs ${isFav ? 'text-rose-600' : 'text-slate-300'}"></i>
-                </button>
-
-                <div class="flex gap-3.5">
-                    <img src="${displayImg}" 
-                         alt="${item.book.title}" 
-                         class="w-20 h-28 object-cover rounded-lg shadow-xs flex-shrink-0 cursor-pointer"
-                         onclick="quickCompareBook('${item.book.isbn}')">
-                    
-                    <div class="flex-1 flex flex-col justify-between">
-                        <div>
-                            <div class="flex items-center gap-1.5 flex-wrap mb-1">
-                                <span class="text-[10px] font-semibold px-2 py-0.5 rounded-full border ${condClass}">
-                                    ${item.condition}
-                                </span>
-                                <span class="text-[11px] text-slate-500">
-                                    <i class="fa-solid fa-location-dot text-blue-600 mr-0.5"></i> ${item.city}
-                                </span>
-                                ${item.book.education_board && item.book.education_board !== 'General / None' ? `
-                                    <span class="text-[9px] bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded">
-                                        ${item.book.education_board.split(' ')[0]}
-                                    </span>
-                                ` : ''}
-                            </div>
-
-                            <h3 class="font-bold text-slate-900 text-sm leading-snug line-clamp-2 cursor-pointer hover:text-blue-700"
-                                onclick="quickCompareBook('${item.book.isbn}')">
-                                ${item.book.title}
-                            </h3>
-                            <p class="text-xs text-slate-500 line-clamp-1 mt-0.5">${item.book.author}</p>
-                            ${item.book.subject ? `<p class="text-[10px] text-blue-700 font-semibold">${item.book.subject}</p>` : ''}
-                        </div>
-
-                        <div class="mt-2 pt-2 border-t border-slate-100 flex items-center justify-between">
-                            <div>
-                                <div class="flex items-baseline gap-1.5">
-                                    <span class="text-base font-black text-blue-800">Rs. ${parseFloat(item.price).toFixed(0)}</span>
-                                    ${item.book.original_retail_price ? `
-                                        <span class="text-xs text-slate-400 line-through">Rs. ${parseFloat(item.book.original_retail_price).toFixed(0)}</span>
-                                    ` : ''}
-                                </div>
-                                ${item.savings_percentage > 0 ? `
-                                    <span class="text-[10px] font-bold text-blue-700 bg-blue-50 px-1.5 py-0.2 rounded border border-blue-100">
-                                        Save ${item.savings_percentage}%
-                                    </span>
-                                ` : ''}
-                            </div>
-
-                            <div class="flex items-center gap-1.5">
-                                <button onclick="quickCompareBook('${item.book.isbn}')" class="px-2.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-semibold flex items-center gap-1" title="Compare Prices">
-                                    <i class="fa-solid fa-code-compare"></i> Compare
-                                </button>
-                                <button onclick="openUnlockModal(${item.id})" class="px-3 py-1.5 bg-gradient-to-r from-blue-700 to-blue-600 hover:from-blue-800 hover:to-blue-700 text-white rounded-xl text-xs font-bold shadow-sm flex items-center gap-1 px-3 py-1.5 transition-all">
-                                    <i class="fa-solid fa-lock-open text-[10px]"></i> Contact (Rs. 50)
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="mt-2.5 pt-2 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-500">
-                    <span class="flex items-center gap-1">
-                        <i class="fa-solid fa-user-circle text-slate-400"></i> ${item.seller_name}
-                        <span class="text-amber-500 font-semibold">★ ${item.seller_rating}</span>
-                    </span>
-                    <span class="flex items-center gap-2">
-                        <span class="text-[10px] text-slate-400 font-mono">ISBN: ${item.book.isbn}</span>
-                        <button onclick="openReportModal(${item.id})" class="text-slate-400 hover:text-rose-600 text-xs transition-colors" title="Report Listing or Seller">
-                            <i class="fa-regular fa-flag"></i>
-                        </button>
-                    </span>
-                </div>
-            </div>
-        `;
+        html += createBookCardHtml(item);
     });
 
     container.innerHTML = html;
@@ -745,7 +1006,9 @@ function toggleTorch() {
 
 // PAID CONTACT UNLOCK MODAL (Phase 1 Sandbox)
 function openUnlockModal(listingId) {
-    const listing = STATE.listings.find(l => l.id === listingId);
+    let listing = (STATE.allListings && STATE.allListings.find(l => l.id === listingId))
+               || (STATE.listings && STATE.listings.find(l => l.id === listingId))
+               || (STATE.aiRecommendations && STATE.aiRecommendations.find(l => l.id === listingId));
     if (!listing) return;
 
     if (STATE.currentUser && STATE.currentUser.id === listing.seller_id) {
@@ -758,10 +1021,12 @@ function openUnlockModal(listingId) {
     const modal = document.getElementById('unlock-modal');
     if (!modal) return;
 
+    const isFree = Boolean(listing.is_free || parseFloat(listing.price) === 0);
+
     document.getElementById('modal-book-title').textContent = listing.book.title;
-    document.getElementById('modal-book-price').textContent = `Rs. ${listing.price}`;
+    document.getElementById('modal-book-price').textContent = isFree ? "Rs. 0 (Free Community Donation)" : `Rs. ${parseFloat(listing.price).toFixed(0)}`;
     document.getElementById('modal-seller-name').textContent = listing.seller_name;
-    document.getElementById('modal-seller-city').textContent = `${listing.city} (${listing.pickup_location})`;
+    document.getElementById('modal-seller-city').textContent = `${listing.city} (${listing.pickup_location || 'Campus / Pickup'})`;
     document.getElementById('modal-fee-display').textContent = `Rs. ${STATE.platformFee.toFixed(0)}`;
 
     const errBanner = document.getElementById('unlock-error-banner');
@@ -1409,9 +1674,70 @@ async function autoFetchBookForSell(isbn) {
             document.getElementById('sell-class-select').value = b.grade_class || 'Bachelor / BS / Undergrad';
             document.getElementById('sell-subject-input').value = b.subject || '';
             document.getElementById('sell-photo-input').value = b.cover_image || '';
+            if (b.original_retail_price) {
+                const mrpInput = document.getElementById('sell-original-price-input');
+                if (mrpInput) mrpInput.value = parseFloat(b.original_retail_price).toFixed(0);
+            }
+            if (typeof updateAiPriceAdvisor === 'function') {
+                updateAiPriceAdvisor();
+            }
         }
     } catch (e) {
         console.warn("Could not prefill", e);
+    }
+}
+
+function toggleSellFreeDonation(isFree) {
+    const toggle = document.getElementById('sell-is-free-toggle');
+    if (toggle && toggle.checked !== isFree) {
+        toggle.checked = isFree;
+    }
+
+    const priceInput = document.getElementById('sell-price-input');
+    const priceWrapper = document.getElementById('sell-price-wrapper');
+    const priceLabel = document.getElementById('sell-price-label');
+    const priceSublabel = document.getElementById('sell-price-sublabel');
+    const submitText = document.getElementById('sell-submit-text');
+    const advisorInsight = document.getElementById('ai-price-insight');
+    const advisorNum = document.getElementById('ai-price-num');
+    const applyBtn = document.getElementById('apply-ai-price-btn');
+
+    if (isFree) {
+        if (priceInput) {
+            priceInput.value = 0;
+            priceInput.readOnly = true;
+            priceInput.classList.add('bg-emerald-50', 'text-emerald-700', 'font-black');
+        }
+        if (priceLabel) priceLabel.textContent = "🎁 Free Community Donation (Rs. 0)";
+        if (priceSublabel) priceSublabel.textContent = "Giving back to students in need";
+        if (priceWrapper) {
+            priceWrapper.classList.remove('from-blue-50', 'to-indigo-50', 'border-blue-200');
+            priceWrapper.classList.add('from-emerald-50', 'to-teal-50', 'border-emerald-300');
+        }
+        if (submitText) submitText.textContent = "🎁 List Book as Free Donation (Rs. 0)";
+        if (advisorNum) advisorNum.textContent = "Rs. 0";
+        if (advisorInsight) {
+            advisorInsight.innerHTML = `AI Advisor: <span class="font-bold text-emerald-300">Free Community Giveaway (Rs. 0)</span> — Promoted with #1 priority on homepage!`;
+        }
+        if (applyBtn) applyBtn.classList.add('hidden');
+    } else {
+        if (priceInput) {
+            priceInput.readOnly = false;
+            priceInput.classList.remove('bg-emerald-50', 'text-emerald-700');
+            if (priceInput.value == 0) priceInput.value = CURRENT_AI_SUGGESTED_PRICE || 500;
+        }
+        if (priceLabel) priceLabel.textContent = "Your Selling Price (PKR) *";
+        if (priceSublabel) priceSublabel.textContent = "You keep 100% of this amount";
+        if (priceWrapper) {
+            priceWrapper.classList.add('from-blue-50', 'to-indigo-50', 'border-blue-200');
+            priceWrapper.classList.remove('from-emerald-50', 'to-teal-50', 'border-emerald-300');
+        }
+        if (submitText) submitText.textContent = "Publish Book for Sale";
+        if (advisorNum) advisorNum.textContent = `Rs. ${CURRENT_AI_SUGGESTED_PRICE || 680}`;
+        if (advisorInsight) {
+            advisorInsight.innerHTML = `AI Suggested Price: <span class="font-bold text-amber-300" id="ai-price-num">Rs. ${CURRENT_AI_SUGGESTED_PRICE || 680}</span> (Optimal for fast sale in 'Good' condition)`;
+        }
+        if (applyBtn) applyBtn.classList.remove('hidden');
     }
 }
 
@@ -1422,12 +1748,17 @@ async function handleCreateListingSubmit(e) {
         return;
     }
 
+    const isFree = document.getElementById('sell-is-free-toggle')?.checked || false;
+    const targetAgeGroup = document.getElementById('sell-age-group-select')?.value || 'all';
+
     const formData = new FormData();
     formData.append('seller_id', STATE.currentUser.id);
     formData.append('isbn', document.getElementById('sell-isbn-input').value.trim());
     formData.append('title', document.getElementById('sell-title-input').value.trim());
     formData.append('author', document.getElementById('sell-author-input').value.trim());
-    formData.append('price', document.getElementById('sell-price-input').value);
+    formData.append('price', isFree ? '0' : document.getElementById('sell-price-input').value);
+    formData.append('is_free', isFree ? 'true' : 'false');
+    formData.append('target_age_group', targetAgeGroup);
     formData.append('condition', document.getElementById('sell-condition-select').value);
     formData.append('city', document.getElementById('sell-city-select').value);
     formData.append('pickup_location', document.getElementById('sell-pickup-input').value);
@@ -1452,14 +1783,24 @@ async function handleCreateListingSubmit(e) {
 
         const data = await res.json();
         if (res.ok) {
+            // Refresh catalog listings
+            try {
+                const listRes = await fetch('/api/listings/');
+                if (listRes.ok) {
+                    STATE.allListings = await listRes.json();
+                    STATE.listings = STATE.allListings;
+                }
+            } catch (err) {}
+
             if (data.interstitial_ad) {
                 showInterstitialAd(data.interstitial_ad);
             } else {
-                alert("Book listed successfully!");
+                alert(isFree ? "🎁 Thank you! Your book was successfully listed as a Free Community Donation (Rs. 0)." : "Book listed successfully!");
                 switchTab('home');
             }
             applyFilters();
             loadMySellerListings();
+            loadAiRecommendations();
         } else {
             alert(data.error || "Failed to publish listing.");
         }
@@ -1543,11 +1884,19 @@ async function applyFilters() {
     const gradeClass = document.getElementById('filter-class')?.value || 'All';
     const sort = document.getElementById('filter-sort')?.value || 'cheapest';
 
+    const hasFilter = Boolean(q.trim() || cat !== 'All' || city !== 'All' || cond !== 'All' || board !== 'All' || gradeClass !== 'All');
+    const feedTitle = document.getElementById('listings-feed-title');
+
     const url = `/api/listings/?search=${encodeURIComponent(q)}&category=${encodeURIComponent(cat)}&city=${encodeURIComponent(city)}&condition=${encodeURIComponent(cond)}&board=${encodeURIComponent(board)}&grade_class=${encodeURIComponent(gradeClass)}&sort=${encodeURIComponent(sort)}`;
     try {
         const res = await fetch(url);
         const data = await res.json();
         STATE.listings = data;
+        if (feedTitle) {
+            feedTitle.innerHTML = hasFilter 
+                ? `<i class="fa-solid fa-filter text-blue-600"></i> Filtered Results (${data.length} found)`
+                : `<i class="fa-solid fa-layer-group text-blue-600"></i> All Available Book Offers`;
+        }
         renderListings(data);
     } catch (e) {
         console.error(e);
@@ -1638,4 +1987,461 @@ async function submitReportForm(e) {
         }
         alert("Network error submitting report.");
     }
+}
+
+// =====================================================================
+// FEATURE 1: AI BOOK RECOMMENDATION SYSTEM (GET /api/recommendations/)
+// =====================================================================
+async function loadAiRecommendations() {
+    const container = document.getElementById('ai-recommendations-container');
+    const section = document.getElementById('ai-recommendations-section');
+    const subtitleEl = document.getElementById('ai-rec-subtitle');
+    if (!container) return;
+
+    try {
+        const userId = STATE.currentUser ? STATE.currentUser.id : '';
+        const profile = STATE.readerProfile || {
+            name: STATE.currentUser ? STATE.currentUser.full_name : 'Ayesha',
+            age_group: 'teens',
+            city: STATE.currentUser ? STATE.currentUser.city : 'Lahore',
+            interests: ['free_only', 'ptb_textbooks']
+        };
+
+        const params = new URLSearchParams();
+        if (userId) params.set('user_id', userId);
+        if (profile.age_group) params.set('age_group', profile.age_group);
+        if (profile.city) params.set('city', profile.city);
+        if (profile.interests && profile.interests.length) params.set('interests', profile.interests.join(','));
+
+        const res = await fetch(`/api/recommendations/?${params.toString()}`);
+        if (!res.ok) throw new Error("Failed to load recommendations");
+        const data = await res.json();
+
+        if (!data.success || !data.recommendations || data.recommendations.length === 0) {
+            if (section) section.classList.add('hidden');
+            return;
+        }
+
+        STATE.aiRecommendations = data.recommendations;
+
+        if (section) section.classList.remove('hidden');
+
+        if (subtitleEl) {
+            const pName = profile.name || (STATE.currentUser ? STATE.currentUser.full_name : 'You');
+            const ageLabel = AGE_GROUP_LABELS[profile.age_group] || data.age_group_label || 'Student (13–19)';
+            subtitleEl.textContent = `Personalized for ${pName} (${ageLabel} • ${profile.city}) — Free donations prioritized on top`;
+        }
+
+        const conditionColors = {
+            'Brand New': 'bg-blue-100 text-blue-800 border-blue-300',
+            'Like New': 'bg-sky-100 text-sky-800 border-sky-300',
+            'Good': 'bg-indigo-50 text-indigo-800 border-indigo-200',
+            'Fair': 'bg-slate-100 text-slate-700 border-slate-300',
+        };
+
+        container.innerHTML = data.recommendations.map(item => {
+            const isFree = Boolean(item.is_free || parseFloat(item.price) === 0);
+            const condClass = conditionColors[item.condition] || 'bg-slate-100 text-slate-700 border-slate-300';
+            const displayImg = item.display_image || item.photo_url || item.book.cover_image || 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=300';
+            const retailPrice = item.book.original_retail_price ? parseFloat(item.book.original_retail_price).toFixed(0) : null;
+            const matchPct = item.ai_match_percentage || 98;
+            const insight = item.ai_insight || `Top recommendation in ${item.city}`;
+            const primaryBadge = item.ai_badge || (isFree ? '🎁 FREE Donation' : `✨ ${matchPct}% AI Match`);
+
+            return `
+                <div class="bg-gradient-to-br from-white via-white to-blue-50/50 rounded-2xl border ${isFree ? 'border-emerald-300 shadow-xs' : 'border-blue-200/90 shadow-xs'} p-3.5 hover:shadow-md hover:border-blue-400 transition-all flex flex-col justify-between relative overflow-hidden group">
+                    <div>
+                        <!-- AI Match Sparkle Badge & Condition -->
+                        <div class="flex items-center justify-between mb-2">
+                            ${isFree ? `
+                                <span class="text-[10px] font-black bg-gradient-to-r from-emerald-600 to-teal-600 text-white px-2 py-0.5 rounded-full shadow-xs flex items-center gap-1">
+                                    <i class="fa-solid fa-gift text-[9px]"></i> 🎁 FREE Donation
+                                </span>
+                            ` : `
+                                <span class="text-[10px] font-extrabold bg-gradient-to-r from-blue-700 via-blue-600 to-indigo-700 text-white px-2 py-0.5 rounded-full shadow-xs flex items-center gap-1">
+                                    <i class="fa-solid fa-wand-magic-sparkles text-[9px] text-amber-300"></i>
+                                    <span>${primaryBadge}</span>
+                                </span>
+                            `}
+                            <span class="text-[9px] font-bold px-1.5 py-0.5 rounded border ${condClass}">
+                                ${item.condition}
+                            </span>
+                        </div>
+
+                        <!-- Book Thumbnail and Academic Metadata -->
+                        <div class="flex gap-3">
+                            <img src="${displayImg}" 
+                                 alt="${item.book.title}" 
+                                 class="w-16 h-22 object-cover rounded-lg shadow-xs flex-shrink-0 cursor-pointer border border-slate-100 group-hover:scale-105 transition-transform"
+                                 onclick="quickCompareBook('${item.book.isbn}')">
+                            
+                            <div class="flex-1 min-w-0">
+                                <h4 class="font-extrabold text-slate-900 text-xs leading-snug line-clamp-2 cursor-pointer hover:text-blue-700"
+                                    onclick="quickCompareBook('${item.book.isbn}')">
+                                    ${item.book.title}
+                                </h4>
+                                <p class="text-[11px] text-slate-500 line-clamp-1 mt-0.5">${item.book.author}</p>
+                                <div class="flex items-center gap-1.5 text-[10px] text-slate-500 mt-1 flex-wrap">
+                                    <span><i class="fa-solid fa-location-dot text-blue-600"></i> ${item.city}</span>
+                                    <span>•</span>
+                                    <span class="text-amber-500 font-semibold">★ ${item.seller_rating}</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Short AI Insight Line -->
+                        <div class="mt-2.5 p-1.5 bg-blue-50/90 rounded-lg border border-blue-100/90 flex items-center gap-1.5 text-[10px] text-blue-900 font-medium">
+                            <i class="fa-solid fa-lightbulb text-amber-500 text-[11px] shrink-0"></i>
+                            <span class="truncate">${insight}</span>
+                        </div>
+                    </div>
+
+                    <!-- Pricing & Action Buttons -->
+                    <div class="mt-3 pt-2 border-t border-slate-100 flex items-center justify-between">
+                        <div>
+                            <div class="flex items-baseline gap-1">
+                                ${isFree ? `
+                                    <span class="text-sm font-black text-emerald-700">Rs. 0</span>
+                                    <span class="text-[9px] font-black uppercase text-emerald-700 bg-emerald-100 px-1 py-0.2 rounded border border-emerald-300">100% Free</span>
+                                ` : `
+                                    <span class="text-sm font-black text-blue-900">Rs. ${parseFloat(item.price).toFixed(0)}</span>
+                                    ${retailPrice ? `<span class="text-[10px] text-slate-400 line-through">Rs. ${retailPrice}</span>` : ''}
+                                `}
+                            </div>
+                            ${item.savings_percentage > 0 && !isFree ? `
+                                <span class="text-[9px] font-extrabold text-blue-700">Save ${item.savings_percentage}%</span>
+                            ` : ''}
+                        </div>
+
+                        <div class="flex items-center gap-1">
+                            <button onclick="quickCompareBook('${item.book.isbn}')" class="px-2 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-[11px] font-semibold" title="Compare Prices">
+                                <i class="fa-solid fa-code-compare text-[10px]"></i>
+                            </button>
+                            <button onclick="openUnlockModal(${item.id})" class="px-2.5 py-1 ${isFree ? 'bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700' : 'bg-gradient-to-r from-blue-700 to-blue-600 hover:from-blue-800 hover:to-blue-700'} text-white rounded-lg text-[11px] font-bold shadow-xs flex items-center gap-1 transition-all">
+                                <i class="fa-solid fa-lock-open text-[9px]"></i> <span>${isFree ? 'Claim Free' : 'Contact'}</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    } catch (e) {
+        console.warn("AI Recommendations load error:", e);
+        if (section) section.classList.add('hidden');
+    }
+}
+
+// =====================================================================
+// FEATURE 2: AI SMART PRICE ADVISOR
+// =====================================================================
+let CURRENT_AI_SUGGESTED_PRICE = 680;
+
+function setupAiPriceAdvisor() {
+    const titleInput = document.getElementById('sell-title-input');
+    const conditionSelect = document.getElementById('sell-condition-select');
+    const categorySelect = document.getElementById('sell-category-select');
+    const originalPriceInput = document.getElementById('sell-original-price-input');
+    const freeToggle = document.getElementById('sell-is-free-toggle');
+
+    const updateHandler = () => updateAiPriceAdvisor();
+
+    if (titleInput) titleInput.addEventListener('input', updateHandler);
+    if (conditionSelect) conditionSelect.addEventListener('change', updateHandler);
+    if (categorySelect) categorySelect.addEventListener('change', updateHandler);
+    if (originalPriceInput) originalPriceInput.addEventListener('input', updateHandler);
+    if (freeToggle) freeToggle.addEventListener('change', updateHandler);
+
+    // Initial calculation
+    updateAiPriceAdvisor();
+}
+
+function updateAiPriceAdvisor() {
+    const isFree = document.getElementById('sell-is-free-toggle')?.checked || false;
+    const titleInput = document.getElementById('sell-title-input');
+    const conditionSelect = document.getElementById('sell-condition-select');
+    const categorySelect = document.getElementById('sell-category-select');
+    const originalPriceInput = document.getElementById('sell-original-price-input');
+    const priceNumEl = document.getElementById('ai-price-num');
+    const insightEl = document.getElementById('ai-price-insight');
+
+    if (!conditionSelect || !priceNumEl || !insightEl) return;
+
+    if (isFree) {
+        CURRENT_AI_SUGGESTED_PRICE = 0;
+        priceNumEl.textContent = 'Rs. 0';
+        insightEl.innerHTML = `AI Advisor: <span class="font-bold text-emerald-300">Free Community Giveaway (Rs. 0)</span> — Promoted with #1 priority on homepage!`;
+        return;
+    }
+
+    const condition = conditionSelect.value || 'Good';
+    const category = categorySelect ? categorySelect.value : '';
+    const userOriginalPrice = originalPriceInput ? parseFloat(originalPriceInput.value) : 0;
+    const title = titleInput ? titleInput.value.toLowerCase() : '';
+
+    // Category retail benchmarks in PKR
+    const benchmarks = {
+        'Medical & MBBS / BDS': 3200,
+        'Software Engineering': 2200,
+        'Computer Science & IT': 2000,
+        'Electrical & Mechanical Eng.': 1800,
+        'University / Higher Ed': 1800,
+        'Law & Judiciary': 1600,
+        'Business, Commerce & BBA': 1400,
+        'CSS & Competitive Exams': 1200,
+        'Punjab Textbooks (Primary to FSc)': 350,
+        'Story Books': 400,
+        'Fiction': 650,
+        'Novels': 600,
+        'History': 750,
+        'FSc / Matric / O & A Level': 550,
+        'Urdu Literature & Novels': 650,
+        'Islamic Studies': 700,
+        'General Fiction & Non-Fiction': 800
+    };
+
+    let baseRetail = 1500;
+    if (userOriginalPrice && userOriginalPrice > 0) {
+        baseRetail = userOriginalPrice;
+    } else if (benchmarks[category]) {
+        baseRetail = benchmarks[category];
+    } else if (title.includes('physics') || title.includes('chemistry') || title.includes('biology')) {
+        baseRetail = 550;
+    } else if (title.includes('calculus') || title.includes('math')) {
+        baseRetail = 850;
+    } else if (title.includes('algorithm') || title.includes('operating system') || title.includes('software')) {
+        baseRetail = 1800;
+    }
+
+    // Condition depreciation factor
+    const factors = {
+        'Brand New': 0.80,
+        'Like New': 0.65,
+        'Good': 0.50,
+        'Fair': 0.35
+    };
+
+    const factor = factors[condition] || 0.50;
+    const calculated = Math.max(50, Math.round((baseRetail * factor) / 10) * 10);
+    CURRENT_AI_SUGGESTED_PRICE = calculated;
+
+    priceNumEl.textContent = `Rs. ${calculated}`;
+    insightEl.innerHTML = `AI Suggested Price: <span class="font-bold text-amber-300">Rs. ${calculated}</span> (Optimal for fast sale in '${condition}' condition)`;
+}
+
+function applyAiSuggestedPrice() {
+    const priceInput = document.getElementById('sell-price-input');
+    const btn = document.getElementById('apply-ai-price-btn');
+    if (!priceInput) return;
+
+    priceInput.value = CURRENT_AI_SUGGESTED_PRICE;
+
+    // Visual pulse feedback on input field
+    priceInput.classList.add('ring-4', 'ring-emerald-400', 'bg-emerald-50');
+    setTimeout(() => {
+        priceInput.classList.remove('ring-4', 'ring-emerald-400', 'bg-emerald-50');
+    }, 1200);
+
+    // Button state update
+    if (btn) {
+        const originalHtml = btn.innerHTML;
+        btn.innerHTML = `<i class="fa-solid fa-check text-xs"></i> <span>Applied Rs. ${CURRENT_AI_SUGGESTED_PRICE}!</span>`;
+        btn.classList.add('from-emerald-600', 'to-teal-700');
+        setTimeout(() => {
+            btn.innerHTML = originalHtml;
+            btn.classList.remove('from-emerald-600', 'to-teal-700');
+        }, 1500);
+    }
+}
+
+// =====================================================================
+// FEATURE 3: STARTUP LOGIN & AI READER ONBOARDING MODAL
+// =====================================================================
+const AGE_GROUP_LABELS = {
+    kids: 'Kids (5–12)',
+    teens: 'Student (13–19)',
+    young_adult: 'University (20–30)',
+    general: 'General (31+)',
+    all: 'All Readers'
+};
+
+function getSavedReaderProfile() {
+    try {
+        const raw = localStorage.getItem('bb_reader_profile');
+        if (raw) return JSON.parse(raw);
+    } catch (e) {
+        console.warn("Could not parse saved reader profile:", e);
+    }
+    return null;
+}
+
+function initReaderProfile() {
+    const saved = getSavedReaderProfile();
+    if (saved) {
+        STATE.readerProfile = saved;
+        updateReaderHeaderUI();
+    } else {
+        STATE.readerProfile = {
+            name: 'Ayesha',
+            age_group: 'teens',
+            city: 'Lahore',
+            interests: ['free_only', 'ptb_textbooks']
+        };
+        updateReaderHeaderUI();
+
+        // Trigger welcome startup modal on first app open
+        setTimeout(() => {
+            if (!localStorage.getItem('bb_reader_onboarded_dismissed')) {
+                openReaderOnboardingModal();
+            }
+        }, 450);
+    }
+}
+
+function updateReaderHeaderUI() {
+    const profile = STATE.readerProfile || { name: 'Ayesha', age_group: 'teens', city: 'Lahore' };
+    const ageLabel = AGE_GROUP_LABELS[profile.age_group] || 'Student (13–19)';
+
+    const topName = document.getElementById('top-user-display-name');
+    const topAge = document.getElementById('top-user-age-badge');
+    const topCity = document.getElementById('top-user-city-display');
+    const topWallet = document.getElementById('top-user-wallet-display');
+    const mobileAge = document.getElementById('mobile-user-age-badge');
+
+    if (topName) topName.textContent = profile.name || (STATE.currentUser ? STATE.currentUser.full_name : 'Reader');
+    if (topAge) topAge.textContent = ageLabel;
+    if (mobileAge) mobileAge.textContent = ageLabel;
+    if (topCity) topCity.textContent = profile.city || (STATE.currentUser ? STATE.currentUser.city : 'Lahore');
+    if (topWallet && STATE.currentUser) {
+        topWallet.textContent = `Rs. ${parseFloat(STATE.currentUser.wallet_balance || 0).toFixed(0)}`;
+    }
+}
+
+function openReaderOnboardingModal() {
+    const modal = document.getElementById('reader-onboarding-modal');
+    if (!modal) return;
+
+    const profile = STATE.readerProfile || {
+        name: STATE.currentUser ? STATE.currentUser.full_name : 'Ayesha',
+        age_group: 'teens',
+        city: STATE.currentUser ? STATE.currentUser.city : 'Lahore',
+        interests: ['free_only', 'ptb_textbooks']
+    };
+
+    const nameInput = document.getElementById('onboard-name-input');
+    const citySelect = document.getElementById('onboard-city-select');
+    const ageHidden = document.getElementById('onboard-age-group-value');
+
+    if (nameInput) nameInput.value = profile.name || '';
+    if (citySelect && profile.city) citySelect.value = profile.city;
+    if (ageHidden) ageHidden.value = profile.age_group || 'teens';
+
+    // Select the age card
+    const targetAge = profile.age_group || 'teens';
+    document.querySelectorAll('#onboard-age-group-cards .onboard-age-card').forEach(card => {
+        if (card.getAttribute('data-age') === targetAge) {
+            selectOnboardAgeGroup(targetAge, card);
+        }
+    });
+
+    // Toggle interest chips
+    const interests = profile.interests || ['free_only', 'ptb_textbooks'];
+    document.querySelectorAll('#onboard-interest-chips .interest-chip').forEach(chip => {
+        const key = chip.getAttribute('data-interest');
+        if (interests.includes(key)) {
+            chip.classList.add('active', 'border-2', 'border-blue-600', 'bg-blue-50', 'text-blue-800');
+            chip.classList.remove('border-slate-300', 'bg-white', 'text-slate-700');
+        } else {
+            chip.classList.remove('active', 'border-2', 'border-blue-600', 'bg-blue-50', 'text-blue-800', 'border-emerald-500', 'bg-emerald-50', 'text-emerald-800');
+            chip.classList.add('border-slate-300', 'bg-white', 'text-slate-700');
+        }
+    });
+
+    modal.classList.remove('hidden');
+}
+
+function closeReaderOnboardingModal() {
+    const modal = document.getElementById('reader-onboarding-modal');
+    if (modal) modal.classList.add('hidden');
+}
+
+function selectOnboardAgeGroup(ageKey, cardEl) {
+    document.querySelectorAll('#onboard-age-group-cards .onboard-age-card').forEach(c => {
+        c.classList.remove('active', 'border-blue-600', 'bg-blue-50/50');
+        c.classList.add('border-slate-200');
+    });
+    if (cardEl) {
+        cardEl.classList.add('active', 'border-blue-600', 'bg-blue-50/50');
+        cardEl.classList.remove('border-slate-200');
+    }
+    const hiddenInput = document.getElementById('onboard-age-group-value');
+    if (hiddenInput) hiddenInput.value = ageKey;
+    const label = document.getElementById('onboard-age-selected-label');
+    if (label) {
+        label.textContent = AGE_GROUP_LABELS[ageKey] || ageKey;
+    }
+}
+
+function toggleOnboardInterest(interestKey, chipEl) {
+    if (!chipEl) return;
+    chipEl.classList.toggle('active');
+    if (chipEl.classList.contains('active')) {
+        chipEl.classList.add('border-2', 'border-blue-600', 'bg-blue-50', 'text-blue-800');
+        chipEl.classList.remove('border-slate-300', 'bg-white', 'text-slate-700');
+    } else {
+        chipEl.classList.remove('active', 'border-2', 'border-blue-600', 'bg-blue-50', 'text-blue-800', 'border-emerald-500', 'bg-emerald-50', 'text-emerald-800');
+        chipEl.classList.add('border-slate-300', 'bg-white', 'text-slate-700');
+    }
+}
+
+async function handleReaderOnboardingSubmit(e) {
+    e.preventDefault();
+    const name = document.getElementById('onboard-name-input')?.value.trim() || 'Reader';
+    const ageGroup = document.getElementById('onboard-age-group-value')?.value || 'teens';
+    const city = document.getElementById('onboard-city-select')?.value || 'Lahore';
+
+    const selectedInterests = [];
+    document.querySelectorAll('#onboard-interest-chips .interest-chip.active').forEach(chip => {
+        const k = chip.getAttribute('data-interest');
+        if (k) selectedInterests.push(k);
+    });
+
+    const profile = {
+        name,
+        age_group: ageGroup,
+        city,
+        interests: selectedInterests
+    };
+
+    STATE.readerProfile = profile;
+    localStorage.setItem('bb_reader_profile', JSON.stringify(profile));
+    localStorage.setItem('bb_reader_onboarded_dismissed', 'true');
+
+    updateReaderHeaderUI();
+
+    // Sync preferences to backend if user profile exists
+    try {
+        await fetch('/api/user/preferences/', {
+            method: 'POST',
+            headers: getAuthHeaders({ 'Content-Type': 'application/json' }),
+            body: JSON.stringify({
+                user_id: STATE.currentUser ? STATE.currentUser.id : '',
+                full_name: name,
+                age_group: ageGroup,
+                city: city,
+                interests: selectedInterests
+            })
+        });
+    } catch (err) {
+        console.warn("Preferences backend sync notice:", err);
+    }
+
+    closeReaderOnboardingModal();
+
+    // Reload AI recommendations with new profile
+    await loadAiRecommendations();
+}
+
+function skipReaderOnboarding() {
+    localStorage.setItem('bb_reader_onboarded_dismissed', 'true');
+    closeReaderOnboardingModal();
 }

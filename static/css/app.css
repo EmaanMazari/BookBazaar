@@ -233,3 +233,31 @@ select option:checked {
 ::-webkit-scrollbar-thumb:hover {
     background: #93c5fd;
 }
+
+/* ===================================================
+   RESPONSIVE LAYOUT & MOBILE BEZEL REMOVAL
+   Ensures native edge-to-edge full screen on real mobile
+   phones and tablets (<= 768px), hiding fake bezel,
+   speaker notch, and simulated status bar completely.
+   =================================================== */
+@media (max-width: 768px) {
+    #mobile-notch,
+    .mobile-notch,
+    #mobile-status-bar,
+    #view-mode-btn {
+        display: none !important;
+    }
+
+    .mobile-device-frame,
+    #app-wrapper {
+        max-width: 100% !important;
+        width: 100% !important;
+        height: auto !important;
+        min-height: 100vh !important;
+        border-radius: 0 !important;
+        box-shadow: none !important;
+        margin: 0 !important;
+        border: none !important;
+    }
+}
+

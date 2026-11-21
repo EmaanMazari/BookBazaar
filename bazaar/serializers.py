@@ -18,7 +18,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
         model = UserProfile
         fields = [
             'id', 'username', 'full_name', 'phone_number', 'city', 
-            'campus_or_area', 'profile_picture_url', 'user_type', 'rating', 'total_reviews', 
+            'campus_or_area', 'profile_picture_url', 'user_type', 'age_group', 'reading_interests', 'rating', 'total_reviews', 
             'wallet_balance', 'is_blocked', 'created_at',
             'active_listings_count', 'sold_listings_count',
             'unlocks_bought_count', 'unlocks_received_count'
@@ -69,7 +69,7 @@ class BookSerializer(serializers.ModelSerializer):
             'id', 'isbn', 'title', 'author', 'publisher', 'edition',
             'category', 'education_board', 'grade_class', 'subject',
             'description', 'cover_image', 'original_retail_price',
-            'lowest_price', 'total_offers', 'created_at'
+            'lowest_price', 'total_offers', 'target_age_group', 'created_at'
         ]
 
 
@@ -91,7 +91,8 @@ class ListingSerializer(serializers.ModelSerializer):
             'id', 'book', 'seller_id', 'seller_name', 'seller_phone', 'seller_rating', 
             'seller_reviews_count', 'seller_city', 'condition', 'price', 
             'city', 'pickup_location', 'description', 'photo_url', 'image',
-            'display_image', 'status', 'is_sponsored', 'views_count', 'savings_percentage', 
+            'display_image', 'status', 'is_sponsored', 'is_free', 'target_age_group',
+            'views_count', 'savings_percentage', 
             'is_favorited', 'is_contact_unlocked', 'created_at'
         ]
 

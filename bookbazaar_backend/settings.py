@@ -91,17 +91,36 @@ if DATABASE_URL:
         }
     }
 elif USE_POSTGRES:
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.postgresql',
-            'NAME': os.environ.get('DB_NAME', 'bookbazaar_db'),
-            'USER': os.environ.get('DB_USER', 'bookbazaar_user'),
-            'PASSWORD': os.environ.get('DB_PASSWORD', 'postgres'),
-            'HOST': os.environ.get('DB_HOST', '127.0.0.1'),
-            'PORT': os.environ.get('DB_PORT', '5432'),
-            'CONN_MAX_AGE': int(os.environ.get('DB_CONN_MAX_AGE', '600')),
+    _pg_available = False
+    try:
+        import socket
+        _s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        _s.settimeout(0.5)
+        _s.connect((os.environ.get('DB_HOST', '127.0.0.1'), int(os.environ.get('DB_PORT', '5432'))))
+        _s.close()
+        _pg_available = True
+    except Exception:
+        _pg_available = False
+
+    if _pg_available:
+        DATABASES = {
+            'default': {
+                'ENGINE': 'django.db.backends.postgresql',
+                'NAME': os.environ.get('DB_NAME', 'bookbazaar_db'),
+                'USER': os.environ.get('DB_USER', 'bookbazaar_user'),
+                'PASSWORD': os.environ.get('DB_PASSWORD', 'postgres'),
+                'HOST': os.environ.get('DB_HOST', '127.0.0.1'),
+                'PORT': os.environ.get('DB_PORT', '5432'),
+                'CONN_MAX_AGE': int(os.environ.get('DB_CONN_MAX_AGE', '600')),
+            }
         }
-    }
+    else:
+        DATABASES = {
+            'default': {
+                'ENGINE': 'django.db.backends.sqlite3',
+                'NAME': BASE_DIR / 'db.sqlite3',
+            }
+        }
 else:
     DATABASES = {
         'default': {

@@ -2,6 +2,7 @@ from django.core.management.base import BaseCommand
 from django.contrib.auth.models import User
 from bazaar.models import UserProfile, Book, Listing, ContactUnlock, SellerReview, Advertisement, PlatformSetting
 from bazaar.services.book_service import KNOWN_CATALOG
+from bazaar.services.seed_service import ensure_demo_listings
 from decimal import Decimal
 import uuid
 from django.utils import timezone
@@ -302,6 +303,8 @@ class Command(BaseCommand):
                 )
                 created_listings.append(listing)
 
+        # Ensure realistic Pakistani demo textbooks (Lahore, Islamabad, Bahawalpur, Karachi)
+        ensure_demo_listings(force=True)
         self.stdout.write(f"-> Created {len(created_listings)} listings across various cities.")
 
         # 6. Seed Sample Contact Unlocks to showcase:

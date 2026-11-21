@@ -25,6 +25,7 @@ class UserProfile(models.Model):
         ('Gujranwala', 'Gujranwala'),
         ('Hyderabad', 'Hyderabad'),
         ('Rahim Yar Khan', 'Rahim Yar Khan'),
+        ('Bahawalpur', 'Bahawalpur'),
     ]
 
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile', null=True, blank=True)
@@ -34,6 +35,8 @@ class UserProfile(models.Model):
     campus_or_area = models.CharField(max_length=150, default='University Campus / Student Center', blank=True)
     profile_picture = models.ImageField(upload_to='profiles/', blank=True, null=True)
     user_type = models.CharField(max_length=20, choices=USER_TYPE_CHOICES, default='student', db_index=True)
+    age_group = models.CharField(max_length=30, default='teens', blank=True, help_text="e.g. kids, teens, young_adult, general")
+    reading_interests = models.CharField(max_length=255, default='', blank=True, help_text="Comma-separated reading interests")
     rating = models.DecimalField(max_digits=3, decimal_places=2, default=5.00)
     total_reviews = models.IntegerField(default=0)
     wallet_balance = models.DecimalField(max_digits=10, decimal_places=2, default=0.00, help_text="PKR Balance")
@@ -54,6 +57,12 @@ class UserProfile(models.Model):
 
 class Book(models.Model):
     CATEGORY_CHOICES = [
+        ('Punjab Textbooks (Primary to FSc)', 'Punjab Textbooks (Primary to FSc)'),
+        ('Story Books', 'Story Books'),
+        ('Fiction', 'Fiction'),
+        ('Novels', 'Novels'),
+        ('History', 'History'),
+        ('University / Higher Ed', 'University / Higher Ed'),
         ('Computer Science & IT', 'Computer Science & IT'),
         ('Software Engineering', 'Software Engineering'),
         ('Electrical & Mechanical Eng.', 'Electrical & Mechanical Eng.'),
@@ -97,6 +106,7 @@ class Book(models.Model):
     education_board = models.CharField(max_length=100, choices=BOARD_CHOICES, default='Higher Education / University', blank=True, db_index=True)
     grade_class = models.CharField(max_length=100, choices=CLASS_CHOICES, default='Bachelor / BS / Undergrad', blank=True, db_index=True)
     subject = models.CharField(max_length=100, blank=True, default='')
+    target_age_group = models.CharField(max_length=30, default='all', blank=True, db_index=True, help_text="kids, teens, young_adult, general, or all")
     description = models.TextField(blank=True, default='')
     cover_image = models.TextField(blank=True, default='', help_text="URL or Base64 data")
     original_retail_price = models.DecimalField(max_digits=10, decimal_places=2, default=1500.00, help_text="Estimated new book price in PKR")
@@ -143,24 +153,30 @@ class Listing(models.Model):
     image = models.ImageField(upload_to='listings/', blank=True, null=True, help_text="Actual uploaded book photo")
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='active', db_index=True)
     is_sponsored = models.BooleanField(default=False, help_text="Promoted sponsored listing shown at top", db_index=True)
+    is_free = models.BooleanField(default=False, db_index=True, help_text="Community free book donation (Rs. 0)")
+    target_age_group = models.CharField(max_length=30, default='all', blank=True, db_index=True)
     views_count = models.IntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True, db_index=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        ordering = ['-is_sponsored', '-created_at']
+        ordering = ['-is_free', '-is_sponsored', '-created_at']
         indexes = [
             models.Index(fields=['status', '-created_at']),
             models.Index(fields=['book', 'status']),
             models.Index(fields=['seller', 'status']),
             models.Index(fields=['city', 'status']),
+            models.Index(fields=['is_free', 'status']),
         ]
 
     def __str__(self):
-        return f"Listing #{self.id}: {self.book.title} - Rs. {self.price} by {self.seller.full_name}"
+        prefix = "[FREE DONATION] " if self.is_free or self.price == Decimal('0.00') else ""
+        return f"{prefix}Listing #{self.id}: {self.book.title} - Rs. {self.price} by {self.seller.full_name}"
 
     @property
     def savings_percentage(self):
+        if self.is_free or self.price == Decimal('0.00'):
+            return 100
         if self.book.original_retail_price and self.book.original_retail_price > self.price:
             diff = self.book.original_retail_price - self.price
             return int((diff / self.book.original_retail_price) * 100)

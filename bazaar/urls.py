@@ -19,6 +19,11 @@ urlpatterns = [
     # Books & Barcode Scan APIs
     path('api/books/scan/', views.scan_isbn, name='api_scan_isbn'),
 
+    # AI Book Recommendations & Smart Price Advisor APIs
+    path('api/recommendations/', views.get_recommendations, name='api_recommendations'),
+    path('api/price-advisor/', views.get_ai_price_advice, name='api_price_advisor'),
+    path('api/user/preferences/', views.update_reader_preferences, name='api_reader_preferences'),
+
     # Listings APIs (Phase 1 Marketplace)
     path('api/listings/', views.get_listings, name='api_listings'),
     path('api/listings/<int:listing_id>/', views.get_listing_detail, name='api_listing_detail'),
