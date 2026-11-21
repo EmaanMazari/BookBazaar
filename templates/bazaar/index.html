@@ -204,7 +204,7 @@
 
                         <!-- Hero CTA Buttons -->
                         <div class="flex gap-2 mt-3.5">
-                            <button onclick="switchTab('scan')" class="flex-1 py-2.5 bg-white hover:bg-blue-50 text-blue-800 rounded-xl text-xs font-black shadow-sm flex items-center justify-center gap-1.5 transition-all">
+                            <button id="hero-scan-btn" onclick="openBarcodeScanner()" class="flex-1 py-2.5 bg-white hover:bg-blue-50 text-blue-800 rounded-xl text-xs font-black shadow-sm flex items-center justify-center gap-1.5 transition-all">
                                 <i class="fa-solid fa-barcode text-sm"></i> <span data-i18n="scan_now_btn">Scan Barcode</span>
                             </button>
                             <button onclick="switchTab('sell')" class="flex-1 py-2.5 bg-white/20 hover:bg-white/30 text-white border border-white/30 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all">
@@ -216,7 +216,7 @@
 
                 <!-- Prominent Quick Action Dashboard -->
                 <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-4">
-                    <div onclick="switchTab('scan')" class="cursor-pointer bg-white p-2.5 sm:p-3 rounded-2xl border border-blue-100 hover:border-blue-300 shadow-xs hover:shadow-md transition-all text-center group">
+                    <div id="quick-scan-card" onclick="openBarcodeScanner()" class="cursor-pointer bg-white p-2.5 sm:p-3 rounded-2xl border border-blue-100 hover:border-blue-300 shadow-xs hover:shadow-md transition-all text-center group">
                         <div class="w-8 h-8 mx-auto rounded-xl bg-blue-50 group-hover:bg-blue-600 text-blue-600 group-hover:text-white flex items-center justify-center text-sm mb-1 transition-colors">
                             <i class="fa-solid fa-barcode"></i>
                         </div>
@@ -604,6 +604,7 @@
                         </label>
                         <div class="flex gap-2">
                             <input type="text" id="manual-isbn-input" placeholder="e.g. 9780132350884" 
+                                   onkeydown="if(event.key==='Enter'){event.preventDefault(); scanIsbnQuery(this.value);}"
                                    class="flex-1 px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs font-mono focus:ring-2 focus:ring-blue-500 focus:outline-none">
                             <button onclick="scanIsbnQuery(document.getElementById('manual-isbn-input').value)" 
                                     class="px-4 py-2 bg-blue-700 hover:bg-blue-800 text-white rounded-xl text-xs font-bold shadow-xs transition-colors">

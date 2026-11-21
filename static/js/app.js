@@ -356,8 +356,53 @@ function toggleViewMode() {
     }
 }
 
+// Open/activate Scanner section, smoothly scroll down and focus manual input
+function openBarcodeScanner() {
+    STATE.activeTab = 'scan';
+
+    // Ensure tab-scan is visible
+    const scanSection = document.getElementById('tab-scan');
+    if (scanSection) {
+        scanSection.classList.remove('hidden');
+        scanSection.style.setProperty('display', 'flex', 'important');
+
+        // Smoothly scroll down to the scanner section
+        const scrollContainer = scanSection.closest('.overflow-y-auto') || document.querySelector('.app-content.overflow-y-auto');
+        if (scrollContainer) {
+            const topOffset = scanSection.offsetTop - 12;
+            scrollContainer.scrollTo({ top: Math.max(0, topOffset), behavior: 'smooth' });
+        } else {
+            scanSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+    }
+
+    // Highlight bottom nav scan tab
+    document.querySelectorAll('.nav-tab').forEach(tab => {
+        if (tab.getAttribute('data-tab') === 'scan') {
+            tab.classList.add('active', 'text-blue-700');
+            tab.classList.remove('text-slate-400');
+        } else if (tab.getAttribute('data-tab') === 'home') {
+            tab.classList.remove('active', 'text-blue-700');
+            tab.classList.add('text-slate-400');
+        }
+    });
+
+    // Smoothly focus manual ISBN input
+    setTimeout(() => {
+        const input = document.getElementById('manual-isbn-input');
+        if (input) {
+            input.focus();
+        }
+    }, 280);
+}
+window.openBarcodeScanner = openBarcodeScanner;
+
 // Tab Switching
 function switchTab(tabId) {
+    if (tabId === 'scan') {
+        openBarcodeScanner();
+        return;
+    }
     STATE.activeTab = tabId;
     document.querySelectorAll('.tab-page').forEach(page => page.classList.add('hidden'));
     const targetPage = document.getElementById(`tab-${tabId}`);
@@ -1873,6 +1918,23 @@ function setupEventListeners() {
 
     const sellForm = document.getElementById('sell-book-form');
     if (sellForm) sellForm.addEventListener('submit', handleCreateListingSubmit);
+
+    // Wire top Hero "Scan Book Barcode" and Quick Action "Scan ISBN" buttons
+    const heroScanBtn = document.getElementById('hero-scan-btn');
+    if (heroScanBtn) {
+        heroScanBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            openBarcodeScanner();
+        });
+    }
+
+    const quickScanCard = document.getElementById('quick-scan-card');
+    if (quickScanCard) {
+        quickScanCard.addEventListener('click', (e) => {
+            e.preventDefault();
+            openBarcodeScanner();
+        });
+    }
 }
 
 async function applyFilters() {
