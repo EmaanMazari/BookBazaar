@@ -235,6 +235,46 @@ select option:checked {
 }
 
 /* ===================================================
+   CORE LAYOUT: FULL-WIDTH COLUMNAR FLEX FIX
+   Fixes horizontal flex bug by forcing <main> and all
+   inner application wrappers to display: flex with
+   flex-direction: column and full 100% width.
+   =================================================== */
+main,
+#app-shell,
+#app-wrapper,
+#phone-frame,
+.app-content {
+    display: flex !important;
+    flex-direction: column !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+}
+
+/* Ensure every section inside main spans full width and centers cleanly */
+main section,
+#app-shell section,
+#app-wrapper section,
+#phone-frame section,
+section.tab-page,
+.shelf-section {
+    width: 100% !important;
+    max-width: 1200px !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+    box-sizing: border-box !important;
+    display: flex !important;
+    flex-direction: column !important;
+}
+
+/* Redundant sub-header removal safeguard */
+.duplicate-sub-header,
+#duplicate-mobile-header,
+.inner-mobile-sub-header {
+    display: none !important;
+}
+
+/* ===================================================
    RESPONSIVE LAYOUT & MOBILE BEZEL REMOVAL
    Ensures native edge-to-edge full screen on real mobile
    phones and tablets (<= 768px), hiding fake bezel,
@@ -249,7 +289,10 @@ select option:checked {
     }
 
     .mobile-device-frame,
-    #app-wrapper {
+    #app-wrapper,
+    #app-shell,
+    #phone-frame,
+    .app-content {
         max-width: 100% !important;
         width: 100% !important;
         height: auto !important;
@@ -258,6 +301,8 @@ select option:checked {
         box-shadow: none !important;
         margin: 0 !important;
         border: none !important;
+        display: flex !important;
+        flex-direction: column !important;
     }
 }
 

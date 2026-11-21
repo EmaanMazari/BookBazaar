@@ -1,1 +1,31 @@
 {% extends 'bazaar/base.html' %}
+
+{% block extra_head %}
+<style>
+    /* Full-width columnar flex fix for main & inner containers */
+    main,
+    #app-shell,
+    #app-wrapper,
+    #phone-frame,
+    .app-content {
+        display: flex !important;
+        flex-direction: column !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+    }
+    main section,
+    #app-shell section,
+    #app-wrapper section,
+    #phone-frame section,
+    section.tab-page,
+    .shelf-section {
+        width: 100% !important;
+        max-width: 1200px !important;
+        margin-left: auto !important;
+        margin-right: auto !important;
+        box-sizing: border-box !important;
+        display: flex !important;
+        flex-direction: column !important;
+    }
+</style>
+{% endblock %}

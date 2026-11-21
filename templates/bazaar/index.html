@@ -160,8 +160,8 @@
 </header>
 
 <!-- Main App Wrapper (Default Full Screen Responsive Web; Phone frame togglable on desktop) -->
-<main class="flex-1 flex items-start sm:items-center justify-center p-0 md:p-4">
-    <div id="app-wrapper" class="w-full max-w-6xl mx-auto my-0 sm:my-6 rounded-none sm:rounded-2xl shadow-none sm:shadow-2xl border-0 sm:border border-slate-200 bg-white min-h-[92vh] flex flex-col overflow-hidden relative">
+<main id="app-shell" class="flex-1 flex flex-col items-center justify-start w-full p-0 md:p-4">
+    <div id="app-wrapper" class="app-content w-full max-w-6xl mx-auto my-0 sm:my-6 rounded-none sm:rounded-2xl shadow-none sm:shadow-2xl border-0 sm:border border-slate-200 bg-white min-h-[92vh] flex flex-col overflow-hidden relative">
         
         <!-- Mobile Notch & Speaker Simulator (Shown only when in Phone Mockup mode on desktop) -->
         <div id="mobile-notch" class="mobile-notch hidden">
@@ -179,36 +179,13 @@
             </div>
         </div>
 
-        <!-- App Main Header (Clean Royal Blue Theme) -->
-        <div class="bg-gradient-to-r from-blue-700 via-blue-600 to-indigo-700 text-white px-3 py-2.5 sm:px-4 sm:py-3.5 flex items-center justify-between shadow-sm z-10 flex-shrink-0">
-            <div class="flex items-center gap-2 sm:gap-2.5">
-                <div class="w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-white/15 flex items-center justify-center text-white shadow-xs">
-                    <i class="fa-solid fa-book-open-reader text-sm sm:text-base"></i>
-                </div>
-                <div>
-                    <h1 class="text-sm sm:text-base font-extrabold tracking-tight" data-i18n="brand_name">BookBazaar AI</h1>
-                    <p class="text-[9px] sm:text-[10px] text-blue-100 font-medium" data-i18n="brand_tagline">Smart Used-Books Marketplace & Recommendation System</p>
-                </div>
-            </div>
-            
-            <!-- User Balance Pill -->
-            <div onclick="switchTab('profile')" class="cursor-pointer bg-white/15 hover:bg-white/25 border border-white/25 px-2.5 py-1 sm:px-3 rounded-full flex items-center gap-1.5 transition-all text-xs" title="View Wallet & Refunds">
-                <i class="fa-solid fa-wallet text-amber-300 text-xs"></i>
-                <span id="current-user-balance" class="text-xs font-black">Rs. 0</span>
-            </div>
-        </div>
-                <i class="fa-solid fa-wallet text-amber-300 text-xs"></i>
-                <span id="current-user-balance" class="text-xs font-black">Rs. 0</span>
-            </div>
-        </div>
-
         <!-- Scrollable Tab Content Container -->
-        <div class="flex-1 overflow-y-auto bg-[#F8FAFC] p-3 sm:p-4 pb-20 relative">
+        <div class="app-content flex-1 flex flex-col overflow-y-auto w-full bg-[#F8FAFC] p-3 sm:p-4 pb-20 relative">
 
             <!-- ============================================== -->
             <!-- TAB 1: HOME & BROWSE -->
             <!-- ============================================== -->
-            <section id="tab-home" class="tab-page">
+            <section id="tab-home" class="tab-page w-full flex flex-col">
                 <!-- Top Sponsor Banner Ad -->
                 <div id="banner-top-ad"></div>
 
@@ -575,7 +552,7 @@
             <!-- ============================================== -->
             <!-- TAB 2: BARCODE (ISBN) SCANNER & PRICE COMPARISON -->
             <!-- ============================================== -->
-            <section id="tab-scan" class="tab-page hidden">
+            <section id="tab-scan" class="tab-page hidden w-full flex flex-col">
                 <div class="bg-white rounded-2xl border border-blue-100 p-4 shadow-sm mb-4">
                     <div class="flex items-center justify-between mb-3">
                         <div>
@@ -685,7 +662,7 @@
             <!-- ============================================== -->
             <!-- TAB 3: SELL BOOK (EASY SELLING & ACTUAL IMAGE UPLOAD) -->
             <!-- ============================================== -->
-            <section id="tab-sell" class="tab-page hidden">
+            <section id="tab-sell" class="tab-page hidden w-full flex flex-col">
                 <div class="bg-white rounded-2xl border border-blue-100 p-4 shadow-sm">
                     <div class="flex items-center gap-2 mb-3 pb-2 border-b border-slate-100">
                         <div class="w-8 h-8 rounded-lg bg-blue-50 text-blue-700 flex items-center justify-center font-bold">
@@ -896,7 +873,7 @@
             <!-- ============================================== -->
             <!-- TAB 4: MY DEALS & UNLOCKS (PAID UNLOCK SYSTEM) -->
             <!-- ============================================== -->
-            <section id="tab-deals" class="tab-page hidden">
+            <section id="tab-deals" class="tab-page hidden w-full flex flex-col">
                 <div class="bg-gradient-to-r from-blue-900 via-blue-800 to-indigo-900 text-white rounded-2xl p-4 shadow-sm mb-4">
                     <div class="flex items-center justify-between">
                         <div>
@@ -928,7 +905,7 @@
             <!-- ============================================== -->
             <!-- TAB 5: PROFILE, WALLET & SELLER DASHBOARD -->
             <!-- ============================================== -->
-            <section id="tab-profile" class="tab-page hidden">
+            <section id="tab-profile" class="tab-page hidden w-full flex flex-col">
                 <!-- User Profile Header -->
                 <div class="bg-white rounded-2xl border border-blue-100 p-4 shadow-sm mb-4 text-center relative">
                     <div class="w-16 h-16 rounded-full bg-blue-50 text-blue-700 flex items-center justify-center text-2xl font-bold mx-auto mb-2 border-2 border-blue-200 overflow-hidden">

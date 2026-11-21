@@ -60,6 +60,33 @@
     </script>
     <link rel="stylesheet" href="/static/css/app.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Urgent Fix: Force column flex direction on main and inner containers */
+        main,
+        #app-shell,
+        #app-wrapper,
+        #phone-frame,
+        .app-content {
+            display: flex !important;
+            flex-direction: column !important;
+            width: 100% !important;
+            box-sizing: border-box !important;
+        }
+        main section,
+        #app-shell section,
+        #app-wrapper section,
+        #phone-frame section,
+        section.tab-page,
+        .shelf-section {
+            width: 100% !important;
+            max-width: 1200px !important;
+            margin-left: auto !important;
+            margin-right: auto !important;
+            box-sizing: border-box !important;
+            display: flex !important;
+            flex-direction: column !important;
+        }
+    </style>
     {% block extra_head %}{% endblock %}
 </head>
 <body class="bg-[#F8FAFC] text-[#0F172A] antialiased min-h-screen flex flex-col font-sans selection:bg-blue-600 selection:text-white">
