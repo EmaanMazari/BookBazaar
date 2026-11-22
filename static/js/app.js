@@ -1715,6 +1715,7 @@ async function handleAuthLogin(e) {
         });
         const data = await res.json();
         if (res.ok) {
+            sessionStorage.setItem('bookzy_session_active', 'true');
             localStorage.setItem('bookloop_token', data.token);
             localStorage.setItem('bb_user_id', data.profile.id);
             alert(`Welcome back, ${data.profile.full_name}!`);
@@ -1743,6 +1744,7 @@ async function handleAuthRegister(e) {
         });
         const data = await res.json();
         if (res.ok) {
+            sessionStorage.setItem('bookzy_session_active', 'true');
             localStorage.setItem('bookloop_token', data.token);
             localStorage.setItem('bb_user_id', data.profile.id);
             alert(data.message);
@@ -2457,6 +2459,8 @@ function getSavedReaderProfile() {
 
 function initReaderProfile() {
     const saved = getSavedReaderProfile();
+    const isSessionActive = sessionStorage.getItem('bookzy_session_active') || localStorage.getItem('bookloop_token');
+
     if (saved) {
         STATE.readerProfile = saved;
         updateReaderHeaderUI();
@@ -2468,13 +2472,13 @@ function initReaderProfile() {
             interests: ['free_only', 'ptb_textbooks']
         };
         updateReaderHeaderUI();
+    }
 
-        // Trigger welcome startup modal on first app open
+    // Enforce mandatory startup login / reader onboarding for unauthenticated visitors in current session
+    if (!isSessionActive) {
         setTimeout(() => {
-            if (!localStorage.getItem('bb_reader_onboarded_dismissed')) {
-                openReaderOnboardingModal();
-            }
-        }, 450);
+            openReaderOnboardingModal({ isStartup: true });
+        }, 150);
     }
 }
 
@@ -2497,9 +2501,52 @@ function updateReaderHeaderUI() {
     }
 }
 
-function openReaderOnboardingModal() {
+function switchOnboardTab(tabName) {
+    const tabReader = document.getElementById('onboard-tab-reader');
+    const tabExisting = document.getElementById('onboard-tab-existing');
+    const tabAdmin = document.getElementById('onboard-tab-admin');
+    const viewReader = document.getElementById('onboard-view-reader');
+    const viewExisting = document.getElementById('onboard-view-existing');
+    const viewAdmin = document.getElementById('onboard-view-admin');
+
+    [tabReader, tabExisting, tabAdmin].forEach(t => {
+        if (!t) return;
+        t.className = 'flex-1 py-1.5 px-2 rounded-lg text-slate-600 hover:text-slate-900 text-center transition-all';
+    });
+    [viewReader, viewExisting, viewAdmin].forEach(v => {
+        if (!v) return;
+        v.classList.add('hidden');
+    });
+
+    if (tabName === 'existing') {
+        if (tabExisting) tabExisting.className = 'flex-1 py-1.5 px-2 rounded-lg bg-white text-blue-700 shadow-xs text-center transition-all font-bold';
+        if (viewExisting) viewExisting.classList.remove('hidden');
+    } else if (tabName === 'admin') {
+        if (tabAdmin) tabAdmin.className = 'flex-1 py-1.5 px-2 rounded-lg bg-white text-slate-900 shadow-xs text-center transition-all font-bold';
+        if (viewAdmin) viewAdmin.classList.remove('hidden');
+    } else {
+        if (tabReader) tabReader.className = 'flex-1 py-1.5 px-2 rounded-lg bg-white text-blue-700 shadow-xs text-center transition-all font-bold';
+        if (viewReader) viewReader.classList.remove('hidden');
+    }
+}
+
+function openReaderOnboardingModal(options = {}) {
     const modal = document.getElementById('reader-onboarding-modal');
     if (!modal) return;
+
+    const isStartup = Boolean(options.isStartup);
+    modal.dataset.isStartup = isStartup ? 'true' : 'false';
+
+    const closeBtn = document.getElementById('onboard-close-btn');
+    if (closeBtn) {
+        if (isStartup) {
+            closeBtn.classList.add('hidden');
+        } else {
+            closeBtn.classList.remove('hidden');
+        }
+    }
+
+    switchOnboardTab('reader');
 
     const profile = STATE.readerProfile || {
         name: STATE.currentUser ? STATE.currentUser.full_name : 'Ayesha',
@@ -2509,10 +2556,12 @@ function openReaderOnboardingModal() {
     };
 
     const nameInput = document.getElementById('onboard-name-input');
+    const phoneInput = document.getElementById('onboard-phone-input');
     const citySelect = document.getElementById('onboard-city-select');
     const ageHidden = document.getElementById('onboard-age-group-value');
 
     if (nameInput) nameInput.value = profile.name || '';
+    if (phoneInput && profile.phone_or_email) phoneInput.value = profile.phone_or_email;
     if (citySelect && profile.city) citySelect.value = profile.city;
     if (ageHidden) ageHidden.value = profile.age_group || 'teens';
 
@@ -2540,7 +2589,12 @@ function openReaderOnboardingModal() {
     modal.classList.remove('hidden');
 }
 
-function closeReaderOnboardingModal() {
+function closeReaderOnboardingModal(force = false) {
+    const isSessionActive = sessionStorage.getItem('bookzy_session_active') || localStorage.getItem('bookloop_token');
+    if (!force && !isSessionActive) {
+        // Mandatory startup login: visitors cannot dismiss before signing in or continuing as reader
+        return;
+    }
     const modal = document.getElementById('reader-onboarding-modal');
     if (modal) modal.classList.add('hidden');
 }
@@ -2577,6 +2631,7 @@ function toggleOnboardInterest(interestKey, chipEl) {
 async function handleReaderOnboardingSubmit(e) {
     e.preventDefault();
     const name = document.getElementById('onboard-name-input')?.value.trim() || 'Reader';
+    const phoneOrEmail = document.getElementById('onboard-phone-input')?.value.trim() || '';
     const ageGroup = document.getElementById('onboard-age-group-value')?.value || 'teens';
     const city = document.getElementById('onboard-city-select')?.value || 'Lahore';
 
@@ -2588,14 +2643,31 @@ async function handleReaderOnboardingSubmit(e) {
 
     const profile = {
         name,
+        phone_or_email: phoneOrEmail,
         age_group: ageGroup,
         city,
         interests: selectedInterests
     };
 
     STATE.readerProfile = profile;
+    sessionStorage.setItem('bookzy_session_active', 'true');
     localStorage.setItem('bb_reader_profile', JSON.stringify(profile));
     localStorage.setItem('bb_reader_onboarded_dismissed', 'true');
+
+    // Auto-link matching user profile if phone matches
+    if (phoneOrEmail && STATE.allUsers && STATE.allUsers.length) {
+        const cleanPhone = phoneOrEmail.replace(/\D/g, '');
+        const matched = STATE.allUsers.find(u => 
+            (cleanPhone && u.phone_number && u.phone_number.includes(cleanPhone)) ||
+            (u.username && u.username.toLowerCase() === phoneOrEmail.toLowerCase())
+        );
+        if (matched) {
+            STATE.currentUser = matched;
+            localStorage.setItem('bb_user_id', matched.id);
+            await syncUserAuthToken(matched.id);
+            updateUserUI();
+        }
+    }
 
     updateReaderHeaderUI();
 
@@ -2616,13 +2688,90 @@ async function handleReaderOnboardingSubmit(e) {
         console.warn("Preferences backend sync notice:", err);
     }
 
-    closeReaderOnboardingModal();
+    closeReaderOnboardingModal(true);
 
-    // Reload AI recommendations with new profile
+    // Immediately show personalized feed
     await loadAiRecommendations();
 }
 
+async function handleOnboardExistingLogin(e) {
+    e.preventDefault();
+    const ident = document.getElementById('onboard-existing-ident')?.value.trim();
+    const pass = document.getElementById('onboard-existing-pass')?.value;
+    const errBanner = document.getElementById('onboard-existing-err');
+    if (errBanner) errBanner.classList.add('hidden');
+
+    try {
+        const res = await fetch('/api/auth/login/', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ phone_or_username: ident, password: pass })
+        });
+        const data = await res.json();
+        if (res.ok) {
+            sessionStorage.setItem('bookzy_session_active', 'true');
+            localStorage.setItem('bookloop_token', data.token);
+            localStorage.setItem('bb_user_id', data.profile.id);
+            if (data.is_staff) {
+                localStorage.setItem('bookbazaar_admin_token', data.token);
+            }
+            closeReaderOnboardingModal(true);
+            location.reload();
+        } else {
+            if (errBanner) {
+                errBanner.textContent = data.error || "Login failed. Check your credentials.";
+                errBanner.classList.remove('hidden');
+            } else {
+                alert(data.error || "Login failed");
+            }
+        }
+    } catch (err) {
+        if (errBanner) {
+            errBanner.textContent = "Network error during login. Please try again.";
+            errBanner.classList.remove('hidden');
+        }
+    }
+}
+
+async function handleOnboardAdminLogin(e) {
+    e.preventDefault();
+    const ident = document.getElementById('onboard-admin-ident')?.value.trim();
+    const pass = document.getElementById('onboard-admin-pass')?.value;
+    const errBanner = document.getElementById('onboard-admin-err');
+    if (errBanner) errBanner.classList.add('hidden');
+
+    try {
+        const res = await fetch('/api/auth/login/', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ phone_or_username: ident, password: pass })
+        });
+        const data = await res.json();
+        if (res.ok && data.is_staff) {
+            sessionStorage.setItem('bookzy_session_active', 'true');
+            localStorage.setItem('bookloop_token', data.token);
+            localStorage.setItem('bookbazaar_admin_token', data.token);
+            localStorage.setItem('bb_user_id', data.profile.id);
+            window.location.href = '/admin-panel/';
+        } else if (res.ok && !data.is_staff) {
+            if (errBanner) {
+                errBanner.textContent = "Access denied. This account does not have staff or administrator privileges.";
+                errBanner.classList.remove('hidden');
+            }
+        } else {
+            if (errBanner) {
+                errBanner.textContent = data.error || "Invalid administrator credentials.";
+                errBanner.classList.remove('hidden');
+            }
+        }
+    } catch (err) {
+        if (errBanner) {
+            errBanner.textContent = "Connection error. Please try again.";
+            errBanner.classList.remove('hidden');
+        }
+    }
+}
+
 function skipReaderOnboarding() {
-    localStorage.setItem('bb_reader_onboarded_dismissed', 'true');
     closeReaderOnboardingModal();
 }

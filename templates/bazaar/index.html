@@ -14,7 +14,6 @@
             <div>
                 <span class="font-extrabold text-xs sm:text-sm tracking-tight text-white flex items-center gap-1.5" data-i18n="brand_name">
                     Bookzy AI
-                    <span class="text-[9px] bg-emerald-500/20 text-emerald-300 border border-emerald-400/30 px-1.5 py-0.5 rounded font-extrabold uppercase tracking-wider hidden sm:inline-block">Live Beta</span>
                 </span>
                 <span class="text-[10px] text-blue-200/80 hidden sm:inline" data-i18n="brand_tagline">
                     Smart Book Marketplace & AI Reader Recommendations
@@ -118,10 +117,6 @@
                         <button onclick="switchTab('profile'); closeUserDropdown();" class="navbar-dropdown-item w-full text-left">
                             <i class="fa-solid fa-id-card"></i> <span>Profile & Seller Dashboard</span>
                         </button>
-                        <div class="my-1 border-t border-slate-100"></div>
-                        <a href="/admin-panel/" class="navbar-dropdown-item w-full text-left text-blue-700 hover:text-blue-800">
-                            <i class="fa-solid fa-gauge-high text-blue-700"></i> <span class="font-bold">Admin Control Panel</span>
-                        </a>
                     </div>
 
                     <!-- Dropdown Footer -->
@@ -149,12 +144,6 @@
                     title="Switch view between Full Screen and Phone Mockup">
                 <i class="fa-solid fa-mobile-screen mr-1.5"></i> <span data-i18n="view_toggle_mobile">Phone View</span>
             </button>
-
-            <!-- Admin Panel Link -->
-            <a href="/admin-panel/" 
-               class="px-2.5 py-1.5 sm:px-3 sm:py-1.5 bg-white hover:bg-blue-50 text-blue-900 border border-blue-200 rounded-xl font-extrabold text-[11px] sm:text-xs transition-all flex items-center gap-1 sm:gap-1.5 shadow-sm">
-                <i class="fa-solid fa-shield-halved text-blue-600 text-xs"></i> <span>Admin</span>
-            </a>
         </div>
     </div>
 </header>
@@ -240,13 +229,13 @@
                         <span class="block text-[10px] text-blue-600 font-semibold">Rs. 50 Refund</span>
                     </div>
 
-                    <a href="/admin-panel/" class="cursor-pointer bg-white p-2.5 sm:p-3 rounded-2xl border border-blue-100 hover:border-blue-300 shadow-xs hover:shadow-md transition-all text-center group">
-                        <div class="w-8 h-8 mx-auto rounded-xl bg-blue-50 group-hover:bg-blue-600 text-blue-600 group-hover:text-white flex items-center justify-center text-sm mb-1 transition-colors">
-                            <i class="fa-solid fa-gauge-high"></i>
+                    <div id="quick-free-books-card" onclick="filterShelfSection('free'); document.getElementById('free-books-section')?.scrollIntoView({behavior: 'smooth'});" class="cursor-pointer bg-white p-2.5 sm:p-3 rounded-2xl border border-emerald-100 hover:border-emerald-300 shadow-xs hover:shadow-md transition-all text-center group">
+                        <div class="w-8 h-8 mx-auto rounded-xl bg-emerald-50 group-hover:bg-emerald-600 text-emerald-600 group-hover:text-white flex items-center justify-center text-sm mb-1 transition-colors">
+                            <i class="fa-solid fa-gift"></i>
                         </div>
-                        <span class="block text-xs font-bold text-slate-800">Admin Panel</span>
-                        <span class="block text-[10px] text-slate-400">Live controls</span>
-                    </a>
+                        <span class="block text-xs font-bold text-slate-800">🎁 Free Books</span>
+                        <span class="block text-[10px] text-emerald-600 font-bold">Rs. 0 Giveaway</span>
+                    </div>
                 </div>
 
                 <!-- Search & Filters Container -->
@@ -623,10 +612,10 @@
                         </div>
                     </div>
 
-                    <!-- Quick Test Barcodes for FYP Evaluator -->
+                    <!-- Sample Books for Instant Lookup -->
                     <div class="mt-4 pt-3 border-t border-slate-100">
                         <span class="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-2">
-                            <i class="fa-solid fa-wand-magic-sparkles text-amber-500 mr-1"></i> Quick Test Barcodes (Click to Scan):
+                            <i class="fa-solid fa-wand-magic-sparkles text-amber-500 mr-1"></i> Sample Books (Click to Test Instant Lookup):
                         </span>
                         <div class="grid grid-cols-2 gap-1.5">
                             <button onclick="scanIsbnQuery('9780132350884')" class="text-left p-2.5 bg-blue-50/70 hover:bg-blue-100 rounded-xl border border-blue-200 text-xs transition-colors">
@@ -1011,7 +1000,7 @@
 </main>
 
 <!-- ============================================== -->
-<!-- MODAL: PAID CONTACT UNLOCK (Phase 1 Sandbox) -->
+<!-- MODAL: SECURE CONTACT UNLOCK -->
 <!-- ============================================== -->
 <div id="unlock-modal" class="fixed inset-0 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 z-[120] hidden">
     <div class="bg-white rounded-3xl max-w-sm w-full p-5 shadow-2xl relative max-h-[92vh] overflow-y-auto border border-blue-100">
@@ -1051,15 +1040,15 @@
             </div>
 
             <!-- Gateway Mode Indicator Banner -->
-            <div id="gateway-mode-indicator" class="bg-sky-50 border border-sky-200 rounded-xl p-2.5 mb-3 text-[11px] text-sky-900 flex items-start gap-2">
-                <i class="fa-solid fa-shield-check text-sky-600 text-sm mt-0.5"></i>
+            <div id="gateway-mode-indicator" class="bg-emerald-50 border border-emerald-200 rounded-xl p-2.5 mb-3 text-[11px] text-emerald-950 flex items-start gap-2">
+                <i class="fa-solid fa-shield-check text-emerald-600 text-sm mt-0.5"></i>
                 <div>
                     <div class="flex items-center gap-1.5 font-bold">
                         <span>Payment Gateway:</span>
-                        <span class="px-1.5 py-0.2 bg-sky-200 text-sky-800 rounded text-[9px] uppercase tracking-wider font-extrabold">Sandbox Active</span>
+                        <span class="px-1.5 py-0.2 bg-emerald-200 text-emerald-900 rounded text-[9px] uppercase tracking-wider font-extrabold">Instant & Secure</span>
                     </div>
-                    <p class="text-[10px] text-sky-700 mt-0.5">
-                        HMAC-SHA256 signature verification enabled. Simulated test wallets allow end-to-end checkout without real bank charges.
+                    <p class="text-[10px] text-emerald-800 mt-0.5">
+                        Encrypted 256-bit secure checkout via JazzCash, Easypaisa, or Refund Wallet.
                     </p>
                 </div>
             </div>
@@ -1347,178 +1336,285 @@
 <!-- ============================================== -->
 <!-- MODAL: STARTUP LOGIN & AI READER PROFILE ONBOARDING -->
 <!-- ============================================== -->
-<div id="reader-onboarding-modal" class="fixed inset-0 bg-slate-900/70 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 z-[130] hidden">
+<div id="reader-onboarding-modal" class="fixed inset-0 bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-3 sm:p-4 z-[130] hidden">
     <div class="bg-white rounded-3xl max-w-lg w-full p-5 sm:p-6 shadow-2xl relative max-h-[92vh] overflow-y-auto border border-blue-100 text-slate-800">
-        <!-- Close / Skip Button -->
-        <button onclick="closeReaderOnboardingModal()" class="absolute top-4 right-4 w-8 h-8 bg-slate-100 hover:bg-slate-200 rounded-full flex items-center justify-center text-slate-500 hover:text-slate-800 text-sm transition-colors" title="Close / Skip">
+        <!-- Close Button (Only visible when modal is opened to edit profile by an already-authenticated user) -->
+        <button id="onboard-close-btn" onclick="closeReaderOnboardingModal()" class="absolute top-4 right-4 w-8 h-8 bg-slate-100 hover:bg-slate-200 rounded-full flex items-center justify-center text-slate-500 hover:text-slate-800 text-sm transition-colors hidden" title="Close">
             <i class="fa-solid fa-xmark"></i>
         </button>
 
         <!-- Header -->
-        <div class="text-center pb-4 border-b border-slate-100">
-            <div class="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-gradient-to-tr from-blue-700 via-blue-600 to-indigo-600 text-white shadow-md shadow-blue-500/20 mb-2.5">
-                <i class="fa-solid fa-wand-magic-sparkles text-xl text-amber-300"></i>
+        <div class="text-center pb-3 border-b border-slate-100">
+            <div class="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-gradient-to-tr from-blue-700 via-blue-600 to-indigo-600 text-white shadow-md shadow-blue-500/20 mb-2">
+                <i class="fa-solid fa-book-open-reader text-xl text-amber-300"></i>
             </div>
             <h2 class="text-base sm:text-lg font-black text-slate-900 tracking-tight">
-                Welcome to Bookzy AI
+                Welcome to Bookzy AI — Sign In to Your Library
             </h2>
             <p class="text-xs text-blue-700 font-bold mt-0.5">
-                Personalize Your Library & AI Recommendations
+                Instant 10-Second Setup • Personalized Reading Feed
             </p>
             <p class="text-[11px] text-slate-500 mt-1 max-w-sm mx-auto leading-relaxed">
                 Tell us your age group and reading interests. We prioritize <span class="text-emerald-700 font-extrabold">🎁 100% Free Donated Books</span> and hand-pick books near your city.
             </p>
         </div>
 
-        <!-- Form -->
-        <form id="reader-onboarding-form" onsubmit="handleReaderOnboardingSubmit(event)" class="space-y-4 pt-4 text-xs">
-            <!-- 1. Full Name -->
-            <div>
-                <label class="block font-bold text-slate-800 mb-1 flex items-center gap-1.5">
-                    <i class="fa-solid fa-user text-blue-600"></i> Your Name *
-                </label>
-                <input type="text" id="onboard-name-input" required placeholder="e.g. Ayesha, Ali, Hamza..." 
-                       class="w-full px-3 py-2.5 bg-slate-50 border border-slate-300 rounded-xl font-bold text-slate-900 focus:bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none transition-all">
-            </div>
+        <!-- Segmented Tab Navigation -->
+        <div class="mt-3.5 mb-2 bg-slate-100 p-1 rounded-xl flex items-center text-xs font-bold gap-1">
+            <button type="button" id="onboard-tab-reader" onclick="switchOnboardTab('reader')" 
+                    class="flex-1 py-1.5 px-2 rounded-lg bg-white text-blue-700 shadow-xs text-center transition-all">
+                <i class="fa-solid fa-wand-magic-sparkles text-amber-500 mr-1"></i> Quick Reader
+            </button>
+            <button type="button" id="onboard-tab-existing" onclick="switchOnboardTab('existing')" 
+                    class="flex-1 py-1.5 px-2 rounded-lg text-slate-600 hover:text-slate-900 text-center transition-all">
+                <i class="fa-solid fa-user mr-1"></i> Existing User
+            </button>
+            <button type="button" id="onboard-tab-admin" onclick="switchOnboardTab('admin')" 
+                    class="flex-1 py-1.5 px-2 rounded-lg text-slate-600 hover:text-slate-900 text-center transition-all">
+                <i class="fa-solid fa-shield-halved text-blue-600 mr-1"></i> Admin Staff
+            </button>
+        </div>
 
-            <!-- 2. Age Group Selector (Interactive Cards) -->
-            <div>
-                <label class="block font-bold text-slate-800 mb-1.5 flex items-center justify-between">
-                    <span class="flex items-center gap-1.5">
-                        <i class="fa-solid fa-layer-group text-blue-600"></i> Select Your Age Group *
-                    </span>
-                    <span class="text-[10px] text-blue-700 font-semibold" id="onboard-age-selected-label">Student (13–19 yrs)</span>
-                </label>
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2" id="onboard-age-group-cards">
-                    <!-- Kids -->
-                    <div class="onboard-age-card border-2 border-slate-200 rounded-xl p-2.5 cursor-pointer hover:border-blue-400 transition-all flex items-start gap-2.5" 
-                         onclick="selectOnboardAgeGroup('kids', this)" data-age="kids">
-                        <div class="w-8 h-8 rounded-lg bg-amber-100 text-amber-700 flex items-center justify-center text-sm font-bold shrink-0 mt-0.5">
-                            🧸
-                        </div>
-                        <div class="flex-1 min-w-0">
-                            <div class="font-extrabold text-slate-900 text-xs flex items-center justify-between">
-                                <span>Kids</span>
-                                <span class="text-[9px] font-bold text-amber-700 bg-amber-50 px-1.5 py-0.2 rounded">5–12 yrs</span>
+        <!-- PANEL 1: Quick Login / Continue as Reader -->
+        <div id="onboard-view-reader">
+            <form id="reader-onboarding-form" onsubmit="handleReaderOnboardingSubmit(event)" class="space-y-3.5 pt-2 text-xs">
+                <!-- 1. Full Name -->
+                <div>
+                    <label class="block font-bold text-slate-800 mb-1 flex items-center gap-1.5">
+                        <i class="fa-solid fa-user text-blue-600"></i> Your Name *
+                    </label>
+                    <input type="text" id="onboard-name-input" required placeholder="e.g. Ayesha, Ali, Hamza..." 
+                           class="w-full px-3 py-2.5 bg-slate-50 border border-slate-300 rounded-xl font-bold text-slate-900 focus:bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none transition-all">
+                </div>
+
+                <!-- 2. Phone or Email (Optional / Quick Login) -->
+                <div>
+                    <label class="block font-bold text-slate-800 mb-1 flex items-center justify-between">
+                        <span class="flex items-center gap-1.5">
+                            <i class="fa-solid fa-phone text-blue-600"></i> Phone or Email
+                        </span>
+                        <span class="text-[10px] text-slate-400 font-normal">Optional / Quick Login</span>
+                    </label>
+                    <input type="text" id="onboard-phone-input" placeholder="e.g. 0300-1234567 or email@domain.com" 
+                           class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl font-medium text-slate-900 focus:bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none transition-all">
+                </div>
+
+                <!-- 3. Age Group Selector (Interactive Cards) -->
+                <div>
+                    <label class="block font-bold text-slate-800 mb-1.5 flex items-center justify-between">
+                        <span class="flex items-center gap-1.5">
+                            <i class="fa-solid fa-layer-group text-blue-600"></i> Select Your Age Group *
+                        </span>
+                        <span class="text-[10px] text-blue-700 font-semibold" id="onboard-age-selected-label">Student (13–19 yrs)</span>
+                    </label>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2" id="onboard-age-group-cards">
+                        <!-- Kids 5–12 -->
+                        <div class="onboard-age-card border-2 border-slate-200 rounded-xl p-2.5 cursor-pointer hover:border-blue-400 transition-all flex items-start gap-2.5" 
+                             onclick="selectOnboardAgeGroup('kids', this)" data-age="kids">
+                            <div class="w-8 h-8 rounded-lg bg-amber-100 text-amber-700 flex items-center justify-center text-sm font-bold shrink-0 mt-0.5">
+                                🧸
                             </div>
-                            <p class="text-[10px] text-slate-500 mt-0.5 leading-tight">Story Books & Primary Punjab Textbooks (Class 1–5)</p>
+                            <div class="flex-1 min-w-0">
+                                <div class="font-extrabold text-slate-900 text-xs flex items-center justify-between">
+                                    <span>Kids 5–12</span>
+                                    <span class="text-[9px] font-bold text-amber-700 bg-amber-50 px-1.5 py-0.2 rounded">5–12 yrs</span>
+                                </div>
+                                <p class="text-[10px] text-slate-500 mt-0.5 leading-tight">Story Books & Primary Punjab Textbooks (Class 1–5)</p>
+                            </div>
+                        </div>
+
+                        <!-- Student 13–19 -->
+                        <div class="onboard-age-card active border-2 border-blue-600 bg-blue-50/50 rounded-xl p-2.5 cursor-pointer hover:border-blue-500 transition-all flex items-start gap-2.5" 
+                             onclick="selectOnboardAgeGroup('teens', this)" data-age="teens">
+                            <div class="w-8 h-8 rounded-lg bg-blue-100 text-blue-700 flex items-center justify-center text-sm font-bold shrink-0 mt-0.5">
+                                📚
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <div class="font-extrabold text-slate-900 text-xs flex items-center justify-between">
+                                    <span>Student 13–19</span>
+                                    <span class="text-[9px] font-bold text-blue-700 bg-blue-50 px-1.5 py-0.2 rounded">13–19 yrs</span>
+                                </div>
+                                <p class="text-[10px] text-slate-500 mt-0.5 leading-tight">Punjab Textbooks (Middle, Matric 9–10 & FSc 11–12)</p>
+                            </div>
+                        </div>
+
+                        <!-- University 20–30 -->
+                        <div class="onboard-age-card border-2 border-slate-200 rounded-xl p-2.5 cursor-pointer hover:border-blue-400 transition-all flex items-start gap-2.5" 
+                             onclick="selectOnboardAgeGroup('young_adult', this)" data-age="young_adult">
+                            <div class="w-8 h-8 rounded-lg bg-purple-100 text-purple-700 flex items-center justify-center text-sm font-bold shrink-0 mt-0.5">
+                                🎓
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <div class="font-extrabold text-slate-900 text-xs flex items-center justify-between">
+                                    <span>University 20–30</span>
+                                    <span class="text-[9px] font-bold text-purple-700 bg-purple-50 px-1.5 py-0.2 rounded">20–30 yrs</span>
+                                </div>
+                                <p class="text-[10px] text-slate-500 mt-0.5 leading-tight">BS/Higher Ed, Novels, Fiction & History</p>
+                            </div>
+                        </div>
+
+                        <!-- General Reader 31+ -->
+                        <div class="onboard-age-card border-2 border-slate-200 rounded-xl p-2.5 cursor-pointer hover:border-blue-400 transition-all flex items-start gap-2.5" 
+                             onclick="selectOnboardAgeGroup('general', this)" data-age="general">
+                            <div class="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center text-sm font-bold shrink-0 mt-0.5">
+                                🏛️
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <div class="font-extrabold text-slate-900 text-xs flex items-center justify-between">
+                                    <span>General Reader 31+</span>
+                                    <span class="text-[9px] font-bold text-emerald-700 bg-emerald-50 px-1.5 py-0.2 rounded">31+ yrs</span>
+                                </div>
+                                <p class="text-[10px] text-slate-500 mt-0.5 leading-tight">Novels, Literature, History & Islamic Books</p>
+                            </div>
                         </div>
                     </div>
+                    <input type="hidden" id="onboard-age-group-value" value="teens">
+                </div>
 
-                    <!-- Teens / School / College -->
-                    <div class="onboard-age-card active border-2 border-blue-600 bg-blue-50/50 rounded-xl p-2.5 cursor-pointer hover:border-blue-500 transition-all flex items-start gap-2.5" 
-                         onclick="selectOnboardAgeGroup('teens', this)" data-age="teens">
-                        <div class="w-8 h-8 rounded-lg bg-blue-100 text-blue-700 flex items-center justify-center text-sm font-bold shrink-0 mt-0.5">
-                            📚
-                        </div>
-                        <div class="flex-1 min-w-0">
-                            <div class="font-extrabold text-slate-900 text-xs flex items-center justify-between">
-                                <span>Student</span>
-                                <span class="text-[9px] font-bold text-blue-700 bg-blue-50 px-1.5 py-0.2 rounded">13–19 yrs</span>
-                            </div>
-                            <p class="text-[10px] text-slate-500 mt-0.5 leading-tight">Punjab Textbooks (Middle, Matric 9–10 & FSc 11–12)</p>
-                        </div>
-                    </div>
+                <!-- 4. City Selection (Including Punjab & Balochistan Cities) -->
+                <div>
+                    <label class="block font-bold text-slate-800 mb-1 flex items-center gap-1.5">
+                        <i class="fa-solid fa-location-dot text-rose-600"></i> City (Punjab & Balochistan Available) *
+                    </label>
+                    <select id="onboard-city-select" required class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl font-bold text-slate-900 focus:bg-white focus:ring-2 focus:ring-blue-500">
+                        {% for city in cities %}
+                            <option value="{{ city }}" {% if city == 'Lahore' %}selected{% endif %}>{{ city }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
 
-                    <!-- University / Young Adult -->
-                    <div class="onboard-age-card border-2 border-slate-200 rounded-xl p-2.5 cursor-pointer hover:border-blue-400 transition-all flex items-start gap-2.5" 
-                         onclick="selectOnboardAgeGroup('young_adult', this)" data-age="young_adult">
-                        <div class="w-8 h-8 rounded-lg bg-purple-100 text-purple-700 flex items-center justify-center text-sm font-bold shrink-0 mt-0.5">
-                            🎓
-                        </div>
-                        <div class="flex-1 min-w-0">
-                            <div class="font-extrabold text-slate-900 text-xs flex items-center justify-between">
-                                <span>University / YA</span>
-                                <span class="text-[9px] font-bold text-purple-700 bg-purple-50 px-1.5 py-0.2 rounded">20–30 yrs</span>
-                            </div>
-                            <p class="text-[10px] text-slate-500 mt-0.5 leading-tight">BS/Higher Ed, Novels, Fiction & History</p>
-                        </div>
-                    </div>
-
-                    <!-- General Reader -->
-                    <div class="onboard-age-card border-2 border-slate-200 rounded-xl p-2.5 cursor-pointer hover:border-blue-400 transition-all flex items-start gap-2.5" 
-                         onclick="selectOnboardAgeGroup('general', this)" data-age="general">
-                        <div class="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center text-sm font-bold shrink-0 mt-0.5">
-                            🏛️
-                        </div>
-                        <div class="flex-1 min-w-0">
-                            <div class="font-extrabold text-slate-900 text-xs flex items-center justify-between">
-                                <span>General Reader</span>
-                                <span class="text-[9px] font-bold text-emerald-700 bg-emerald-50 px-1.5 py-0.2 rounded">31+ yrs</span>
-                            </div>
-                            <p class="text-[10px] text-slate-500 mt-0.5 leading-tight">Novels, Literature, History & Islamic Books</p>
-                        </div>
+                <!-- 5. Reading Interests (Story Books, PTB 1-FSc, Fiction, Novels, History, Free Books) -->
+                <div>
+                    <label class="block font-bold text-slate-800 mb-1.5 flex items-center justify-between">
+                        <span class="flex items-center gap-1.5">
+                            <i class="fa-solid fa-heart text-rose-500"></i> Reading Interests (Select All That Apply)
+                        </span>
+                        <span class="text-[10px] text-slate-400">Multi-select</span>
+                    </label>
+                    <div class="flex flex-wrap gap-1.5" id="onboard-interest-chips">
+                        <button type="button" onclick="toggleOnboardInterest('free_only', this)" data-interest="free_only"
+                                class="interest-chip active px-3 py-1.5 rounded-xl border-2 border-emerald-500 bg-emerald-50 text-emerald-800 font-bold text-xs flex items-center gap-1.5 transition-all">
+                            <i class="fa-solid fa-gift text-emerald-600 text-xs"></i> <span>Free Books (Rs. 0)</span>
+                        </button>
+                        <button type="button" onclick="toggleOnboardInterest('ptb_textbooks', this)" data-interest="ptb_textbooks"
+                                class="interest-chip active px-3 py-1.5 rounded-xl border-2 border-blue-600 bg-blue-50 text-blue-800 font-bold text-xs flex items-center gap-1.5 transition-all">
+                            <i class="fa-solid fa-book-bookmark text-blue-600 text-xs"></i> <span>Punjab Textbooks 1–FSc</span>
+                        </button>
+                        <button type="button" onclick="toggleOnboardInterest('story_books', this)" data-interest="story_books"
+                                class="interest-chip px-3 py-1.5 rounded-xl border border-slate-300 bg-white text-slate-700 font-bold text-xs flex items-center gap-1.5 hover:border-blue-400 transition-all">
+                            <i class="fa-solid fa-shapes text-amber-500 text-xs"></i> <span>Story Books</span>
+                        </button>
+                        <button type="button" onclick="toggleOnboardInterest('novels', this)" data-interest="novels"
+                                class="interest-chip px-3 py-1.5 rounded-xl border border-slate-300 bg-white text-slate-700 font-bold text-xs flex items-center gap-1.5 hover:border-blue-400 transition-all">
+                            <i class="fa-solid fa-feather text-purple-600 text-xs"></i> <span>Novels</span>
+                        </button>
+                        <button type="button" onclick="toggleOnboardInterest('fiction', this)" data-interest="fiction"
+                                class="interest-chip px-3 py-1.5 rounded-xl border border-slate-300 bg-white text-slate-700 font-bold text-xs flex items-center gap-1.5 hover:border-blue-400 transition-all">
+                            <i class="fa-solid fa-book-open text-sky-600 text-xs"></i> <span>Fiction</span>
+                        </button>
+                        <button type="button" onclick="toggleOnboardInterest('history', this)" data-interest="history"
+                                class="interest-chip px-3 py-1.5 rounded-xl border border-slate-300 bg-white text-slate-700 font-bold text-xs flex items-center gap-1.5 hover:border-blue-400 transition-all">
+                            <i class="fa-solid fa-landmark text-amber-700 text-xs"></i> <span>History</span>
+                        </button>
                     </div>
                 </div>
-                <input type="hidden" id="onboard-age-group-value" value="teens">
-            </div>
 
-            <!-- 3. City Selection (For Proximity / Campus Deals) -->
-            <div>
-                <label class="block font-bold text-slate-800 mb-1 flex items-center gap-1.5">
-                    <i class="fa-solid fa-location-dot text-rose-600"></i> Your City (For Near-You Recommendations) *
-                </label>
-                <select id="onboard-city-select" required class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl font-bold text-slate-900 focus:bg-white focus:ring-2 focus:ring-blue-500">
-                    {% for city in cities %}
-                        <option value="{{ city }}" {% if city == 'Lahore' %}selected{% endif %}>{{ city }}</option>
-                    {% endfor %}
-                </select>
-            </div>
+                <!-- Submit Button -->
+                <div class="pt-2 space-y-2">
+                    <button type="submit" id="onboard-submit-btn" 
+                            class="w-full py-3 bg-gradient-to-r from-blue-700 via-blue-600 to-indigo-700 hover:from-blue-800 hover:to-indigo-800 text-white font-black rounded-xl text-xs sm:text-sm shadow-md flex items-center justify-center gap-2 transition-all active:scale-[0.99]">
+                        <i class="fa-solid fa-wand-magic-sparkles text-amber-300"></i>
+                        <span>✨ Start Reading & Enter Bookzy AI</span>
+                    </button>
 
-            <!-- 4. Reading Interests (Multi-select Chips) -->
-            <div>
-                <label class="block font-bold text-slate-800 mb-1.5 flex items-center justify-between">
-                    <span class="flex items-center gap-1.5">
-                        <i class="fa-solid fa-heart text-rose-500"></i> Reading Interests (Select All That Apply)
-                    </span>
-                    <span class="text-[10px] text-slate-400">Multi-select</span>
-                </label>
-                <div class="flex flex-wrap gap-1.5" id="onboard-interest-chips">
-                    <button type="button" onclick="toggleOnboardInterest('free_only', this)" data-interest="free_only"
-                            class="interest-chip active px-3 py-1.5 rounded-xl border-2 border-emerald-500 bg-emerald-50 text-emerald-800 font-bold text-xs flex items-center gap-1.5 transition-all">
-                        <i class="fa-solid fa-gift text-emerald-600 text-xs"></i> <span>Free Books (Rs. 0)</span>
-                    </button>
-                    <button type="button" onclick="toggleOnboardInterest('ptb_textbooks', this)" data-interest="ptb_textbooks"
-                            class="interest-chip active px-3 py-1.5 rounded-xl border-2 border-blue-600 bg-blue-50 text-blue-800 font-bold text-xs flex items-center gap-1.5 transition-all">
-                        <i class="fa-solid fa-book-bookmark text-blue-600 text-xs"></i> <span>Punjab Textbooks (1–FSc)</span>
-                    </button>
-                    <button type="button" onclick="toggleOnboardInterest('story_books', this)" data-interest="story_books"
-                            class="interest-chip px-3 py-1.5 rounded-xl border border-slate-300 bg-white text-slate-700 font-bold text-xs flex items-center gap-1.5 hover:border-blue-400 transition-all">
-                        <i class="fa-solid fa-shapes text-amber-500 text-xs"></i> <span>Story Books</span>
-                    </button>
-                    <button type="button" onclick="toggleOnboardInterest('novels', this)" data-interest="novels"
-                            class="interest-chip px-3 py-1.5 rounded-xl border border-slate-300 bg-white text-slate-700 font-bold text-xs flex items-center gap-1.5 hover:border-blue-400 transition-all">
-                        <i class="fa-solid fa-feather text-purple-600 text-xs"></i> <span>Novels</span>
-                    </button>
-                    <button type="button" onclick="toggleOnboardInterest('fiction', this)" data-interest="fiction"
-                            class="interest-chip px-3 py-1.5 rounded-xl border border-slate-300 bg-white text-slate-700 font-bold text-xs flex items-center gap-1.5 hover:border-blue-400 transition-all">
-                        <i class="fa-solid fa-book-open text-sky-600 text-xs"></i> <span>Fiction</span>
-                    </button>
-                    <button type="button" onclick="toggleOnboardInterest('history', this)" data-interest="history"
-                            class="interest-chip px-3 py-1.5 rounded-xl border border-slate-300 bg-white text-slate-700 font-bold text-xs flex items-center gap-1.5 hover:border-blue-400 transition-all">
-                        <i class="fa-solid fa-landmark text-amber-700 text-xs"></i> <span>History & Literature</span>
-                    </button>
+                    <div class="flex items-center justify-between text-[11px] text-slate-500 px-1 pt-1">
+                        <button type="button" onclick="switchOnboardTab('existing')" class="text-blue-700 hover:text-blue-900 font-bold hover:underline flex items-center gap-1">
+                            <i class="fa-solid fa-right-to-bracket text-[10px]"></i> Existing User Login
+                        </button>
+                        <button type="button" onclick="switchOnboardTab('admin')" class="text-slate-500 hover:text-slate-800 font-semibold hover:underline flex items-center gap-1">
+                            <i class="fa-solid fa-shield-halved text-[10px] text-blue-600"></i> Admin Staff Login
+                        </button>
+                    </div>
                 </div>
-            </div>
+            </form>
+        </div>
 
-            <!-- Submit & Action Buttons -->
-            <div class="pt-2 space-y-2">
-                <button type="submit" id="onboard-submit-btn" 
-                        class="w-full py-3 bg-gradient-to-r from-blue-700 via-blue-600 to-indigo-700 hover:from-blue-800 hover:to-indigo-800 text-white font-black rounded-xl text-xs sm:text-sm shadow-md flex items-center justify-center gap-2 transition-all active:scale-[0.99]">
-                    <i class="fa-solid fa-wand-magic-sparkles text-amber-300"></i>
-                    <span>✨ Personalize My Bookzy AI</span>
-                </button>
+        <!-- PANEL 2: Existing User Login -->
+        <div id="onboard-view-existing" class="hidden">
+            <form id="onboard-existing-form" onsubmit="handleOnboardExistingLogin(event)" class="space-y-3.5 pt-2 text-xs">
+                <div id="onboard-existing-err" class="hidden p-2.5 bg-rose-50 border border-rose-200 text-rose-800 rounded-xl text-xs font-semibold"></div>
 
-                <div class="flex items-center justify-between text-[11px] text-slate-500 px-1 pt-1">
-                    <button type="button" onclick="skipReaderOnboarding()" class="text-slate-500 hover:text-slate-800 font-semibold hover:underline">
-                        Skip for Now (Browse All)
-                    </button>
-                    <button type="button" onclick="closeReaderOnboardingModal(); openAuthModal('login');" class="text-blue-700 hover:text-blue-900 font-bold hover:underline">
-                        Have an account? Sign In
-                    </button>
+                <div>
+                    <label class="block font-bold text-slate-800 mb-1 flex items-center gap-1.5">
+                        <i class="fa-solid fa-user text-blue-600"></i> Phone Number or Username
+                    </label>
+                    <input type="text" id="onboard-existing-ident" required placeholder="03001234567 or username" 
+                           class="w-full px-3 py-2.5 bg-slate-50 border border-slate-300 rounded-xl font-medium text-slate-900 focus:bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none">
                 </div>
+
+                <div>
+                    <label class="block font-bold text-slate-800 mb-1 flex items-center gap-1.5">
+                        <i class="fa-solid fa-lock text-blue-600"></i> Password
+                    </label>
+                    <input type="password" id="onboard-existing-pass" required placeholder="••••••••" 
+                           class="w-full px-3 py-2.5 bg-slate-50 border border-slate-300 rounded-xl font-medium text-slate-900 focus:bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                </div>
+
+                <div class="pt-2 space-y-2">
+                    <button type="submit" 
+                            class="w-full py-3 bg-blue-700 hover:bg-blue-800 text-white font-black rounded-xl text-xs sm:text-sm shadow-md flex items-center justify-center gap-2 transition-all">
+                        <i class="fa-solid fa-right-to-bracket"></i>
+                        <span>Sign In to Account</span>
+                    </button>
+                    <div class="text-center pt-1">
+                        <button type="button" onclick="switchOnboardTab('reader')" class="text-xs text-blue-700 hover:text-blue-900 font-bold hover:underline inline-flex items-center gap-1">
+                            <i class="fa-solid fa-arrow-left text-[10px]"></i> Back to Quick Reader Sign-In
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <!-- PANEL 3: Admin Staff Login -->
+        <div id="onboard-view-admin" class="hidden">
+            <div class="p-2.5 bg-amber-50 border border-amber-200 rounded-xl text-amber-900 text-xs flex items-center gap-2 mb-2">
+                <i class="fa-solid fa-shield-halved text-amber-600 text-sm shrink-0"></i>
+                <span class="text-[11px] font-medium">Restricted operations portal. Requires verified administrator credentials.</span>
             </div>
-        </form>
+
+            <form id="onboard-admin-form" onsubmit="handleOnboardAdminLogin(event)" class="space-y-3.5 pt-1 text-xs">
+                <div id="onboard-admin-err" class="hidden p-2.5 bg-rose-50 border border-rose-200 text-rose-800 rounded-xl text-xs font-semibold"></div>
+
+                <div>
+                    <label class="block font-bold text-slate-800 mb-1 flex items-center gap-1.5">
+                        <i class="fa-solid fa-user-shield text-blue-600"></i> Admin Username or Email
+                    </label>
+                    <input type="text" id="onboard-admin-ident" required placeholder="admin or staff@bookzy.pk" 
+                           class="w-full px-3 py-2.5 bg-slate-50 border border-slate-300 rounded-xl font-medium text-slate-900 focus:bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                </div>
+
+                <div>
+                    <label class="block font-bold text-slate-800 mb-1 flex items-center gap-1.5">
+                        <i class="fa-solid fa-lock text-blue-600"></i> Admin Password
+                    </label>
+                    <input type="password" id="onboard-admin-pass" required placeholder="••••••••" 
+                           class="w-full px-3 py-2.5 bg-slate-50 border border-slate-300 rounded-xl font-medium text-slate-900 focus:bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                </div>
+
+                <div class="pt-2 space-y-2">
+                    <button type="submit" 
+                            class="w-full py-3 bg-slate-900 hover:bg-slate-800 text-white font-black rounded-xl text-xs sm:text-sm shadow-md flex items-center justify-center gap-2 transition-all">
+                        <i class="fa-solid fa-key text-amber-400"></i>
+                        <span>Sign In to Admin Panel</span>
+                    </button>
+                    <div class="text-center pt-1">
+                        <button type="button" onclick="switchOnboardTab('reader')" class="text-xs text-blue-700 hover:text-blue-900 font-bold hover:underline inline-flex items-center gap-1">
+                            <i class="fa-solid fa-arrow-left text-[10px]"></i> Back to Quick Reader Sign-In
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
     </div>
 </div>
 

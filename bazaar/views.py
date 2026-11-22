@@ -6,7 +6,7 @@ import logging
 import urllib.parse
 from decimal import Decimal
 
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import render, redirect, get_object_or_404
 from django.http import JsonResponse
 from django.utils import timezone
 from django.db import transaction
@@ -80,18 +80,64 @@ def index_view(request):
 
 
 def admin_view(request):
-    """Admin Dashboard View"""
+    """
+    Admin Dashboard View with strict role-based access control.
+    Only authorized staff / superusers can access administrative operations.
+    Regular buyers and sellers see a clean Restricted Admin Login screen.
+    """
     plat_settings = PlatformSetting.get_settings()
-    admin_user = User.objects.filter(is_staff=True).first()
-    admin_token = ''
-    if admin_user:
-        admin_token = Token.objects.get_or_create(user=admin_user)[0].key
+    error_message = None
 
+    # Handle admin lock/logout request
+    if request.GET.get('action') == 'logout':
+        django_logout(request)
+        return redirect('/admin-panel/')
+
+    # Handle direct POST authentication from the Restricted Admin Login screen
+    if request.method == 'POST':
+        username_or_email = str(request.POST.get('username', '')).strip()
+        password = str(request.POST.get('password', '')).strip()
+
+        user = authenticate(request, username=username_or_email, password=password)
+        if not user:
+            user_obj = User.objects.filter(email__iexact=username_or_email).first()
+            if user_obj:
+                user = authenticate(request, username=user_obj.username, password=password)
+
+        if user and (user.is_staff or user.is_superuser):
+            django_login(request, user)
+            token, _ = Token.objects.get_or_create(user=user)
+            context = {
+                'settings': plat_settings,
+                'admin_token': token.key,
+                'is_admin_authenticated': True,
+                'admin_user': user,
+            }
+            return render(request, 'bazaar/admin.html', context)
+        else:
+            error_message = "Invalid administrator credentials or unauthorized account."
+
+    # Check if user is already authenticated in session as staff / superuser
+    if request.user.is_authenticated and (request.user.is_staff or request.user.is_superuser):
+        token, _ = Token.objects.get_or_create(user=request.user)
+        context = {
+            'settings': plat_settings,
+            'admin_token': token.key,
+            'is_admin_authenticated': True,
+            'admin_user': request.user,
+        }
+        return render(request, 'bazaar/admin.html', context)
+
+    # Unauthorized visitor: Show clean Restricted Admin Login screen
+    # Do not leak admin token to unauthorized visitors
     context = {
         'settings': plat_settings,
-        'admin_token': admin_token,
+        'admin_token': '',
+        'is_admin_authenticated': False,
+        'error_message': error_message,
     }
-    return render(request, 'bazaar/admin.html', context)
+    status_code = 401 if error_message else 200
+    return render(request, 'bazaar/admin.html', context, status=status_code)
 
 
 # ==========================================
@@ -164,8 +210,8 @@ def register_user(request):
 @permission_classes([AllowAny])
 def login_user(request):
     """
-    Secure login using Phone Number / Username and Password.
-    Returns Auth Token and UserProfile.
+    Secure login using Phone Number, Username, or Email and Password.
+    Returns Auth Token, UserProfile, and staff privilege status.
     """
     data = request.data
     phone_or_user = str(data.get('phone_or_username', '')).strip()
@@ -178,25 +224,54 @@ def login_user(request):
     if len(phone_clean) == 10 and phone_clean.startswith('3'):
         phone_clean = '0' + phone_clean
 
-    profile = UserProfile.objects.filter(Q(phone_number=phone_clean) | Q(user__username=phone_or_user)).first()
-    if not profile or not profile.user:
-        return Response({'error': 'No account found with this phone number or username.'}, status=status.HTTP_404_NOT_FOUND)
+    profile = None
+    if phone_clean:
+        profile = UserProfile.objects.filter(phone_number=phone_clean).first()
 
-    if profile.is_blocked:
+    if not profile:
+        profile = UserProfile.objects.filter(
+            Q(user__username__iexact=phone_or_user) | Q(user__email__iexact=phone_or_user)
+        ).first()
+
+    target_user = None
+    if profile and profile.user:
+        target_user = profile.user
+    else:
+        target_user = User.objects.filter(
+            Q(username__iexact=phone_or_user) | Q(email__iexact=phone_or_user)
+        ).first()
+
+    if not target_user:
+        return Response({'error': 'No account found with this phone number, username, or email.'}, status=status.HTTP_404_NOT_FOUND)
+
+    if profile and profile.is_blocked:
         return Response({'error': 'This account has been blocked by Bookzy AI Admin.'}, status=status.HTTP_403_FORBIDDEN)
 
-    user = authenticate(username=profile.user.username, password=password)
+    user = authenticate(username=target_user.username, password=password)
     if not user:
         return Response({'error': 'Incorrect password.'}, status=status.HTTP_401_UNAUTHORIZED)
 
     django_login(request, user)
     token, _ = Token.objects.get_or_create(user=user)
+
+    if not profile:
+        profile, _ = UserProfile.objects.get_or_create(
+            user=user,
+            defaults={
+                'full_name': user.get_full_name() or user.username,
+                'phone_number': phone_clean or '03000000000',
+                'user_type': 'admin' if user.is_staff else 'student',
+                'city': 'Lahore'
+            }
+        )
+
     logger.info(f"User logged in: {user.username}")
 
     return Response({
         'message': 'Login successful',
         'token': token.key,
-        'profile': UserProfileSerializer(profile, context={'request': request, 'is_owner': True}).data
+        'profile': UserProfileSerializer(profile, context={'request': request, 'is_owner': True}).data,
+        'is_staff': bool(user.is_staff or user.is_superuser)
     })
 
 
