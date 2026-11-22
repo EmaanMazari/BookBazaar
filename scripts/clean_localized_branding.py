@@ -17,7 +17,7 @@ for i, u in enumerate(UserProfile.objects.all()):
     
     # Remove Muhammad Bilal
     if 'bilal' in u.full_name.lower():
-        u.full_name = 'Demo Buyer'
+        u.full_name = 'Ayesha Reader'
         changed = True
     elif u.user and u.user.username == 'admin':
         u.full_name = 'System Administrator'

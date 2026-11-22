@@ -174,7 +174,7 @@ class JazzCashGatewayAdapter(BaseGatewayAdapter):
             'pp_TxnCurrency': 'PKR',
             'pp_TxnDateTime': txn_date_time,
             'pp_BillReference': str(payment_txn.transaction_id)[:20],
-            'pp_Description': f'BookBazaar Contact Unlock for Listing #{payment_txn.listing_id}',
+            'pp_Description': f'Bookzy AI Contact Unlock for Listing #{payment_txn.listing_id}',
             'pp_ReturnURL': return_url or self.return_url,
             'pp_MobileNumber': buyer_phone or payment_txn.buyer.phone_number or '',
         }
@@ -216,7 +216,7 @@ class JazzCashGatewayAdapter(BaseGatewayAdapter):
             # Currency validation
             currency = payload.get('pp_TxnCurrency', 'PKR')
             if currency != 'PKR':
-                raise InvalidCurrencyError(f"Invalid currency: {currency}. BookBazaar only accepts PKR.")
+                raise InvalidCurrencyError(f"Invalid currency: {currency}. Bookzy AI only accepts PKR.")
 
             is_success = (response_code == '000')
             return {
@@ -467,7 +467,7 @@ class WalletPaymentAdapter(BaseGatewayAdapter):
             return {
                 'success': False,
                 'response_code': 'INSUFFICIENT_FUNDS',
-                'response_message': f"Insufficient BookBazaar wallet balance (Available: Rs. {buyer.wallet_balance}, Required: Rs. {payment_txn.amount}).",
+                'response_message': f"Insufficient Bookzy AI wallet balance (Available: Rs. {buyer.wallet_balance}, Required: Rs. {payment_txn.amount}).",
                 'gateway_ref': f"TXN-WAL-FAIL-{random.randint(1000, 9999)}",
                 'raw_payload': {'balance': str(buyer.wallet_balance)},
             }
@@ -478,7 +478,7 @@ class WalletPaymentAdapter(BaseGatewayAdapter):
         return {
             'success': True,
             'response_code': 'SUCCESS',
-            'response_message': f"Rs. {payment_txn.amount} deducted from BookBazaar wallet.",
+            'response_message': f"Rs. {payment_txn.amount} deducted from Bookzy AI wallet.",
             'gateway_ref': f"TXN-WAL-{random.randint(100000, 999999)}",
             'raw_payload': {'remaining_balance': str(buyer.wallet_balance)},
         }

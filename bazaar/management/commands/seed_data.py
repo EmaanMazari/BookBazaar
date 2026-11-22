@@ -8,14 +8,14 @@ import uuid
 from django.utils import timezone
 
 class Command(BaseCommand):
-    help = 'Seeds initial realistic data for BookBazaar (Pakistan Used Books Marketplace)'
+    help = 'Seeds initial realistic data for Bookzy AI (Pakistan Used Books Marketplace)'
 
     def handle(self, *args, **kwargs):
-        self.stdout.write("Starting BookBazaar database seeding...")
+        self.stdout.write("Starting Bookzy AI database seeding...")
 
         # 1. Platform Settings
         setting, _ = PlatformSetting.objects.get_or_create(id=1)
-        setting.platform_name = 'BookLoop Pakistan'
+        setting.platform_name = 'Bookzy AI'
         setting.contact_unlock_fee = Decimal('50.00')
         setting.auto_refund_days = 5
         setting.require_admin_approval = False
@@ -102,7 +102,7 @@ class Command(BaseCommand):
             },
             {
                 'username': 'buyer_test',
-                'name': 'Demo Buyer',
+                'name': 'Ayesha Reader',
                 'phone': '03023344556',
                 'city': 'Islamabad',
                 'campus': 'Central Campus / Student Center',
@@ -438,4 +438,4 @@ class Command(BaseCommand):
             )
 
         self.stdout.write("-> Seeded advertisements (Banner, Interstitial, Native).")
-        self.stdout.write(self.style.SUCCESS("All BookBazaar demo data seeded successfully!"))
+        self.stdout.write(self.style.SUCCESS("All Bookzy AI demo data seeded successfully!"))

@@ -1,5 +1,5 @@
 /**
- * BookBazaar Pakistan - Core Marketplace Logic
+ * Bookzy AI Pakistan - Core Marketplace Logic
  * Pakistan's Academic & Used Books Marketplace
  */
 
@@ -54,7 +54,7 @@ async function syncUserAuthToken(userId) {
 // Bilingual Translations (English & Urdu)
 const I18N = {
     en: {
-        brand_name: "BookBazaar AI",
+        brand_name: "Bookzy AI",
         brand_tagline: "Smart Used-Books Marketplace & Recommendation System",
         nav_home: "Home",
         nav_scan: "Scan ISBN",
@@ -86,12 +86,12 @@ const I18N = {
         call_seller: "Call Seller",
         whatsapp_seller: "WhatsApp Seller",
         refund_guarantee_badge: "100% Refundable Contact Fee (Rs. 50)",
-        refund_guarantee_text: "Fee is kept by BookBazaar only if deal is finalized; fully refunded if no deal is made.",
+        refund_guarantee_text: "Fee is kept by Bookzy AI only if deal is finalized; fully refunded if no deal is made.",
         select_payment_method: "Select Local Payment Method",
         jazzcash_wallet: "JazzCash Mobile Account",
         easypaisa_wallet: "Easypaisa Mobile Wallet",
         card_payment: "Debit / Credit Card (Safepay / PayFast)",
-        wallet_balance: "BookBazaar Wallet",
+        wallet_balance: "Bookzy AI Wallet",
         pay_and_unlock: "Pay & Unlock Seller Contact",
         sell_step1: "Scan or Enter ISBN to Auto-fill Book",
         sell_btn: "Publish Book for Sale",
@@ -99,8 +99,8 @@ const I18N = {
         view_toggle_full: "Full Screen"
     },
     ur: {
-        brand_name: "بک بازار AI",
-        brand_tagline: "سمارٹ مستعمل و درسی کتب مارکیٹ پلیس اور تجویزاتی نظام",
+        brand_name: "Bookzy AI (بک زی)",
+        brand_tagline: "سمارٹ مستعمل و درسی کتب مارکیٹ پلیس اور AI تجویزاتی نظام",
         nav_home: "ہوم",
         nav_scan: "بارکوڈ اسکین",
         nav_sell: "کتاب بیچیں",
@@ -136,7 +136,7 @@ const I18N = {
         jazzcash_wallet: "جاز کیش موبائل اکاؤنٹ",
         easypaisa_wallet: "ایزی پیسہ والٹ",
         card_payment: "ڈیبٹ / کریڈٹ کارڈ (سیف پے / پے فاسٹ)",
-        wallet_balance: "بک لوپ والٹ بیلنس",
+        wallet_balance: "Bookzy والٹ بیلنس",
         pay_and_unlock: "فیس ادا کریں اور رابطہ حاصل کریں",
         sell_step1: "بارکوڈ اسکین کریں تاکہ معلومات خودبخود درج ہو جائیں",
         sell_btn: "کتاب فروخت کے لیے شائع کریں",
@@ -275,7 +275,13 @@ function updateUserUI() {
     if (profileCity) profileCity.textContent = `${STATE.currentUser.city} (${STATE.currentUser.campus_or_area})`;
     if (profileRating) profileRating.textContent = `★ ${STATE.currentUser.rating} (${STATE.currentUser.total_reviews} reviews)`;
     if (profileWallet) profileWallet.textContent = `Rs. ${parseFloat(STATE.currentUser.wallet_balance).toFixed(2)}`;
-    if (authBtnLabel) authBtnLabel.textContent = STATE.currentUser.full_name.split(' ')[0];
+    if (authBtnLabel) {
+        if (!STATE.currentUser || !STATE.currentUser.full_name || STATE.currentUser.full_name.toLowerCase().includes('demo')) {
+            authBtnLabel.textContent = 'My Account';
+        } else {
+            authBtnLabel.textContent = STATE.currentUser.full_name.split(' ')[0] || 'My Account';
+        }
+    }
     if (dropName) dropName.textContent = STATE.currentUser.full_name;
     if (dropPhone) dropPhone.textContent = STATE.currentUser.phone_number;
     if (dropBal) dropBal.textContent = `Rs. ${parseFloat(STATE.currentUser.wallet_balance).toFixed(2)}`;
@@ -697,10 +703,10 @@ function renderShelves(listings) {
             const cat = item.book?.category || '';
             const title = (item.book?.title || '').toLowerCase();
             const subj = (item.book?.subject || '').toLowerCase();
-            return cat === 'History' || subj.includes('history') || title.includes('history') || title.includes('tareekh') || title.includes('iqbal');
+            return cat === 'History' || subj.includes('history') || title.includes('history') || title.includes('tareekh') || title.includes('iqbal') || title.includes('balochistan') || title.includes('mehrgarh');
         });
         if (histItems.length > 0) {
-            historyContainer.innerHTML = histItems.slice(0, 4).map(item => createBookCardHtml(item)).join('');
+            historyContainer.innerHTML = histItems.slice(0, 8).map(item => createBookCardHtml(item)).join('');
             if (historySection) historySection.classList.remove('hidden');
         } else {
             if (historySection) historySection.classList.add('hidden');
@@ -728,12 +734,12 @@ function renderPtbShelf(listings, filterClass = 'all') {
     const section = document.getElementById('ptb-textbooks-section');
     if (!container || !listings) return;
 
-    // Filter to PTB items
+    // Filter to PTB / Regional Board items
     const ptbItems = listings.filter(item => {
         const cat = item.book?.category || '';
         const board = (item.book?.education_board || '').toLowerCase();
         const title = (item.book?.title || '').toLowerCase();
-        return cat === 'Punjab Textbooks (Primary to FSc)' || board.includes('punjab') || title.includes('punjab') || title.includes('ptb');
+        return cat === 'Punjab Textbooks (Primary to FSc)' || board.includes('punjab') || board.includes('balochistan') || title.includes('punjab') || title.includes('ptb') || title.includes('balochistan');
     });
 
     if (ptbItems.length === 0) {
@@ -1487,7 +1493,7 @@ function generateDealCard(u, role) {
 
 // Confirm Deal Made
 async function confirmDeal(unlockId) {
-    if (!confirm("Are you sure the book deal was completed? BookBazaar will finalize the Rs. 50 fee and mark the book as sold.")) {
+    if (!confirm("Are you sure the book deal was completed? Bookzy AI will finalize the Rs. 50 fee and mark the book as sold.")) {
         return;
     }
 
@@ -2059,7 +2065,7 @@ async function applyFilters() {
     const gradeClass = document.getElementById('filter-class')?.value || 'All';
     const sort = document.getElementById('filter-sort')?.value || 'cheapest';
 
-    const hasFilter = Boolean(q.trim() || cat !== 'All' || city !== 'All' || cond !== 'All' || board !== 'All' || gradeClass !== 'All');
+    const hasFilter = Boolean(q.trim() || cat !== 'All' || (city !== 'All' && city !== 'all') || cond !== 'All' || board !== 'All' || gradeClass !== 'All');
     const feedTitle = document.getElementById('listings-feed-title');
 
     const url = `/api/listings/?search=${encodeURIComponent(q)}&category=${encodeURIComponent(cat)}&city=${encodeURIComponent(city)}&condition=${encodeURIComponent(cond)}&board=${encodeURIComponent(board)}&grade_class=${encodeURIComponent(gradeClass)}&sort=${encodeURIComponent(sort)}`;

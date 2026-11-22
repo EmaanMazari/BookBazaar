@@ -17,10 +17,17 @@ class UserProfile(models.Model):
         ('Lahore', 'Lahore'),
         ('Karachi', 'Karachi'),
         ('Rawalpindi', 'Rawalpindi'),
+        ('Quetta', 'Quetta'),
+        ('Gwadar', 'Gwadar'),
+        ('Turbat', 'Turbat'),
+        ('Khuzdar', 'Khuzdar'),
+        ('Sibi', 'Sibi'),
+        ('Zhob', 'Zhob'),
+        ('Balochistan', 'Balochistan'),
+        ('Balochistan (All Cities)', 'Balochistan (All Cities)'),
         ('Multan', 'Multan'),
         ('Faisalabad', 'Faisalabad'),
         ('Peshawar', 'Peshawar'),
-        ('Quetta', 'Quetta'),
         ('Sialkot', 'Sialkot'),
         ('Gujranwala', 'Gujranwala'),
         ('Hyderabad', 'Hyderabad'),
@@ -341,7 +348,7 @@ class Advertisement(models.Model):
 
 
 class PlatformSetting(models.Model):
-    platform_name = models.CharField(max_length=100, default='BookBazaar Pakistan')
+    platform_name = models.CharField(max_length=100, default='Bookzy AI')
     contact_unlock_fee = models.DecimalField(max_digits=6, decimal_places=2, default=50.00, help_text="PKR 50.00 contact unlock fee")
     auto_refund_days = models.IntegerField(default=5, help_text="Days after which unconfirmed deal auto-refunds")
     require_admin_approval = models.BooleanField(default=False)

@@ -1,3 +1,4 @@
+import re
 import os
 import uuid
 import random
@@ -153,7 +154,7 @@ def register_user(request):
     logger.info(f"User registered successfully: {username} ({phone_clean})")
 
     return Response({
-        'message': 'Registration successful! Welcome to BookBazaar.',
+        'message': 'Registration successful! Welcome to Bookzy AI.',
         'token': token.key,
         'profile': UserProfileSerializer(profile, context={'request': request, 'is_owner': True}).data
     }, status=status.HTTP_201_CREATED)
@@ -182,7 +183,7 @@ def login_user(request):
         return Response({'error': 'No account found with this phone number or username.'}, status=status.HTTP_404_NOT_FOUND)
 
     if profile.is_blocked:
-        return Response({'error': 'This account has been blocked by BookBazaar Admin.'}, status=status.HTTP_403_FORBIDDEN)
+        return Response({'error': 'This account has been blocked by Bookzy AI Admin.'}, status=status.HTTP_403_FORBIDDEN)
 
     user = authenticate(username=profile.user.username, password=password)
     if not user:
@@ -436,8 +437,12 @@ def get_listings(request):
     if category and category != 'All':
         listings = listings.filter(book__category=category)
 
-    if city and city != 'All':
-        listings = listings.filter(city=city)
+    if city and city != 'All' and city != 'all':
+        if city in ['Balochistan', 'Balochistan (All Cities)']:
+            baloch_cities = ['Quetta', 'Gwadar', 'Turbat', 'Khuzdar', 'Sibi', 'Zhob', 'Balochistan', 'Balochistan (All Cities)']
+            listings = listings.filter(city__in=baloch_cities)
+        else:
+            listings = listings.filter(city__iexact=city)
 
     if condition and condition != 'All':
         listings = listings.filter(condition=condition)
@@ -833,7 +838,7 @@ def request_contact_unlock(request):
         return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
     clean_phone = seller.phone_number.lstrip('0') if seller.phone_number else ''
-    wa_url = f"https://wa.me/92{clean_phone}?text=Assalam-o-Alaikum%20{urllib.parse.quote(seller.full_name)},%20I%20am%20interested%20in%20your%20book%20'{urllib.parse.quote(listing.book.title)}'%20on%20BookBazaar%20for%20Rs.%20{listing.price}."
+    wa_url = f"https://wa.me/92{clean_phone}?text=Assalam-o-Alaikum%20{urllib.parse.quote(seller.full_name)},%20I%20am%20interested%20in%20your%20book%20'{urllib.parse.quote(listing.book.title)}'%20on%20Bookzy%20AI%20for%20Rs.%20{listing.price}."
 
     return Response({
         'message': message,
@@ -896,7 +901,7 @@ def initiate_payment_api(request):
         unlock = init_data['unlock']
         seller = listing.seller
         clean_phone = seller.phone_number.lstrip('0') if seller.phone_number else ''
-        wa_url = f"https://wa.me/92{clean_phone}?text=Assalam-o-Alaikum%20{urllib.parse.quote(seller.full_name)},%20I%20am%20interested%20in%20your%20book%20'{urllib.parse.quote(listing.book.title)}'%20on%20BookBazaar%20for%20Rs.%20{listing.price}."
+        wa_url = f"https://wa.me/92{clean_phone}?text=Assalam-o-Alaikum%20{urllib.parse.quote(seller.full_name)},%20I%20am%20interested%20in%20your%20book%20'{urllib.parse.quote(listing.book.title)}'%20on%20Bookzy%20AI%20for%20Rs.%20{listing.price}."
         return Response({
             'already_unlocked': True,
             'message': init_data['message'],
@@ -956,7 +961,7 @@ def verify_payment_api(request):
 
     seller = payment_txn.listing.seller
     clean_phone = seller.phone_number.lstrip('0') if seller.phone_number else ''
-    wa_url = f"https://wa.me/92{clean_phone}?text=Assalam-o-Alaikum%20{urllib.parse.quote(seller.full_name)},%20I%20am%20interested%20in%20your%20book%20'{urllib.parse.quote(payment_txn.listing.book.title)}'%20on%20BookBazaar%20for%20Rs.%20{payment_txn.listing.price}."
+    wa_url = f"https://wa.me/92{clean_phone}?text=Assalam-o-Alaikum%20{urllib.parse.quote(seller.full_name)},%20I%20am%20interested%20in%20your%20book%20'{urllib.parse.quote(payment_txn.listing.book.title)}'%20on%20Bookzy%20AI%20for%20Rs.%20{payment_txn.listing.price}."
 
     return Response({
         'message': msg,
@@ -1164,7 +1169,7 @@ def confirm_deal_made(request, unlock_id):
     logger.info(f"Deal confirmed: unlock_id={unlock.unlock_id}, listing_id={listing.id}")
 
     return Response({
-        'message': f"Deal confirmed! BookBazaar fee of Rs. {unlock.fee_amount} finalized. Please rate {unlock.seller.full_name}.",
+        'message': f"Deal confirmed! Bookzy AI fee of Rs. {unlock.fee_amount} finalized. Please rate {unlock.seller.full_name}.",
         'unlock': ContactUnlockSerializer(unlock).data
     })
 
@@ -1232,7 +1237,7 @@ def cancel_deal_refund(request, unlock_id):
     logger.info(f"Deal refunded: unlock_id={unlock.unlock_id}, refund_txn={ref_txn}, buyer={buyer.full_name}")
 
     return Response({
-        'message': f"No deal made. Fee of Rs. {unlock.fee_amount} refunded immediately to your BookBazaar account (Ref: {ref_txn}).",
+        'message': f"No deal made. Fee of Rs. {unlock.fee_amount} refunded immediately to your Bookzy AI account (Ref: {ref_txn}).",
         'refund_transaction_id': ref_txn,
         'unlock': ContactUnlockSerializer(unlock).data
     })
@@ -2309,7 +2314,7 @@ def get_recommendations(request):
         # -------------------------------------------------------------
         if age_group == 'kids':
             # Kids (5–12 yrs) -> Story Books & Primary Punjab Textbooks
-            is_story = 'story' in book_cat or 'story' in full_text or 'kahani' in full_text or 'jungle book' in full_text or 'panchatantra' in full_text or 'alif laila' in full_text
+            is_story = 'story' in book_cat or bool(re.search(r'\bstor(y|ies)\b', full_text)) or 'kahani' in full_text or 'jungle book' in full_text or 'panchatantra' in full_text or 'alif laila' in full_text
             is_primary_ptb = 'punjab' in full_text and any(c in full_text for c in ['class 1', 'class 2', 'class 3', 'class 4', 'class 5', 'primary', 'qaida'])
             if is_story or is_primary_ptb or item.target_age_group == 'kids':
                 score += 50.0
@@ -2317,20 +2322,20 @@ def get_recommendations(request):
                 insights.append("Curated for Kids (5–12 yrs) & Primary Education")
 
         elif age_group == 'teens':
-            # School / College Student (13–19 yrs) -> Punjab Textbooks (Class 6–10 & FSc)
-            is_ptb = ('punjab' in full_text or 'ptb' in full_text or 'punjab board' in book_board) and any(
+            # School / College Student (13–19 yrs) -> Punjab & Regional Board Textbooks (Class 6–10 & FSc)
+            is_ptb = ('punjab' in full_text or 'ptb' in full_text or 'punjab board' in book_board or 'balochistan' in full_text or 'balochistan board' in book_board) and any(
                 lvl in full_text for lvl in ['class 6', 'class 7', 'class 8', 'class 9', 'class 10', 'matric', 'fsc', 'ics', '11th', '12th', 'intermediate']
             )
-            if is_ptb or item.target_age_group == 'teens' or item.book.education_board == 'Punjab Board':
+            if is_ptb or item.target_age_group == 'teens' or item.book.education_board in ['Punjab Board', 'Balochistan Board']:
                 score += 50.0
                 is_age_matched = True
-                insights.append("Top Pick for School & College (Matric / FSc Punjab Board)")
+                insights.append("Top Pick for School & College (Matric / FSc & Regional Board)")
 
         elif age_group == 'young_adult':
             # University / Young Adult (20–30 yrs) -> BS/Higher Ed, Novels, Fiction & History
             is_university_stem = any(k in full_text for k in ['software', 'computer', 'operating system', 'algorithm', 'calculus', 'clean code', 'engineering', 'higher education'])
             is_novel_fiction = any(k in full_text for k in ['novel', 'fiction', 'alchemist', 'peer-e-kamil', 'jannat ke pattay', 'raja gidh'])
-            is_history = 'history' in full_text or 'tareekh' in full_text
+            is_history = 'history' in full_text or 'tareekh' in full_text or 'balochistan' in full_text or 'mehrgarh' in full_text
             if is_university_stem or is_novel_fiction or is_history or item.target_age_group == 'young_adult':
                 score += 50.0
                 is_age_matched = True
@@ -2338,7 +2343,7 @@ def get_recommendations(request):
 
         elif age_group == 'general':
             # General Reader (31+ yrs) -> Novels, Fiction, History & Islamic Books
-            is_novel_history = any(k in full_text for k in ['novel', 'history', 'tareekh', 'iqbal', 'shahab nama', 'peer-e-kamil', 'raja gidh', 'islamic', 'fiction', 'literature'])
+            is_novel_history = any(k in full_text for k in ['novel', 'history', 'tareekh', 'iqbal', 'shahab nama', 'peer-e-kamil', 'raja gidh', 'islamic', 'fiction', 'literature', 'balochistan', 'mehrgarh'])
             if is_novel_history or item.target_age_group == 'general':
                 score += 50.0
                 is_age_matched = True
@@ -2346,14 +2351,14 @@ def get_recommendations(request):
 
         # Specific Interest Chips Bonus
         for intr in interests:
-            if 'story' in intr and ('story' in full_text or 'kahani' in full_text):
+            if ('story' in intr and 'history' not in intr) and ('story' in book_cat or bool(re.search(r'\bstor(y|ies)\b', full_text)) or 'kahani' in full_text):
                 score += 25.0
                 is_age_matched = True
                 insights.append("Matches interest in Story Books")
-            elif 'punjab' in intr and ('punjab' in full_text or 'ptb' in full_text or item.book.education_board == 'Punjab Board'):
+            elif 'punjab' in intr and ('punjab' in full_text or 'ptb' in full_text or item.book.education_board in ['Punjab Board', 'Balochistan Board']):
                 score += 25.0
                 is_age_matched = True
-                insights.append("Matches Punjab Textbooks (Class 1–FSc)")
+                insights.append("Matches Textbooks (Class 1–FSc)")
             elif 'fiction' in intr and ('fiction' in full_text):
                 score += 25.0
                 is_age_matched = True
@@ -2362,7 +2367,7 @@ def get_recommendations(request):
                 score += 25.0
                 is_age_matched = True
                 insights.append("Matches Novels interest")
-            elif 'history' in intr and ('history' in full_text or 'tareekh' in full_text or 'iqbal' in full_text or 'shahab' in full_text):
+            elif 'history' in intr and ('history' in full_text or 'tareekh' in full_text or 'balochistan' in full_text or 'mehrgarh' in full_text or 'iqbal' in full_text or 'shahab' in full_text):
                 score += 25.0
                 is_age_matched = True
                 insights.append("Matches History & Literature interest")
@@ -2374,11 +2379,15 @@ def get_recommendations(request):
         # PRIORITY #3: Location & Sale Boost
         # -------------------------------------------------------------
         # Location / City Proximity
-        if user_city and item.city.lower() == user_city.lower():
+        balochistan_cities = ['quetta', 'gwadar', 'turbat', 'khuzdar', 'sibi', 'zhob', 'balochistan', 'balochistan (all cities)']
+        is_same_city = user_city and item.city.lower() == user_city.lower()
+        is_balochistan_match = user_city and (user_city.lower() in balochistan_cities) and (item.city.lower() in balochistan_cities)
+        
+        if is_same_city or is_balochistan_match:
             score += 35.0
             badges.append("📍 Near You")
             insights.append(f"Zero-cost pickup in {item.city}")
-        elif item.city in ['Lahore', 'Islamabad', 'Rawalpindi']:
+        elif item.city in ['Lahore', 'Islamabad', 'Rawalpindi', 'Quetta']:
             score += 8.0
 
         # Sale / Super Value Boost
@@ -2412,7 +2421,7 @@ def get_recommendations(request):
         if insights:
             ai_insight = " • ".join(insights[:2])
         else:
-            ai_insight = f"Recommended based on your reading profile in {item.city}"
+            ai_insight = f"Bookzy AI match based on your reading profile in {item.city}"
 
         scored.append((score, final_match_pct, primary_badge, badges, ai_insight, item))
 

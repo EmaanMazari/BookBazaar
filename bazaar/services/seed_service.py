@@ -490,10 +490,78 @@ DEMO_TEXTBOOKS = [
         'photo': 'https://images-na.ssl-images-amazon.com/images/I/41SNoh5ZhOL._SX379_BO1,204,203,200_.jpg',
         'is_sponsored': False,
         'views': 220
+    },
+    # --- BALOCHISTAN HISTORY & REGIONAL BOOKS ---
+    {
+        'isbn': '9789694073514',
+        'seller_username': 'baloch_seller',
+        'condition': 'Like New',
+        'price': Decimal('580.00'),
+        'is_free': False,
+        'target_age_group': 'general',
+        'city': 'Quetta',
+        'pickup': 'University of Balochistan (UoB) Sariab Road / Jinnah Road',
+        'desc': 'Original print of Sardar Khan Baluch’s masterwork on Balochistan history. Intact binding, clean pages, essential for CSS Pakistan Affairs and regional history researchers in Quetta.',
+        'photo': 'https://images.unsplash.com/photo-1461360370896-922624d12aa1?w=500&auto=format&fit=crop&q=80',
+        'is_sponsored': True,
+        'views': 165
+    },
+    {
+        'isbn': '9789694073521',
+        'seller_username': 'baloch_seller',
+        'condition': 'Good',
+        'price': Decimal('450.00'),
+        'is_free': False,
+        'target_age_group': 'general',
+        'city': 'Gwadar',
+        'pickup': 'Gwadar Port Road / University of Gwadar Gate',
+        'desc': 'Complete Urdu text of Tareekh-e-Balochistan by Mir Gul Khan Naseer. High quality archival binding, rare regional edition available for immediate handover near Gwadar Port.',
+        'photo': 'https://images.unsplash.com/photo-1457369804613-52c61a468e7d?w=500&auto=format&fit=crop&q=80',
+        'is_sponsored': False,
+        'views': 140
+    },
+    {
+        'isbn': '9789694073538',
+        'seller_username': 'baloch_seller',
+        'condition': 'Like New',
+        'price': Decimal('620.00'),
+        'is_free': False,
+        'target_age_group': 'general',
+        'city': 'Khuzdar',
+        'pickup': 'BUET Khuzdar Main Campus / RCD Highway',
+        'desc': 'Illustrated study of Mehrgarh archaeological excavations in Balochistan with maps, pottery sketches, and chronology. Pristine condition, available at Balochistan UET Khuzdar campus.',
+        'photo': 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=500&auto=format&fit=crop&q=80',
+        'is_sponsored': False,
+        'views': 125
+    },
+    {
+        'isbn': '9789694073545',
+        'seller_username': 'baloch_seller',
+        'condition': 'Like New',
+        'price': Decimal('120.00'),
+        'is_free': False,
+        'target_age_group': 'teens',
+        'city': 'Quetta',
+        'pickup': 'BISE Quetta Gate / Zarghoon Road',
+        'desc': 'Official Balochistan Board Matric Class 10 Pakistan Studies & History textbook. Clean, unmarked, latest BTBB curriculum. Campus pickup near BISE Quetta office.',
+        'photo': 'https://images.unsplash.com/photo-1532012164546-f432f2e3777f?w=500&auto=format&fit=crop&q=80',
+        'is_sponsored': False,
+        'views': 190
     }
 ]
 
 DEMO_USERS = [
+    {
+        'username': 'baloch_seller',
+        'name': 'Mir Baloch (Quetta)',
+        'phone': '03337890123',
+        'city': 'Quetta',
+        'campus': 'University of Balochistan (UoB) / Sariab Road',
+        'type': 'student',
+        'rating': Decimal('4.9'),
+        'reviews': 16,
+        'wallet': Decimal('450.00')
+    },
     {
         'username': 'ali_seller',
         'name': 'Ali Khan (Verified Seller)',
@@ -562,7 +630,7 @@ DEMO_USERS = [
     },
     {
         'username': 'buyer_test',
-        'name': 'Demo Buyer',
+        'name': 'Ayesha Reader',
         'phone': '03023344556',
         'city': 'Islamabad',
         'campus': 'Central Campus / Student Center',
@@ -578,11 +646,11 @@ import sys
 
 def ensure_demo_listings(force=False):
     """
-    Checks active listings in BookBazaar.
-    Ensures complete catalog of Punjab Textbooks (Primary to FSc),
+    Checks active listings in Bookzy AI.
+    Ensures complete catalog of Textbooks (Primary to FSc, Balochistan Board),
     Free Community Donations (Rs. 0), Kids & Story Books, Fiction & Novels,
-    and History & Literature across Lahore, Islamabad, Karachi, Rawalpindi,
-    Multan, Faisalabad, and Bahawalpur.
+    and History & Literature across Quetta, Gwadar, Khuzdar, Lahore, Islamabad,
+    Karachi, Rawalpindi, Multan, Faisalabad, and Bahawalpur.
     """
     # Do not auto-seed during automated test suites unless explicitly forced
     if not force and ('test' in sys.argv or 'pytest' in sys.argv[0]):
@@ -590,15 +658,16 @@ def ensure_demo_listings(force=False):
 
     try:
         active_count = Listing.objects.filter(status='active').count()
-        if not force and active_count >= len(DEMO_TEXTBOOKS):
+        missing_isbns = set(item['isbn'] for item in DEMO_TEXTBOOKS) - set(Listing.objects.filter(status='active').values_list('book__isbn', flat=True))
+        if not force and active_count >= len(DEMO_TEXTBOOKS) and not missing_isbns:
             return active_count
 
-        logger.info(f"BookBazaar auto-seed triggered: active listings count ({active_count}) is below {len(DEMO_TEXTBOOKS)}.")
+        logger.info(f"Bookzy AI auto-seed triggered: active listings count ({active_count}) / missing ({len(missing_isbns)}).")
 
         # 1. Platform Settings
         setting, _ = PlatformSetting.objects.get_or_create(id=1)
-        if not setting.platform_name or setting.platform_name == 'BookLoop Pakistan':
-            setting.platform_name = 'BookBazaar AI'
+        if not setting.platform_name or setting.platform_name in ['BookLoop Pakistan', 'BookBazaar Pakistan', 'BookBazaar AI']:
+            setting.platform_name = 'Bookzy AI'
             setting.contact_unlock_fee = Decimal('50.00')
             setting.auto_refund_days = 5
             setting.require_admin_approval = False
@@ -728,7 +797,7 @@ def ensure_demo_listings(force=False):
                         listing.save(update_fields=['status', 'price', 'is_free', 'target_age_group', 'city'])
 
         final_count = Listing.objects.filter(status='active').count()
-        logger.info(f"BookBazaar auto-seed completed successfully. Active listings: {final_count}")
+        logger.info(f"Bookzy AI auto-seed completed successfully. Active listings: {final_count}")
         return final_count
 
     except Exception as e:

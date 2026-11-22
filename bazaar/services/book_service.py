@@ -580,6 +580,67 @@ KNOWN_CATALOG = {
         'description': 'Iconic autobiography and civil service insider account of Pakistan\'s formative decades from 1947 through the 1960s. Extraordinary historical and personal narrative.',
         'cover_image': 'https://images.unsplash.com/photo-1476275466078-4007374efbbe?w=500&auto=format&fit=crop&q=80',
         'original_retail_price': 1300.00
+    },
+    # --- BALOCHISTAN HISTORY & REGIONAL BOOKS ---
+    '9789694073514': {
+        'isbn': '9789694073514',
+        'title': 'The History of Balochistan',
+        'author': 'Muhammad Sardar Khan Baluch',
+        'publisher': 'Nisa Traders / Baluchi Academy, Quetta',
+        'edition': 'Comprehensive Historical Edition',
+        'category': 'History',
+        'education_board': 'Higher Education / University',
+        'grade_class': 'Bachelor / BS / Undergrad',
+        'target_age_group': 'general',
+        'subject': 'Balochistan History & Regional Heritage',
+        'description': 'Comprehensive historical chronicle covering the origins, tribal lineage, culture, medieval treaties, and modern history of Balochistan by eminent historian Muhammad Sardar Khan Baluch.',
+        'cover_image': 'https://images.unsplash.com/photo-1461360370896-922624d12aa1?w=500&auto=format&fit=crop&q=80',
+        'original_retail_price': 1400.00
+    },
+    '9789694073521': {
+        'isbn': '9789694073521',
+        'title': 'Tareekh-e-Balochistan (تاریخِ بلوچستان)',
+        'author': 'Mir Gul Khan Naseer (میر گل خان نصیر)',
+        'publisher': 'Balochi Academy / Kalat Publishers, Quetta',
+        'edition': '2-Volume Complete Classic Edition',
+        'category': 'History',
+        'education_board': 'General / None',
+        'grade_class': 'General Reading',
+        'target_age_group': 'general',
+        'subject': 'Balochistan History & Urdu Literature',
+        'description': 'The definitive historical reference on Balochistan in Urdu by celebrated national poet and historian Mir Gul Khan Naseer. Documents archaeological records, khanates of Kalat, and socio-political history.',
+        'cover_image': 'https://images.unsplash.com/photo-1457369804613-52c61a468e7d?w=500&auto=format&fit=crop&q=80',
+        'original_retail_price': 1250.00
+    },
+    '9789694073538': {
+        'isbn': '9789694073538',
+        'title': 'Balochistan: Cultural Heritage & Ancient Civilization (Mehrgarh)',
+        'author': 'Archaeological Research Group (Balochistan Heritage)',
+        'publisher': 'Department of Archaeology & Museums, Balochistan',
+        'edition': 'Illustrated Heritage Edition',
+        'category': 'History',
+        'education_board': 'Higher Education / University',
+        'grade_class': 'General Reading',
+        'target_age_group': 'general',
+        'subject': 'Archaeology, Mehrgarh Civilization & Antiquities',
+        'description': 'In-depth academic survey of the Neolithic Mehrgarh civilization (7000 BCE–2500 BCE) on the Kachi plain of Balochistan. Covers early pottery, agriculture, and prehistoric civilizational evolution.',
+        'cover_image': 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=500&auto=format&fit=crop&q=80',
+        'original_retail_price': 1500.00
+    },
+    '9789694073545': {
+        'isbn': '9789694073545',
+        'title': 'Balochistan Board Class 10 Pakistan Studies & History',
+        'author': 'Balochistan Textbook Board (BTBB), Quetta',
+        'publisher': 'Balochistan Textbook Board (BTBB), Quetta',
+        'edition': 'Single National Curriculum Edition',
+        'category': 'Punjab Textbooks (Primary to FSc)',
+        'education_board': 'Balochistan Board',
+        'grade_class': 'Matric (9th - 10th)',
+        'target_age_group': 'teens',
+        'subject': 'Pakistan Studies & Regional History',
+        'description': 'Official Class 10 Pakistan Studies textbook approved by Balochistan Textbook Board (BTBB) Quetta for Matric SSC examinations. Covers ideology of Pakistan, history, constitution, and geography.',
+        'cover_image': 'https://images.unsplash.com/photo-1532012164546-f432f2e3777f?w=500&auto=format&fit=crop&q=80',
+        'original_retail_price': 280.00
     }
 }
 

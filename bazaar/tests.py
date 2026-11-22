@@ -93,11 +93,11 @@ class BookBazaarAiTests(TestCase):
         self.assertEqual(data.get('discount_percentage'), 20)
 
     def test_homepage_branding(self):
-        """Test homepage contains BookBazaar AI branding and AI sections"""
+        """Test homepage contains Bookzy AI branding and AI sections"""
         response = self.client.get('/')
         self.assertEqual(response.status_code, 200)
         content = response.content.decode('utf-8')
-        self.assertIn('BookBazaar AI', content)
+        self.assertIn('Bookzy AI', content)
         self.assertIn('Smart Book Marketplace & AI Reader Recommendations', content)
         self.assertIn('id="reader-onboarding-modal"', content)
         self.assertIn('id="ai-recommendations-section"', content)
