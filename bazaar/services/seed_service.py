@@ -547,6 +547,750 @@ DEMO_TEXTBOOKS = [
         'photo': 'https://images.unsplash.com/photo-1532012164546-f432f2e3777f?w=500&auto=format&fit=crop&q=80',
         'is_sponsored': False,
         'views': 190
+    },
+
+    # ========================================================
+    # 📚 PUNJAB BOARD (PCTB)
+    # ========================================================
+    {
+        'isbn': '9789695840307',
+        'seller_username': 'ali_seller',
+        'condition': 'Good',
+        'price': Decimal('160.00'),
+        'is_free': False,
+        'target_age_group': 'teens',
+        'city': 'Lahore',
+        'pickup': 'PU New Campus / Wahdat Road Gate',
+        'desc': 'Official Punjab Board Physics Class 11 (FSc Part 1). Vectors, circular motion, work & energy, oscillations, physical optics. Intact pages.',
+        'photo': 'https://images.unsplash.com/photo-1632571401005-458e9d244591?w=500&auto=format&fit=crop&q=80',
+        'is_sponsored': False,
+        'views': 82
+    },
+    {
+        'isbn': '9789695840314',
+        'seller_username': 'ali_seller',
+        'condition': 'Like New',
+        'price': Decimal('180.00'),
+        'is_free': False,
+        'target_age_group': 'teens',
+        'city': 'Faisalabad',
+        'pickup': 'University of Agriculture Faisalabad (UAF) Main Gate',
+        'desc': 'Official Punjab Board Chemistry Class 12 (FSc Part 2). Periodic classification, transition elements, organic reactions and environmental chemistry.',
+        'photo': 'https://images.unsplash.com/photo-1532094349884-543bc11b234d?w=500&auto=format&fit=crop&q=80',
+        'is_sponsored': False,
+        'views': 95
+    },
+    {
+        'isbn': '9789695840321',
+        'seller_username': 'zainab_rwp',
+        'condition': 'Good',
+        'price': Decimal('150.00'),
+        'is_free': False,
+        'target_age_group': 'teens',
+        'city': 'Rawalpindi',
+        'pickup': 'Gordon College / Liaquat Bagh Metro Stop',
+        'desc': 'Punjab Board Mathematics Class 10 (Science Group). Solved exercise notes in pencil, quadratic equations, partial fractions, trigonometry.',
+        'photo': 'https://images.unsplash.com/photo-1596495578065-6e0763fa1178?w=500&auto=format&fit=crop&q=80',
+        'is_sponsored': False,
+        'views': 110
+    },
+    {
+        'isbn': '9789695840338',
+        'seller_username': 'bilal_bwp',
+        'condition': 'Like New',
+        'price': Decimal('130.00'),
+        'is_free': False,
+        'target_age_group': 'teens',
+        'city': 'Bahawalpur',
+        'pickup': 'Islamia University Bahawalpur (IUB) Baghdad Campus',
+        'desc': 'Punjab Board English Class 12 (Modern Prose & Poems). Includes past paper essays, hero summaries, and Goodbye Mr Chips study guide.',
+        'photo': 'https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?w=500&auto=format&fit=crop&q=80',
+        'is_sponsored': False,
+        'views': 64
+    },
+
+    # ========================================================
+    # 🏛️ FEDERAL BOARD (FBISE)
+    # ========================================================
+    {
+        'isbn': '9789698760012',
+        'seller_username': 'fatima_z',
+        'condition': 'Like New',
+        'price': Decimal('220.00'),
+        'is_free': False,
+        'target_age_group': 'teens',
+        'city': 'Islamabad',
+        'pickup': 'National Book Foundation / G-8 or University Road',
+        'desc': 'Official FBISE Federal Board Physics Class 11 (HSSC-I). Published by National Book Foundation (NBF). Clean condition with zero pen marks.',
+        'photo': 'https://images.unsplash.com/photo-1632571401005-458e9d244591?w=500&auto=format&fit=crop&q=80',
+        'is_sponsored': True,
+        'views': 140
+    },
+    {
+        'isbn': '9789698760029',
+        'seller_username': 'buyer_test',
+        'condition': 'Good',
+        'price': Decimal('190.00'),
+        'is_free': False,
+        'target_age_group': 'teens',
+        'city': 'Islamabad',
+        'pickup': 'F-6 Super Market / Blue Area Metro Stop',
+        'desc': 'FBISE Computer Science Class 10 (SSC-II). C programming fundamentals, loops, control structures, and logic development.',
+        'photo': 'https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=500&auto=format&fit=crop&q=80',
+        'is_sponsored': False,
+        'views': 92
+    },
+    {
+        'isbn': '9789698760036',
+        'seller_username': 'zainab_rwp',
+        'condition': 'Good',
+        'price': Decimal('160.00'),
+        'is_free': False,
+        'target_age_group': 'teens',
+        'city': 'Rawalpindi',
+        'pickup': 'Satellite Town Commercial Market',
+        'desc': 'Federal Board Pakistan Studies Class 12 (HSSC-II). Complete constitutional history, foreign policy, and economic survey for board exams.',
+        'photo': 'https://images.unsplash.com/photo-1461360370896-922624d12aa1?w=500&auto=format&fit=crop&q=80',
+        'is_sponsored': False,
+        'views': 78
+    },
+    {
+        'isbn': '9789698760043',
+        'seller_username': 'fatima_z',
+        'condition': 'Like New',
+        'price': Decimal('170.00'),
+        'is_free': False,
+        'target_age_group': 'teens',
+        'city': 'Islamabad',
+        'pickup': 'NUST Gate 1 / H-12 Campus',
+        'desc': 'Federal Board Urdu Lazmi Class 11 (Sarmaya-e-Urdu HSSC-I). Classical poetry, prose essays, grammar, and essay writing notes.',
+        'photo': 'https://images.unsplash.com/photo-1457369804613-52c61a468e7d?w=500&auto=format&fit=crop&q=80',
+        'is_sponsored': False,
+        'views': 85
+    },
+    {
+        'isbn': '9789698760050',
+        'seller_username': 'buyer_test',
+        'condition': 'Good',
+        'price': Decimal('140.00'),
+        'is_free': False,
+        'target_age_group': 'teens',
+        'city': 'Islamabad',
+        'pickup': 'G-9 Markaz / Karachi Company',
+        'desc': 'Federal Board Islamiyat Lazmi Class 9 (SSC-I). Quranic verses translation, Hadith selections, Seerat-un-Nabi and ethical guidance.',
+        'photo': 'https://images.unsplash.com/photo-1585829365295-ab7cd400c167?w=500&auto=format&fit=crop&q=80',
+        'is_sponsored': False,
+        'views': 67
+    },
+
+    # ========================================================
+    # 🌊 SINDH BOARD (BSEK / BIEK Karachi)
+    # ========================================================
+    {
+        'isbn': '9789694400013',
+        'seller_username': 'sindh_seller',
+        'condition': 'Good',
+        'price': Decimal('175.00'),
+        'is_free': False,
+        'target_age_group': 'teens',
+        'city': 'Karachi',
+        'pickup': 'DJ Sindh Govt Science College / Saddar',
+        'desc': 'Sindh Textbook Board Physics Class 11 (Intermediate Part-1). Standard reference for BIEK Karachi intermediate pre-engineering students.',
+        'photo': 'https://images.unsplash.com/photo-1632571401005-458e9d244591?w=500&auto=format&fit=crop&q=80',
+        'is_sponsored': True,
+        'views': 115
+    },
+    {
+        'isbn': '9789694400020',
+        'seller_username': 'sindh_seller',
+        'condition': 'Like New',
+        'price': Decimal('150.00'),
+        'is_free': False,
+        'target_age_group': 'teens',
+        'city': 'Karachi',
+        'pickup': 'NED University / University Road Karachi',
+        'desc': 'Sindh Board Chemistry Class 9 (Secondary Stage Science). Atomic structure, chemical reactions, states of matter, and periodic table.',
+        'photo': 'https://images.unsplash.com/photo-1532094349884-543bc11b234d?w=500&auto=format&fit=crop&q=80',
+        'is_sponsored': False,
+        'views': 88
+    },
+    {
+        'isbn': '9789694400037',
+        'seller_username': 'ayesha_khi',
+        'condition': 'Good',
+        'price': Decimal('160.00'),
+        'is_free': False,
+        'target_age_group': 'teens',
+        'city': 'Karachi',
+        'pickup': 'Karachi University (KU) Silver Jubilee Gate',
+        'desc': 'Sindh Board Biology Class 10 (Secondary Stage Science Group). Human organ systems, coordination, genetics, and biotechnology.',
+        'photo': 'https://images.unsplash.com/photo-1530210124550-912dc1381cb8?w=500&auto=format&fit=crop&q=80',
+        'is_sponsored': False,
+        'views': 76
+    },
+    {
+        'isbn': '9789694400044',
+        'seller_username': 'sindh_seller',
+        'condition': 'Like New',
+        'price': Decimal('190.00'),
+        'is_free': False,
+        'target_age_group': 'teens',
+        'city': 'Hyderabad',
+        'pickup': 'University of Sindh Old Campus / Saddar Hyderabad',
+        'desc': 'Sindh Board Mathematics Class 12 (Higher Secondary Part-II). Analytic geometry, vectors, calculus, differentiation, and integration.',
+        'photo': 'https://images.unsplash.com/photo-1596495578065-6e0763fa1178?w=500&auto=format&fit=crop&q=80',
+        'is_sponsored': False,
+        'views': 94
+    },
+    {
+        'isbn': '9789694400051',
+        'seller_username': 'ayesha_khi',
+        'condition': 'Good',
+        'price': Decimal('140.00'),
+        'is_free': False,
+        'target_age_group': 'teens',
+        'city': 'Karachi',
+        'pickup': 'Gulshan-e-Iqbal Block 5 / NIPA Chowrangi',
+        'desc': 'Sindh Board English Compulsory Class 11 (Intermediate Stage). Essays, short stories, grammar, and formal composition skills.',
+        'photo': 'https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?w=500&auto=format&fit=crop&q=80',
+        'is_sponsored': False,
+        'views': 62
+    },
+
+    # ========================================================
+    # 🏔️ KPK BOARD (BISE Peshawar / Abbottabad)
+    # ========================================================
+    {
+        'isbn': '9789694500010',
+        'seller_username': 'kpk_seller',
+        'condition': 'Like New',
+        'price': Decimal('190.00'),
+        'is_free': False,
+        'target_age_group': 'teens',
+        'city': 'Peshawar',
+        'pickup': 'University of Peshawar (UoP) / Islamia College Gate',
+        'desc': 'KPK Board Biology Class 11 (HSSC Part-1 Pre-Medical). Biological molecules, enzymes, plant anatomy, and animal diversity.',
+        'photo': 'https://images.unsplash.com/photo-1530210124550-912dc1381cb8?w=500&auto=format&fit=crop&q=80',
+        'is_sponsored': True,
+        'views': 130
+    },
+    {
+        'isbn': '9789694500027',
+        'seller_username': 'kpk_seller',
+        'condition': 'Good',
+        'price': Decimal('210.00'),
+        'is_free': False,
+        'target_age_group': 'teens',
+        'city': 'Peshawar',
+        'pickup': 'Khyber Medical College Gate / Jamrud Road',
+        'desc': 'KPK Board Chemistry Class 12 (HSSC Part-2 Science). Inorganic metallurgy, organic reaction mechanisms, and biochemistry.',
+        'photo': 'https://images.unsplash.com/photo-1532094349884-543bc11b234d?w=500&auto=format&fit=crop&q=80',
+        'is_sponsored': False,
+        'views': 84
+    },
+    {
+        'isbn': '9789694500034',
+        'seller_username': 'kpk_seller',
+        'condition': 'Like New',
+        'price': Decimal('150.00'),
+        'is_free': False,
+        'target_age_group': 'teens',
+        'city': 'Peshawar',
+        'pickup': 'Board of Intermediate & Secondary Education Peshawar',
+        'desc': 'KPK Board Physics Class 9 (SSC Part-1 Science Group). Kinematics, dynamics, gravitation, and heat transfer. Intact book condition.',
+        'photo': 'https://images.unsplash.com/photo-1632571401005-458e9d244591?w=500&auto=format&fit=crop&q=80',
+        'is_sponsored': False,
+        'views': 91
+    },
+    {
+        'isbn': '9789694500041',
+        'seller_username': 'kpk_seller',
+        'condition': 'Good',
+        'price': Decimal('170.00'),
+        'is_free': False,
+        'target_age_group': 'teens',
+        'city': 'Peshawar',
+        'pickup': 'Qissa Khwani Bazaar / Academic Booksellers Street',
+        'desc': 'KPK Board Mathematics Class 10 (SSC Part-2 Science Group). Quadratic equations, partial fractions, coordinate geometry, and circle theorems.',
+        'photo': 'https://images.unsplash.com/photo-1596495578065-6e0763fa1178?w=500&auto=format&fit=crop&q=80',
+        'is_sponsored': False,
+        'views': 73
+    },
+    {
+        'isbn': '9789694500058',
+        'seller_username': 'kpk_seller',
+        'condition': 'Good',
+        'price': Decimal('180.00'),
+        'is_free': False,
+        'target_age_group': 'teens',
+        'city': 'Peshawar',
+        'pickup': 'UET Peshawar Main Campus / University Town',
+        'desc': 'KPK Board Computer Science Class 11 (HSSC-I ICS Group). Computing hardware, system software, networking, security, and digital data.',
+        'photo': 'https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=500&auto=format&fit=crop&q=80',
+        'is_sponsored': False,
+        'views': 68
+    },
+
+    # ========================================================
+    # 🌾 BALOCHISTAN BOARD (BISE Quetta)
+    # ========================================================
+    {
+        'isbn': '9789694600017',
+        'seller_username': 'baloch_seller',
+        'condition': 'Good',
+        'price': Decimal('120.00'),
+        'is_free': False,
+        'target_age_group': 'kids',
+        'city': 'Quetta',
+        'pickup': 'University of Balochistan (UoB) / Sariab Road',
+        'desc': 'Balochistan Board General Science Class 8 (Middle Stage). Living systems, biotechnology basics, acids and bases, and space exploration.',
+        'photo': 'https://images.unsplash.com/photo-1507668077129-56e32842fceb?w=500&auto=format&fit=crop&q=80',
+        'is_sponsored': False,
+        'views': 58
+    },
+    {
+        'isbn': '9789694600024',
+        'seller_username': 'baloch_seller',
+        'condition': 'Like New',
+        'price': Decimal('180.00'),
+        'is_free': False,
+        'target_age_group': 'teens',
+        'city': 'Quetta',
+        'pickup': 'Jinnah Road / Model Town Quetta',
+        'desc': 'Balochistan Board Physics Class 11 (HSSC-I Science). Approved by BTBB Quetta for FSc pre-engineering and pre-medical examinations.',
+        'photo': 'https://images.unsplash.com/photo-1632571401005-458e9d244591?w=500&auto=format&fit=crop&q=80',
+        'is_sponsored': True,
+        'views': 105
+    },
+    {
+        'isbn': '9789694600031',
+        'seller_username': 'baloch_seller',
+        'condition': 'Good',
+        'price': Decimal('160.00'),
+        'is_free': False,
+        'target_age_group': 'teens',
+        'city': 'Khuzdar',
+        'pickup': 'BUETK Khuzdar Main Campus Gate',
+        'desc': 'Balochistan Board Chemistry Class 10 (SSC Part-2 Science). Chemical equilibrium, acids, bases, organic chemistry, and water resources.',
+        'photo': 'https://images.unsplash.com/photo-1532094349884-543bc11b234d?w=500&auto=format&fit=crop&q=80',
+        'is_sponsored': False,
+        'views': 72
+    },
+    {
+        'isbn': '9789694600048',
+        'seller_username': 'baloch_seller',
+        'condition': 'Like New',
+        'price': Decimal('130.00'),
+        'is_free': False,
+        'target_age_group': 'teens',
+        'city': 'Gwadar',
+        'pickup': 'University of Gwadar / Airport Road Campus',
+        'desc': 'Balochistan Board Pakistan Studies Class 12 (HSSC-II). Comprehensive overview of ideology, governance, economy, and provincial development.',
+        'photo': 'https://images.unsplash.com/photo-1461360370896-922624d12aa1?w=500&auto=format&fit=crop&q=80',
+        'is_sponsored': False,
+        'views': 86
+    },
+    {
+        'isbn': '9789694600055',
+        'seller_username': 'baloch_seller',
+        'condition': 'Good',
+        'price': Decimal('150.00'),
+        'is_free': False,
+        'target_age_group': 'teens',
+        'city': 'Turbat',
+        'pickup': 'University of Turbat Main Campus Gate',
+        'desc': 'Balochistan Board Mathematics Class 9 (SSC Part-1 Science). Real numbers, logarithms, algebraic formulas, linear equations, and geometry.',
+        'photo': 'https://images.unsplash.com/photo-1596495578065-6e0763fa1178?w=500&auto=format&fit=crop&q=80',
+        'is_sponsored': False,
+        'views': 64
+    },
+
+    # ========================================================
+    # 🎓 CAMBRIDGE (O/A Levels)
+    # ========================================================
+    {
+        'isbn': '9780199407408',
+        'seller_username': 'cambridge_seller',
+        'condition': 'Like New',
+        'price': Decimal('850.00'),
+        'is_free': False,
+        'target_age_group': 'teens',
+        'city': 'Lahore',
+        'pickup': 'LGS Defence Phase 5 / Ring Road',
+        'desc': 'Cambridge O-Level Mathematics D4 (7th Edition). Comprehensive syllabus coverage for 4024 with vectors, probability, and matrices.',
+        'photo': 'https://images.unsplash.com/photo-1596495578065-6e0763fa1178?w=500&auto=format&fit=crop&q=80',
+        'is_sponsored': True,
+        'views': 160
+    },
+    {
+        'isbn': '9781108847063',
+        'seller_username': 'cambridge_seller',
+        'condition': 'Brand New',
+        'price': Decimal('1100.00'),
+        'is_free': False,
+        'target_age_group': 'teens',
+        'city': 'Islamabad',
+        'pickup': 'Roots Millennium / F-8 Markaz Islamabad',
+        'desc': 'Cambridge International AS & A Level Economics Coursebook (Colin Bamford, 4th Ed). Endorsed by Cambridge. Perfect condition.',
+        'photo': 'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=500&auto=format&fit=crop&q=80',
+        'is_sponsored': False,
+        'views': 120
+    },
+    {
+        'isbn': '9781108436991',
+        'seller_username': 'ayesha_khi',
+        'condition': 'Like New',
+        'price': Decimal('950.00'),
+        'is_free': False,
+        'target_age_group': 'teens',
+        'city': 'Karachi',
+        'pickup': 'Karachi Grammar School / Clifton Block 4',
+        'desc': 'Cambridge O Level Physics Coursebook (5054). Essential guide for CAIE O-Level exams with worked past paper problems and diagrams.',
+        'photo': 'https://images.unsplash.com/photo-1632571401005-458e9d244591?w=500&auto=format&fit=crop&q=80',
+        'is_sponsored': False,
+        'views': 135
+    },
+    {
+        'isbn': '9781108951609',
+        'seller_username': 'cambridge_seller',
+        'condition': 'Good',
+        'price': Decimal('900.00'),
+        'is_free': False,
+        'target_age_group': 'teens',
+        'city': 'Lahore',
+        'pickup': 'Aitchison College Gate / Mall Road Lahore',
+        'desc': 'Cambridge IGCSE & O Level Chemistry Coursebook (Richard Harwood). Organic chemistry, stoichiometry, and practical qualitative tests.',
+        'photo': 'https://images.unsplash.com/photo-1532094349884-543bc11b234d?w=500&auto=format&fit=crop&q=80',
+        'is_sponsored': False,
+        'views': 98
+    },
+    {
+        'isbn': '9781108740524',
+        'seller_username': 'cambridge_seller',
+        'condition': 'Like New',
+        'price': Decimal('1050.00'),
+        'is_free': False,
+        'target_age_group': 'teens',
+        'city': 'Islamabad',
+        'pickup': 'Beaconhouse Margalla Campus / H-8 Islamabad',
+        'desc': 'Cambridge International AS & A Level Accounting Coursebook (Harold Randall). Financial reporting, budget variance, and management accounts.',
+        'photo': 'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=500&auto=format&fit=crop&q=80',
+        'is_sponsored': False,
+        'views': 112
+    },
+
+    # ========================================================
+    # 🎁 FREE DONATED BOOKS (Community Giveaways - Rs. 0)
+    # ========================================================
+    {
+        'isbn': '9789694370019',
+        'seller_username': 'ayesha_khi',
+        'condition': 'Good',
+        'price': Decimal('0.00'),
+        'is_free': True,
+        'target_age_group': 'young_adult',
+        'city': 'Karachi',
+        'pickup': 'NED University / Gulshan-e-Iqbal',
+        'desc': 'Community book donation: Peer-e-Kamil reading copy. Passing it forward for another avid novel reader. 100% free giveaway.',
+        'photo': 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=500&auto=format&fit=crop&q=80',
+        'is_sponsored': False,
+        'views': 240
+    },
+    {
+        'isbn': '9789695840406',
+        'seller_username': 'bilal_bwp',
+        'condition': 'Good',
+        'price': Decimal('0.00'),
+        'is_free': True,
+        'target_age_group': 'kids',
+        'city': 'Bahawalpur',
+        'pickup': 'IUB Abbasia Campus / Model Town B',
+        'desc': 'Free community storybook for kids: Taleem-o-Tarbiyat moral stories collection. Donated to inspire young readers to read books.',
+        'photo': 'https://images.unsplash.com/photo-1512820790803-83ca734da794?w=500&auto=format&fit=crop&q=80',
+        'is_sponsored': False,
+        'views': 180
+    },
+
+    # ========================================================
+    # 🧸 KIDS & STORY BOOKS (Age 5-12)
+    # ========================================================
+    {
+        'isbn': '9789695840413',
+        'seller_username': 'ali_seller',
+        'condition': 'Like New',
+        'price': Decimal('180.00'),
+        'is_free': False,
+        'target_age_group': 'kids',
+        'city': 'Lahore',
+        'pickup': 'Ferozsons Mall Road / Anarkali',
+        'desc': 'Taleem-o-Tarbiyat: Selected Moral Stories for Children. Colorful full-page illustrations promoting honesty, hard work, and good manners.',
+        'photo': 'https://images.unsplash.com/photo-1512820790803-83ca734da794?w=500&auto=format&fit=crop&q=80',
+        'is_sponsored': False,
+        'views': 78
+    },
+    {
+        'isbn': '9789695840420',
+        'seller_username': 'zainab_rwp',
+        'condition': 'Good',
+        'price': Decimal('160.00'),
+        'is_free': False,
+        'target_age_group': 'kids',
+        'city': 'Rawalpindi',
+        'pickup': 'Saddar Rawalpindi / Cantt Library',
+        'desc': 'Sheikh Chilli ke Qissay (Classic Folk Tales of Pakistan). Illustrated humorous traditional stories for kids aged 6 to 12.',
+        'photo': 'https://images.unsplash.com/photo-1503676260728-1c00da094a0b?w=500&auto=format&fit=crop&q=80',
+        'is_sponsored': False,
+        'views': 85
+    },
+    {
+        'isbn': '9789695840437',
+        'seller_username': 'fatima_z',
+        'condition': 'Brand New',
+        'price': Decimal('220.00'),
+        'is_free': False,
+        'target_age_group': 'kids',
+        'city': 'Islamabad',
+        'pickup': 'F-7 Markaz / Jinnah Super Market',
+        'desc': "Aesop's Fables Illustrated for Pakistani Children (Urdu & English). Bilingual illustrated edition with classic moral lessons.",
+        'photo': 'https://images.unsplash.com/photo-1512820790803-83ca734da794?w=500&auto=format&fit=crop&q=80',
+        'is_sponsored': True,
+        'views': 125
+    },
+    {
+        'isbn': '9789695840444',
+        'seller_username': 'usman_mul',
+        'condition': 'Like New',
+        'price': Decimal('250.00'),
+        'is_free': False,
+        'target_age_group': 'kids',
+        'city': 'Multan',
+        'pickup': 'Gulgasht Colony / BZU Multan',
+        'desc': 'Alif Laila Kids Edition (One Thousand and One Nights). Aladdin, Ali Baba, and Sinbad tales adapted in simple Urdu for children.',
+        'photo': 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=500&auto=format&fit=crop&q=80',
+        'is_sponsored': False,
+        'views': 94
+    },
+    {
+        'isbn': '9789695840451',
+        'seller_username': 'bilal_bwp',
+        'condition': 'Good',
+        'price': Decimal('190.00'),
+        'is_free': False,
+        'target_age_group': 'kids',
+        'city': 'Bahawalpur',
+        'pickup': 'IUB Baghdad Campus / Library',
+        'desc': 'Moral Stories for Young Readers (Ikhlaqi Kahaniyan by Ishtiaq Ahmed). Exciting adventure stories teaching character and empathy.',
+        'photo': 'https://images.unsplash.com/photo-1503676260728-1c00da094a0b?w=500&auto=format&fit=crop&q=80',
+        'is_sponsored': False,
+        'views': 72
+    },
+    {
+        'isbn': '9789695840468',
+        'seller_username': 'ayesha_khi',
+        'condition': 'Like New',
+        'price': Decimal('200.00'),
+        'is_free': False,
+        'target_age_group': 'kids',
+        'city': 'Karachi',
+        'pickup': 'Bahria University / Karsaz Karachi',
+        'desc': 'Bachon Ki Dunya: Illustrated Animal Adventures. Exciting stories featuring Markhor, Snow Leopard, and Indus River Dolphin.',
+        'photo': 'https://images.unsplash.com/photo-1512820790803-83ca734da794?w=500&auto=format&fit=crop&q=80',
+        'is_sponsored': False,
+        'views': 88
+    },
+
+    # ========================================================
+    # 📖 FICTION & NOVELS
+    # ========================================================
+    {
+        'isbn': '9789694370026',
+        'seller_username': 'fatima_z',
+        'condition': 'Like New',
+        'price': Decimal('420.00'),
+        'is_free': False,
+        'target_age_group': 'young_adult',
+        'city': 'Islamabad',
+        'pickup': 'University Road / National Library Islamabad',
+        'desc': 'Jannat Kay Pattay (جنت کے پتے) by Nemrah Ahmed. Bestselling novel of mystery, spiritual transformation, and intrigue. Immaculate condition.',
+        'photo': 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=500&auto=format&fit=crop&q=80',
+        'is_sponsored': True,
+        'views': 295
+    },
+    {
+        'isbn': '9789694370033',
+        'seller_username': 'usman_mul',
+        'condition': 'Good',
+        'price': Decimal('380.00'),
+        'is_free': False,
+        'target_age_group': 'general',
+        'city': 'Lahore',
+        'pickup': 'Urdu Bazaar / Anarkali Lahore',
+        'desc': 'Raja Gidh (راجہ گدھ) by Bano Qudsia. Acclaimed modern Urdu literary masterpiece. Clean pages and intact binding.',
+        'photo': 'https://images.unsplash.com/photo-1457369804613-52c61a468e7d?w=500&auto=format&fit=crop&q=80',
+        'is_sponsored': False,
+        'views': 210
+    },
+    {
+        'isbn': '9781594631931',
+        'seller_username': 'ayesha_khi',
+        'condition': 'Like New',
+        'price': Decimal('450.00'),
+        'is_free': False,
+        'target_age_group': 'general',
+        'city': 'Karachi',
+        'pickup': 'Clifton Block 5 / Dolmen Mall area',
+        'desc': 'The Kite Runner by Khaled Hosseini. Unforgettable world-renowned novel of brotherhood, betrayal, and redemption.',
+        'photo': 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=500&auto=format&fit=crop&q=80',
+        'is_sponsored': False,
+        'views': 185
+    },
+    {
+        'isbn': '9780143118527',
+        'seller_username': 'cambridge_seller',
+        'condition': 'Like New',
+        'price': Decimal('490.00'),
+        'is_free': False,
+        'target_age_group': 'general',
+        'city': 'Islamabad',
+        'pickup': 'F-8 Markaz / Islamabad Club area',
+        'desc': 'The Forty Rules of Love by Elif Shafak. Bestselling novel exploring love, friendship, and the spiritual bond of Rumi and Shams of Tabriz.',
+        'photo': 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=500&auto=format&fit=crop&q=80',
+        'is_sponsored': False,
+        'views': 230
+    },
+    {
+        'isbn': '9789694370040',
+        'seller_username': 'bilal_bwp',
+        'condition': 'Brand New',
+        'price': Decimal('480.00'),
+        'is_free': False,
+        'target_age_group': 'young_adult',
+        'city': 'Bahawalpur',
+        'pickup': 'IUB Baghdad Campus / Student Hostel Gate',
+        'desc': 'Aab-e-Hayat (آب حیات) by Umera Ahmed. Official sequel to Peer-e-Kamil. Unread, pristine copy.',
+        'photo': 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=500&auto=format&fit=crop&q=80',
+        'is_sponsored': False,
+        'views': 260
+    },
+
+    # ========================================================
+    # 🏛️ HISTORY & LITERATURE
+    # ========================================================
+    {
+        'isbn': '9789693500011',
+        'seller_username': 'ali_seller',
+        'condition': 'Like New',
+        'price': Decimal('320.00'),
+        'is_free': False,
+        'target_age_group': 'general',
+        'city': 'Lahore',
+        'pickup': 'GCU Lahore / Kachehri Road',
+        'desc': 'Bang-e-Dra (بانگِ درا) by Allama Muhammad Iqbal. Definitive Iqbal Academy Pakistan edition with complete explanatory notes.',
+        'photo': 'https://images.unsplash.com/photo-1585829365295-ab7cd400c167?w=500&auto=format&fit=crop&q=80',
+        'is_sponsored': True,
+        'views': 175
+    },
+    {
+        'isbn': '9780195775419',
+        'seller_username': 'fatima_z',
+        'condition': 'Good',
+        'price': Decimal('650.00'),
+        'is_free': False,
+        'target_age_group': 'general',
+        'city': 'Islamabad',
+        'pickup': 'Quaid-i-Azam University (QAU) Campus',
+        'desc': 'Jinnah of Pakistan by Stanley Wolpert (Oxford University Press). The authoritative biography of Quaid-e-Azam Muhammad Ali Jinnah.',
+        'photo': 'https://images.unsplash.com/photo-1461360370896-922624d12aa1?w=500&auto=format&fit=crop&q=80',
+        'is_sponsored': False,
+        'views': 210
+    },
+    {
+        'isbn': '9789694370057',
+        'seller_username': 'zainab_rwp',
+        'condition': 'Good',
+        'price': Decimal('550.00'),
+        'is_free': False,
+        'target_age_group': 'general',
+        'city': 'Rawalpindi',
+        'pickup': 'Rawalpindi Arts Council / Stadium Road',
+        'desc': 'Shahab Nama (شہاب نامہ) by Qudratullah Shahab. Legendary autobiographical memoir of Pakistani civil service and early history.',
+        'photo': 'https://images.unsplash.com/photo-1457369804613-52c61a468e7d?w=500&auto=format&fit=crop&q=80',
+        'is_sponsored': False,
+        'views': 320
+    },
+    {
+        'isbn': '9789693500028',
+        'seller_username': 'usman_mul',
+        'condition': 'Like New',
+        'price': Decimal('480.00'),
+        'is_free': False,
+        'target_age_group': 'general',
+        'city': 'Lahore',
+        'pickup': 'Urdu Bazaar / Ilmi Publishers Street',
+        'desc': 'Tareekh-e-Pakistan: Qayam se Daur-e-Hazir Tak by Prof. Muhammad Yahya Amjad. Essential reference for CSS, PMS, and history scholars.',
+        'photo': 'https://images.unsplash.com/photo-1461360370896-922624d12aa1?w=500&auto=format&fit=crop&q=80',
+        'is_sponsored': False,
+        'views': 155
+    },
+    {
+        'isbn': '9780674052895',
+        'seller_username': 'cambridge_seller',
+        'condition': 'Brand New',
+        'price': Decimal('580.00'),
+        'is_free': False,
+        'target_age_group': 'general',
+        'city': 'Islamabad',
+        'pickup': 'National Library / Constitution Avenue',
+        'desc': 'The Struggle for Pakistan: A Muslim Homeland and Global Politics by Dr. Ayesha Jalal. Hardcover academic edition.',
+        'photo': 'https://images.unsplash.com/photo-1461360370896-922624d12aa1?w=500&auto=format&fit=crop&q=80',
+        'is_sponsored': False,
+        'views': 165
+    },
+
+    # ========================================================
+    # 🎓 UNIVERSITY / HIGHER ED (Medical, BBA, CSS)
+    # ========================================================
+    {
+        'isbn': '9780323597128',
+        'seller_username': 'usman_mul',
+        'condition': 'Like New',
+        'price': Decimal('1450.00'),
+        'is_free': False,
+        'target_age_group': 'young_adult',
+        'city': 'Multan',
+        'pickup': 'Nishtar Medical University Gate / Multan',
+        'desc': 'Guyton and Hall Textbook of Medical Physiology (14th Edition). Standard medical textbook for 1st & 2nd year MBBS and BDS students.',
+        'photo': 'https://images.unsplash.com/photo-1505751172876-fa1923c5c528?w=500&auto=format&fit=crop&q=80',
+        'is_sponsored': True,
+        'views': 280
+    },
+    {
+        'isbn': '9789332587700',
+        'seller_username': 'ayesha_khi',
+        'condition': 'Like New',
+        'price': Decimal('850.00'),
+        'is_free': False,
+        'target_age_group': 'young_adult',
+        'city': 'Karachi',
+        'pickup': 'IBA Karachi Main Campus / University Road',
+        'desc': 'Principles of Marketing (17th South Asian Edition) by Philip Kotler & Gary Armstrong. Key BBA & MBA marketing reference.',
+        'photo': 'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=500&auto=format&fit=crop&q=80',
+        'is_sponsored': False,
+        'views': 190
+    },
+    {
+        'isbn': '9789699640018',
+        'seller_username': 'ali_seller',
+        'condition': 'Like New',
+        'price': Decimal('750.00'),
+        'is_free': False,
+        'target_age_group': 'young_adult',
+        'city': 'Lahore',
+        'pickup': 'Civil Services Academy area / Mall Road Lahore',
+        'desc': 'CSS Current Affairs & Pakistan Affairs Comprehensive Guide (Jahangir World Times). Indispensable for FPSC CSS 2025 aspirants.',
+        'photo': 'https://images.unsplash.com/photo-1461360370896-922624d12aa1?w=500&auto=format&fit=crop&q=80',
+        'is_sponsored': False,
+        'views': 225
     }
 ]
 
@@ -638,6 +1382,39 @@ DEMO_USERS = [
         'rating': Decimal('5.0'),
         'reviews': 2,
         'wallet': Decimal('300.00')
+    },
+    {
+        'username': 'kpk_seller',
+        'name': 'Tariq Khattak (Peshawar)',
+        'phone': '03138899001',
+        'city': 'Peshawar',
+        'campus': 'University of Peshawar (UoP) Campus',
+        'type': 'student',
+        'rating': Decimal('4.9'),
+        'reviews': 14,
+        'wallet': Decimal('220.00')
+    },
+    {
+        'username': 'sindh_seller',
+        'name': 'Farhan Memon (Karachi)',
+        'phone': '03321122445',
+        'city': 'Karachi',
+        'campus': 'DJ Sindh Govt Science College / Saddar',
+        'type': 'student',
+        'rating': Decimal('4.8'),
+        'reviews': 10,
+        'wallet': Decimal('190.00')
+    },
+    {
+        'username': 'cambridge_seller',
+        'name': 'Saad Qureshi (Cambridge A-Level)',
+        'phone': '03051122334',
+        'city': 'Islamabad',
+        'campus': 'Roots Millennium / Beaconhouse Margalla',
+        'type': 'student',
+        'rating': Decimal('5.0'),
+        'reviews': 7,
+        'wallet': Decimal('400.00')
     }
 ]
 
@@ -759,24 +1536,24 @@ def ensure_demo_listings(force=False):
             is_free_val = l.get('is_free', l['price'] == Decimal('0.00'))
             age_grp_val = l.get('target_age_group', book_obj.target_age_group if book_obj else 'all')
             if book_obj and seller_prof:
-                listing, created = Listing.objects.get_or_create(
-                    book=book_obj,
-                    seller=seller_prof,
-                    defaults={
-                        'price': l['price'],
-                        'is_free': is_free_val,
-                        'target_age_group': age_grp_val,
-                        'condition': l['condition'],
-                        'city': l['city'],
-                        'pickup_location': l['pickup'],
-                        'description': l['desc'],
-                        'photo_url': l['photo'],
-                        'status': 'active',
-                        'is_sponsored': l['is_sponsored'],
-                        'views_count': l.get('views', 42)
-                    }
-                )
-                if not created:
+                listing = Listing.objects.filter(book=book_obj, seller=seller_prof).first()
+                if not listing:
+                    listing = Listing.objects.create(
+                        book=book_obj,
+                        seller=seller_prof,
+                        price=l['price'],
+                        is_free=is_free_val,
+                        target_age_group=age_grp_val,
+                        condition=l['condition'],
+                        city=l['city'],
+                        pickup_location=l['pickup'],
+                        description=l['desc'],
+                        photo_url=l['photo'],
+                        status='active',
+                        is_sponsored=l['is_sponsored'],
+                        views_count=l.get('views', 42)
+                    )
+                else:
                     needs_save = False
                     if listing.status != 'active':
                         listing.status = 'active'

@@ -542,7 +542,7 @@ function renderShelves(listings) {
     if (freeContainer) {
         const freeItems = listings.filter(item => item.is_free || parseFloat(item.price) === 0);
         if (freeItems.length > 0) {
-            freeContainer.innerHTML = freeItems.slice(0, 4).map(item => createBookCardHtml(item)).join('');
+            freeContainer.innerHTML = freeItems.slice(0, 8).map(item => createBookCardHtml(item)).join('');
             if (freeSection) freeSection.classList.remove('hidden');
         } else {
             if (freeSection) freeSection.classList.add('hidden');
@@ -563,7 +563,7 @@ function renderShelves(listings) {
             return cat === 'Story Books' || age === 'kids' || title.includes('kahani') || title.includes('story') || title.includes('bachon') || title.includes('jungle');
         });
         if (kidsItems.length > 0) {
-            kidsContainer.innerHTML = kidsItems.slice(0, 4).map(item => createBookCardHtml(item)).join('');
+            kidsContainer.innerHTML = kidsItems.slice(0, 8).map(item => createBookCardHtml(item)).join('');
             if (kidsSection) kidsSection.classList.remove('hidden');
         } else {
             if (kidsSection) kidsSection.classList.add('hidden');
@@ -576,10 +576,10 @@ function renderShelves(listings) {
     if (novelsContainer) {
         const novelItems = listings.filter(item => {
             const cat = item.book?.category || '';
-            return cat === 'Fiction' || cat === 'Novels';
+            return cat === 'Fiction' || cat === 'Novels' || cat === 'Urdu Literature & Novels';
         });
         if (novelItems.length > 0) {
-            novelsContainer.innerHTML = novelItems.slice(0, 4).map(item => createBookCardHtml(item)).join('');
+            novelsContainer.innerHTML = novelItems.slice(0, 8).map(item => createBookCardHtml(item)).join('');
             if (novelsSection) novelsSection.classList.remove('hidden');
         } else {
             if (novelsSection) novelsSection.classList.add('hidden');
