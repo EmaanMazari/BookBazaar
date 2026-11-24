@@ -2423,6 +2423,266 @@ function toggleSellFreeDonation(isFree) {
     }
 }
 
+// ==========================================
+// SELL FORM: BOOK PHOTO CAMERA & GALLERY
+// ==========================================
+window.currentBookPhotoFile = null;
+window._bookWebcamStream = null;
+window._bookWebcamCurrentDeviceId = null;
+
+function isMobileUserAgent() {
+    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
+           (navigator.maxTouchPoints && navigator.maxTouchPoints > 2 && /Macintosh/i.test(navigator.userAgent));
+}
+
+function openBookPhotoCamera() {
+    // 1. Mobile devices: native rear camera via capture="environment"
+    if (isMobileUserAgent()) {
+        const cameraInput = document.getElementById('sell-camera-file');
+        if (cameraInput) {
+            cameraInput.click();
+            return;
+        }
+    }
+
+    // 2. Desktop: live webcam capture modal if getUserMedia is supported
+    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+        openBookWebcamModal();
+    } else {
+        // Fallback to camera or standard file input
+        const cameraInput = document.getElementById('sell-camera-file');
+        if (cameraInput) {
+            cameraInput.click();
+        } else {
+            document.getElementById('sell-image-file')?.click();
+        }
+    }
+}
+window.openBookPhotoCamera = openBookPhotoCamera;
+
+function openBookPhotoGallery() {
+    const fileInput = document.getElementById('sell-image-file');
+    if (fileInput) {
+        fileInput.click();
+    }
+}
+window.openBookPhotoGallery = openBookPhotoGallery;
+
+function handleSelectedBookPhoto(file) {
+    if (!file) return;
+
+    // Check size limit: 5MB
+    const MAX_SIZE = 5 * 1024 * 1024;
+    if (file.size > MAX_SIZE) {
+        alert(`The selected photo is too large (${(file.size / (1024 * 1024)).toFixed(2)} MB). Please select or take a photo under 5MB.`);
+        return;
+    }
+
+    // Check file extension / MIME type
+    const validTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/jpg'];
+    const fileName = file.name || 'book_photo.jpg';
+    const ext = fileName.includes('.') ? fileName.substring(fileName.lastIndexOf('.')).toLowerCase() : '.jpg';
+    const validExts = ['.jpg', '.jpeg', '.png', '.webp'];
+
+    if (file.type && !validTypes.includes(file.type) && !validExts.includes(ext)) {
+        alert("Please select a valid image file (.jpg, .jpeg, .png, or .webp).");
+        return;
+    }
+
+    // Store in global state
+    window.currentBookPhotoFile = file;
+
+    // Try synchronizing with the file inputs if supported
+    try {
+        const dt = new DataTransfer();
+        dt.items.add(file);
+        const imageInput = document.getElementById('sell-image-file');
+        if (imageInput) imageInput.files = dt.files;
+    } catch (e) {
+        // DataTransfer may not be supported on all browsers
+    }
+
+    // Live preview update
+    const reader = new FileReader();
+    reader.onload = function(evt) {
+        const preview = document.getElementById('sell-image-preview');
+        const img = document.getElementById('sell-preview-img');
+        const filenameEl = document.getElementById('sell-preview-filename');
+        const metaEl = document.getElementById('sell-preview-meta');
+
+        if (img) img.src = evt.target.result;
+        if (filenameEl) filenameEl.textContent = fileName;
+        if (metaEl) {
+            const sizeKb = (file.size / 1024).toFixed(1);
+            metaEl.textContent = `${sizeKb} KB · Ready for upload`;
+        }
+        if (preview) preview.classList.remove('hidden');
+    };
+    reader.readAsDataURL(file);
+}
+window.handleSelectedBookPhoto = handleSelectedBookPhoto;
+
+function retakeBookPhoto() {
+    openBookPhotoCamera();
+}
+window.retakeBookPhoto = retakeBookPhoto;
+
+function removeBookPhoto() {
+    window.currentBookPhotoFile = null;
+    const imageInput = document.getElementById('sell-image-file');
+    const cameraInput = document.getElementById('sell-camera-file');
+    const photoInput = document.getElementById('sell-photo-input');
+    const preview = document.getElementById('sell-image-preview');
+    const img = document.getElementById('sell-preview-img');
+    const filenameEl = document.getElementById('sell-preview-filename');
+    const metaEl = document.getElementById('sell-preview-meta');
+
+    if (imageInput) imageInput.value = '';
+    if (cameraInput) cameraInput.value = '';
+    if (photoInput) photoInput.value = '';
+    if (img) img.src = '';
+    if (filenameEl) filenameEl.textContent = '';
+    if (metaEl) metaEl.textContent = '';
+    if (preview) preview.classList.add('hidden');
+}
+window.removeBookPhoto = removeBookPhoto;
+
+// ==========================================
+// DESKTOP LIVE WEBCAM CAPTURE MODAL
+// ==========================================
+async function openBookWebcamModal() {
+    const modal = document.getElementById('book-webcam-modal');
+    const video = document.getElementById('book-webcam-video');
+    const loading = document.getElementById('book-webcam-loading');
+    const switchBtn = document.getElementById('book-webcam-switch-btn');
+
+    if (!modal) return;
+    modal.classList.remove('hidden');
+    if (loading) loading.classList.remove('hidden');
+
+    try {
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+            throw new Error("Webcam not supported by browser");
+        }
+
+        try {
+            const devices = await navigator.mediaDevices.enumerateDevices();
+            const videoDevices = devices.filter(d => d.kind === 'videoinput');
+            if (switchBtn) {
+                switchBtn.classList.toggle('hidden', videoDevices.length <= 1);
+            }
+        } catch (e) {}
+
+        const constraints = {
+            video: {
+                facingMode: { ideal: 'environment' },
+                width: { ideal: 1280 },
+                height: { ideal: 720 }
+            }
+        };
+
+        const stream = await navigator.mediaDevices.getUserMedia(constraints);
+        window._bookWebcamStream = stream;
+        if (video) {
+            video.srcObject = stream;
+            await video.play().catch(e => console.warn("Video play error:", e));
+        }
+        if (loading) loading.classList.add('hidden');
+    } catch (err) {
+        console.warn("Desktop webcam unavailable, falling back to file picker:", err);
+        closeBookWebcamModal();
+        // Fallback to camera / file input
+        const cameraInput = document.getElementById('sell-camera-file');
+        if (cameraInput) {
+            cameraInput.click();
+        } else {
+            document.getElementById('sell-image-file')?.click();
+        }
+    }
+}
+window.openBookWebcamModal = openBookWebcamModal;
+
+function closeBookWebcamModal() {
+    const modal = document.getElementById('book-webcam-modal');
+    if (modal) modal.classList.add('hidden');
+
+    if (window._bookWebcamStream) {
+        window._bookWebcamStream.getTracks().forEach(track => track.stop());
+        window._bookWebcamStream = null;
+    }
+    const video = document.getElementById('book-webcam-video');
+    if (video) video.srcObject = null;
+}
+window.closeBookWebcamModal = closeBookWebcamModal;
+
+async function switchBookWebcamCamera() {
+    try {
+        if (!navigator.mediaDevices || !navigator.mediaDevices.enumerateDevices) return;
+        const devices = await navigator.mediaDevices.enumerateDevices();
+        const videoDevices = devices.filter(d => d.kind === 'videoinput');
+        if (videoDevices.length <= 1) return;
+
+        const currentId = window._bookWebcamCurrentDeviceId;
+        let nextIndex = 0;
+        if (currentId) {
+            const currentIndex = videoDevices.findIndex(d => d.deviceId === currentId);
+            if (currentIndex !== -1) {
+                nextIndex = (currentIndex + 1) % videoDevices.length;
+            }
+        }
+        const nextDevice = videoDevices[nextIndex];
+        window._bookWebcamCurrentDeviceId = nextDevice.deviceId;
+
+        if (window._bookWebcamStream) {
+            window._bookWebcamStream.getTracks().forEach(track => track.stop());
+            window._bookWebcamStream = null;
+        }
+
+        const stream = await navigator.mediaDevices.getUserMedia({
+            video: {
+                deviceId: { exact: nextDevice.deviceId },
+                width: { ideal: 1280 },
+                height: { ideal: 720 }
+            }
+        });
+        window._bookWebcamStream = stream;
+        const video = document.getElementById('book-webcam-video');
+        if (video) {
+            video.srcObject = stream;
+            await video.play().catch(e => console.warn(e));
+        }
+    } catch (e) {
+        console.warn("Failed to switch camera:", e);
+    }
+}
+window.switchBookWebcamCamera = switchBookWebcamCamera;
+
+function captureBookWebcamPhoto() {
+    const video = document.getElementById('book-webcam-video');
+    if (!video || !video.videoWidth) {
+        alert("Camera stream is not ready yet. Please wait a moment.");
+        return;
+    }
+
+    const canvas = document.createElement('canvas');
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+    canvas.toBlob((blob) => {
+        if (!blob) {
+            alert("Failed to capture image from camera.");
+            return;
+        }
+        const fileName = `book_photo_${Date.now()}.jpg`;
+        const file = new File([blob], fileName, { type: 'image/jpeg' });
+        handleSelectedBookPhoto(file);
+        closeBookWebcamModal();
+    }, 'image/jpeg', 0.92);
+}
+window.captureBookWebcamPhoto = captureBookWebcamPhoto;
+
 async function handleCreateListingSubmit(e) {
     e.preventDefault();
     if (!STATE.currentUser) {
@@ -2451,9 +2711,11 @@ async function handleCreateListingSubmit(e) {
     formData.append('subject', document.getElementById('sell-subject-input').value.trim());
     formData.append('photo_url', document.getElementById('sell-photo-input').value);
 
-    const imageFile = document.getElementById('sell-image-file')?.files[0];
+    const imageFile = window.currentBookPhotoFile || 
+                      document.getElementById('sell-camera-file')?.files[0] || 
+                      document.getElementById('sell-image-file')?.files[0];
     if (imageFile) {
-        formData.append('image', imageFile);
+        formData.append('image', imageFile, imageFile.name || 'book_photo.jpg');
     }
 
     try {
@@ -2473,6 +2735,10 @@ async function handleCreateListingSubmit(e) {
                     STATE.listings = STATE.allListings;
                 }
             } catch (err) {}
+
+            // Clean up photo preview and form
+            removeBookPhoto();
+            document.getElementById('sell-book-form')?.reset();
 
             if (data.interstitial_ad) {
                 showInterstitialAd(data.interstitial_ad);
@@ -2595,6 +2861,22 @@ function setupEventListeners() {
     const scanFileInput = document.getElementById('scan-file-input');
     if (scanFileInput) {
         scanFileInput.addEventListener('change', handleScanImageUpload);
+    }
+
+    const sellImageFile = document.getElementById('sell-image-file');
+    if (sellImageFile) {
+        sellImageFile.addEventListener('change', (e) => {
+            const file = e.target.files && e.target.files[0];
+            if (file) handleSelectedBookPhoto(file);
+        });
+    }
+
+    const sellCameraFile = document.getElementById('sell-camera-file');
+    if (sellCameraFile) {
+        sellCameraFile.addEventListener('change', (e) => {
+            const file = e.target.files && e.target.files[0];
+            if (file) handleSelectedBookPhoto(file);
+        });
     }
 
     const heroSellBtn = document.getElementById('hero-sell-btn');
