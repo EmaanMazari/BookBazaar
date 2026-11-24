@@ -337,30 +337,31 @@ function updateLanguageTexts() {
     });
 }
 
-// View Mode Toggle (Phone Mockup vs Fullscreen Desktop)
-function toggleViewMode() {
-    const wrapper = document.getElementById('app-wrapper');
-    const modeBtn = document.getElementById('view-mode-btn');
-    const notch = document.getElementById('mobile-notch');
-    const statusBar = document.getElementById('mobile-status-bar');
-    if (!wrapper) return;
-
-    if (STATE.viewMode === 'full') {
-        STATE.viewMode = 'mobile';
-        wrapper.classList.remove('w-full', 'max-w-6xl', 'mx-auto', 'my-0', 'sm:my-6', 'rounded-none', 'sm:rounded-2xl', 'shadow-none', 'sm:shadow-2xl', 'border-0', 'sm:border', 'border-slate-200');
-        wrapper.classList.add('mobile-device-frame');
-        if (notch) notch.classList.remove('hidden');
-        if (statusBar) statusBar.classList.remove('hidden');
-        if (modeBtn) modeBtn.innerHTML = `<i class="fa-solid fa-desktop mr-1.5"></i> <span data-i18n="view_toggle_full">Full Screen</span>`;
-    } else {
-        STATE.viewMode = 'full';
-        wrapper.classList.remove('mobile-device-frame');
-        wrapper.classList.add('w-full', 'max-w-6xl', 'mx-auto', 'my-0', 'sm:my-6', 'rounded-none', 'sm:rounded-2xl', 'shadow-none', 'sm:shadow-2xl', 'border-0', 'sm:border', 'border-slate-200');
-        if (notch) notch.classList.add('hidden');
-        if (statusBar) statusBar.classList.add('hidden');
-        if (modeBtn) modeBtn.innerHTML = `<i class="fa-solid fa-mobile-screen mr-1.5"></i> <span data-i18n="view_toggle_mobile">Phone View</span>`;
+// Navigation & Scroll Helpers
+function scrollToBrowse() {
+    const el = document.getElementById('browse-section') || document.getElementById('all-offers-section') || document.getElementById('shelf-pills-bar');
+    if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
 }
+window.scrollToBrowse = scrollToBrowse;
+
+function toggleMobileNavMenu() {
+    const menu = document.getElementById('mobile-nav-dropdown');
+    if (menu) {
+        menu.classList.toggle('hidden');
+    }
+}
+window.toggleMobileNavMenu = toggleMobileNavMenu;
+
+// View Mode Toggle (Retained for backwards compatibility)
+function toggleViewMode() {
+    const wrapper = document.getElementById('app-wrapper');
+    if (wrapper) {
+        wrapper.classList.remove('mobile-device-frame');
+    }
+}
+window.toggleViewMode = toggleViewMode;
 
 // Open/activate Scanner section, smoothly scroll down and focus manual input
 function openBarcodeScanner() {
@@ -521,121 +522,70 @@ function switchTab(tabId) {
 }
 
 // Dedicated Reusable Book Card Component
+// Dedicated Reusable Minimalist Book Card Component (Requirement 5)
 function createBookCardHtml(item, options = {}) {
     const isFree = Boolean(item.is_free || parseFloat(item.price) === 0);
-    const conditionColors = {
-        'Brand New': 'bg-blue-100 text-blue-800 border-blue-300',
-        'Like New': 'bg-sky-100 text-sky-800 border-sky-300',
-        'Good': 'bg-indigo-50 text-indigo-800 border-indigo-200',
-        'Fair': 'bg-slate-100 text-slate-700 border-slate-300',
-    };
-    const condClass = conditionColors[item.condition] || 'bg-slate-100 text-slate-700 border-slate-300';
-    const displayImg = item.display_image || item.photo_url || (item.book && item.book.cover_image) || 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=300';
-    const isFav = item.is_favorited;
+    const displayImg = item.display_image || item.photo_url || (item.book && item.book.cover_image) || 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=400';
+    const title = item.book ? item.book.title : (item.title || 'Untitled Book');
+    const isbn = item.book ? item.book.isbn : (item.isbn || '');
+    const city = item.city || 'Pakistan';
+    const condition = item.condition || 'Good';
     const priceNum = parseFloat(item.price || 0);
-    const retailPrice = item.book && item.book.original_retail_price ? parseFloat(item.book.original_retail_price).toFixed(0) : null;
-
-    const cardBgClass = isFree 
-        ? 'bg-gradient-to-br from-white via-white to-emerald-50/50 border-emerald-300 hover:border-emerald-500 shadow-xs' 
-        : 'bg-white border-blue-100 hover:border-blue-300 shadow-sm';
 
     return `
-        <div class="rounded-2xl border p-3.5 hover:shadow-md transition-all relative overflow-hidden flex flex-col justify-between ${cardBgClass} mb-3.5">
-            ${item.is_sponsored ? `
-                <div class="absolute top-0 right-0 bg-gradient-to-l from-amber-500 to-amber-600 text-white text-[10px] font-bold px-2.5 py-0.5 rounded-bl-lg shadow-xs flex items-center gap-1 z-10">
-                    <i class="fa-solid fa-star text-[8px]"></i> Sponsored
-                </div>
-            ` : ''}
-
-            <!-- Favorite Heart Button -->
-            <button onclick="toggleFavoriteListing(${item.id})" class="absolute top-2 left-2 z-10 w-7 h-7 bg-white/90 hover:bg-white rounded-full flex items-center justify-center shadow-xs transition-transform active:scale-90" title="Add to Favourites">
-                <i class="fa-solid fa-heart text-xs ${isFav ? 'text-rose-600' : 'text-slate-300'}"></i>
-            </button>
-
+        <div class="bg-white rounded-2xl border border-slate-200 hover:border-blue-300 shadow-xs hover:shadow-lg transition-all duration-200 overflow-hidden flex flex-col justify-between group h-full">
             <div>
-                <!-- Top Badges / Tagline -->
-                <div class="flex items-center gap-1.5 flex-wrap mb-2 pl-7 pr-2">
+                <!-- Book Cover Image -->
+                <div class="relative w-full aspect-[3/4] bg-slate-100 overflow-hidden cursor-pointer" onclick="openUnlockModal(${item.id})">
+                    <img src="${displayImg}" 
+                         alt="${title}" 
+                         class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                         loading="lazy"
+                         onerror="this.src='https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=400'">
                     ${isFree ? `
-                        <span class="text-[10px] font-black bg-gradient-to-r from-emerald-600 to-teal-600 text-white px-2 py-0.5 rounded-full shadow-xs flex items-center gap-1">
-                            <i class="fa-solid fa-gift text-[9px]"></i> 🎁 FREE Donation
-                        </span>
+                        <div class="absolute top-2.5 right-2.5">
+                            <span class="bg-emerald-600 text-white font-extrabold text-[11px] px-2.5 py-0.5 rounded-full shadow-sm">
+                                Free
+                            </span>
+                        </div>
                     ` : ''}
-                    ${item.ai_badge && !isFree ? `
-                        <span class="text-[9px] font-extrabold bg-blue-100 text-blue-800 border border-blue-300 px-2 py-0.5 rounded-full flex items-center gap-1">
-                            ${item.ai_badge}
-                        </span>
-                    ` : ''}
-                    <span class="text-[9px] font-semibold px-2 py-0.5 rounded-full border ${condClass}">
-                        ${item.condition}
-                    </span>
-                    <span class="text-[10px] text-slate-500">
-                        <i class="fa-solid fa-location-dot text-blue-600 mr-0.5"></i> ${item.city}
-                    </span>
                 </div>
 
-                <div class="flex gap-3">
-                    <img src="${displayImg}" 
-                         alt="${item.book ? item.book.title : 'Book'}" 
-                         class="w-16 h-24 sm:w-20 sm:h-28 object-cover rounded-lg shadow-xs flex-shrink-0 cursor-pointer border border-slate-100 hover:scale-105 transition-transform"
-                         onclick="quickCompareBook('${item.book ? item.book.isbn : ''}')">
-                    
-                    <div class="flex-1 min-w-0 flex flex-col justify-between">
-                        <div>
-                            <h3 class="font-extrabold text-slate-900 text-xs sm:text-sm leading-snug line-clamp-2 cursor-pointer hover:text-blue-700"
-                                onclick="quickCompareBook('${item.book ? item.book.isbn : ''}')">
-                                ${item.book ? item.book.title : 'Untitled Book'}
-                            </h3>
-                            <p class="text-[11px] text-slate-500 line-clamp-1 mt-0.5">${item.book ? item.book.author : ''}</p>
-                            
-                            <div class="flex items-center gap-1 flex-wrap mt-1 text-[10px]">
-                                ${item.book && item.book.education_board && item.book.education_board !== 'General / None' ? `
-                                    <span class="bg-blue-50 text-blue-700 font-semibold px-1.5 py-0.2 rounded border border-blue-100 truncate max-w-[120px]">
-                                        ${item.book.education_board.split(' ')[0]}
-                                    </span>
-                                ` : ''}
-                                ${item.book && item.book.grade_class && item.book.grade_class !== 'General / Non-Academic' ? `
-                                    <span class="bg-slate-100 text-slate-600 px-1.5 py-0.2 rounded font-medium">
-                                        ${item.book.grade_class}
-                                    </span>
-                                ` : ''}
-                            </div>
-                        </div>
-
-                        ${item.ai_insight ? `
-                            <p class="text-[10px] text-blue-900 bg-blue-50/90 rounded px-1.5 py-0.5 mt-1 border border-blue-100 truncate">
-                                <i class="fa-solid fa-wand-magic-sparkles text-amber-500 mr-0.5"></i> ${item.ai_insight}
-                            </p>
-                        ` : ''}
+                <!-- Book Details -->
+                <div class="p-4 flex flex-col gap-1.5">
+                    <!-- City & Condition Tag (e.g., "Lahore • Good") -->
+                    <div class="text-xs font-semibold text-slate-500 flex items-center gap-1.5">
+                        <i class="fa-solid fa-location-dot text-blue-600 text-[10px]"></i>
+                        <span>${city} • ${condition}</span>
                     </div>
+
+                    <!-- Book Title -->
+                    <h3 class="font-extrabold text-slate-900 text-sm leading-snug line-clamp-2 hover:text-blue-700 cursor-pointer transition-colors"
+                        title="${title}"
+                        onclick="openUnlockModal(${item.id})">
+                        ${title}
+                    </h3>
                 </div>
             </div>
 
-            <div class="mt-3 pt-2 border-t border-slate-100 flex items-center justify-between">
+            <!-- Price & Single Clean Action Button -->
+            <div class="p-4 pt-0 mt-auto flex items-center justify-between gap-2 border-t border-slate-100 pt-3">
                 <div>
-                    <div class="flex items-baseline gap-1.5">
-                        ${isFree ? `
-                            <span class="text-base font-black text-emerald-700">Rs. 0</span>
-                            <span class="text-[9px] font-black uppercase text-emerald-700 bg-emerald-100 px-1.5 py-0.2 rounded border border-emerald-300">100% Free</span>
-                        ` : `
-                            <span class="text-base font-black text-blue-900">Rs. ${priceNum.toFixed(0)}</span>
-                            ${retailPrice ? `<span class="text-[10px] text-slate-400 line-through">Rs. ${retailPrice}</span>` : ''}
-                        `}
-                    </div>
-                    ${item.savings_percentage > 0 && !isFree ? `
-                        <span class="text-[9px] font-bold text-blue-700 bg-blue-50 px-1 py-0.2 rounded">
-                            Save ${item.savings_percentage}%
+                    ${isFree ? `
+                        <span class="inline-block text-xs font-black uppercase text-emerald-700 bg-emerald-50 border border-emerald-200 px-2.5 py-1 rounded-lg">
+                            Free
                         </span>
-                    ` : ''}
+                    ` : `
+                        <div class="flex items-baseline gap-1">
+                            <span class="text-base font-black text-blue-900">Rs. ${priceNum.toFixed(0)}</span>
+                        </div>
+                    `}
                 </div>
 
-                <div class="flex items-center gap-1.5">
-                    <button onclick="quickCompareBook('${item.book ? item.book.isbn : ''}')" class="px-2.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-semibold flex items-center gap-1" title="Compare Prices">
-                        <i class="fa-solid fa-code-compare text-[10px]"></i> <span class="hidden sm:inline">Compare</span>
-                    </button>
-                    <button onclick="openUnlockModal(${item.id})" class="px-3 py-1.5 ${isFree ? 'bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700' : 'bg-gradient-to-r from-blue-700 to-blue-600 hover:from-blue-800 hover:to-blue-700'} text-white rounded-xl text-xs font-bold shadow-xs flex items-center gap-1 transition-all">
-                        <i class="fa-solid fa-lock-open text-[10px]"></i> <span>${isFree ? 'Claim Free' : 'Contact'}</span>
-                    </button>
-                </div>
+                <button onclick="openUnlockModal(${item.id})" 
+                        class="px-3.5 py-1.5 ${isFree ? 'bg-emerald-600 hover:bg-emerald-700' : 'bg-blue-600 hover:bg-blue-700'} text-white font-bold rounded-xl text-xs transition-colors shadow-xs hover:shadow flex items-center gap-1.5 active:scale-95">
+                    <span>${isFree ? 'Claim' : 'View Details'}</span>
+                </button>
             </div>
         </div>
     `;
@@ -778,7 +728,7 @@ function renderPtbShelf(listings, filterClass = 'all') {
 
     if (filtered.length === 0) {
         container.innerHTML = `
-            <div class="col-span-1 sm:col-span-2 p-6 text-center bg-slate-50 rounded-2xl border border-dashed border-slate-200">
+            <div class="col-span-full p-8 text-center bg-slate-50 rounded-2xl border border-dashed border-slate-200">
                 <p class="text-xs text-slate-500 font-medium">No Punjab Textbooks listed in this specific class tier yet.</p>
                 <button type="button" onclick="switchTab('sell'); toggleSellFreeDonation(true);" class="mt-2 text-xs font-bold text-blue-700 hover:underline">Donate or Sell One Now</button>
             </div>
@@ -786,7 +736,7 @@ function renderPtbShelf(listings, filterClass = 'all') {
         return;
     }
 
-    container.innerHTML = filtered.slice(0, 6).map(item => createBookCardHtml(item)).join('');
+    container.innerHTML = filtered.slice(0, 8).map(item => createBookCardHtml(item)).join('');
 }
 
 function filterShelfSection(shelfKey) {
@@ -833,7 +783,7 @@ function renderListings(listings) {
 
     if (!listings || listings.length === 0) {
         container.innerHTML = `
-            <div class="p-8 text-center bg-white rounded-2xl border border-dashed border-slate-300">
+            <div class="col-span-full p-12 text-center bg-white rounded-2xl border border-dashed border-slate-300">
                 <i class="fa-solid fa-book-open text-4xl text-slate-300 mb-3"></i>
                 <p class="text-slate-600 font-medium">No book listings match your filter.</p>
                 <button onclick="resetFilters()" class="mt-3 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold">Clear Filters</button>
@@ -846,21 +796,21 @@ function renderListings(listings) {
 
     let html = '';
     listings.forEach((item, index) => {
-        // Native Ad injection
-        if (index === 2 && nativeAd) {
+        // Native Ad injection (formatted cleanly as a grid card)
+        if (index === 4 && nativeAd) {
             html += `
-                <div class="bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-xl p-3.5 my-2 shadow-sm flex items-center justify-between">
-                    <div class="flex items-center gap-3">
-                        <img src="${nativeAd.image_url}" class="w-12 h-12 rounded-lg object-cover shadow-xs">
-                        <div>
-                            <div class="flex items-center gap-1.5">
-                                <span class="bg-amber-500 text-white text-[10px] uppercase font-bold px-1.5 py-0.5 rounded">Ad</span>
-                                <span class="text-xs font-bold text-slate-800">${nativeAd.sponsor_name}</span>
-                            </div>
-                            <p class="text-xs text-slate-600 line-clamp-1 mt-0.5">${nativeAd.headline}</p>
+                <div class="bg-gradient-to-br from-amber-50 to-orange-50 border border-amber-200 rounded-2xl p-4 shadow-xs hover:shadow-md transition-all flex flex-col justify-between h-full">
+                    <div>
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="bg-amber-500 text-white text-[10px] uppercase font-bold px-2 py-0.5 rounded-full">Sponsored Ad</span>
+                            <span class="text-xs font-bold text-slate-800 truncate">${nativeAd.sponsor_name}</span>
                         </div>
+                        <img src="${nativeAd.image_url}" class="w-full aspect-[3/4] object-cover rounded-xl shadow-xs mb-3">
+                        <h4 class="text-sm font-bold text-slate-900 line-clamp-2">${nativeAd.headline}</h4>
                     </div>
-                    <button onclick="trackAdClick(${nativeAd.id})" class="px-2.5 py-1 bg-amber-600 hover:bg-amber-700 text-white text-xs font-semibold rounded-md">View</button>
+                    <div class="mt-4 pt-3 border-t border-amber-200/60 flex justify-end">
+                        <button onclick="trackAdClick(${nativeAd.id})" class="px-3.5 py-1.5 bg-amber-600 hover:bg-amber-700 text-white text-xs font-semibold rounded-xl transition-colors">View Sponsor</button>
+                    </div>
                 </div>
             `;
         }
@@ -927,8 +877,12 @@ async function toggleFavoritesFilter() {
 
 function toggleAdvancedFilters() {
     const box = document.getElementById('advanced-filters-box');
+    const arrow = document.getElementById('filter-arrow-icon');
     if (box) {
-        box.classList.toggle('hidden');
+        const isHidden = box.classList.toggle('hidden');
+        if (arrow) {
+            arrow.style.transform = isHidden ? 'rotate(0deg)' : 'rotate(180deg)';
+        }
     }
 }
 
@@ -2215,99 +2169,7 @@ async function loadAiRecommendations() {
             subtitleEl.textContent = `Personalized for ${pName} (${ageLabel} • ${profile.city}) — Free donations prioritized on top`;
         }
 
-        const conditionColors = {
-            'Brand New': 'bg-blue-100 text-blue-800 border-blue-300',
-            'Like New': 'bg-sky-100 text-sky-800 border-sky-300',
-            'Good': 'bg-indigo-50 text-indigo-800 border-indigo-200',
-            'Fair': 'bg-slate-100 text-slate-700 border-slate-300',
-        };
-
-        container.innerHTML = data.recommendations.map(item => {
-            const isFree = Boolean(item.is_free || parseFloat(item.price) === 0);
-            const condClass = conditionColors[item.condition] || 'bg-slate-100 text-slate-700 border-slate-300';
-            const displayImg = item.display_image || item.photo_url || item.book.cover_image || 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=300';
-            const retailPrice = item.book.original_retail_price ? parseFloat(item.book.original_retail_price).toFixed(0) : null;
-            const matchPct = item.ai_match_percentage || 98;
-            const insight = item.ai_insight || `Top recommendation in ${item.city}`;
-            const primaryBadge = item.ai_badge || (isFree ? '🎁 FREE Donation' : `✨ ${matchPct}% AI Match`);
-
-            return `
-                <div class="bg-gradient-to-br from-white via-white to-blue-50/50 rounded-2xl border ${isFree ? 'border-emerald-300 shadow-xs' : 'border-blue-200/90 shadow-xs'} p-3.5 hover:shadow-md hover:border-blue-400 transition-all flex flex-col justify-between relative overflow-hidden group">
-                    <div>
-                        <!-- AI Match Sparkle Badge & Condition -->
-                        <div class="flex items-center justify-between mb-2">
-                            ${isFree ? `
-                                <span class="text-[10px] font-black bg-gradient-to-r from-emerald-600 to-teal-600 text-white px-2 py-0.5 rounded-full shadow-xs flex items-center gap-1">
-                                    <i class="fa-solid fa-gift text-[9px]"></i> 🎁 FREE Donation
-                                </span>
-                            ` : `
-                                <span class="text-[10px] font-extrabold bg-gradient-to-r from-blue-700 via-blue-600 to-indigo-700 text-white px-2 py-0.5 rounded-full shadow-xs flex items-center gap-1">
-                                    <i class="fa-solid fa-wand-magic-sparkles text-[9px] text-amber-300"></i>
-                                    <span>${primaryBadge}</span>
-                                </span>
-                            `}
-                            <span class="text-[9px] font-bold px-1.5 py-0.5 rounded border ${condClass}">
-                                ${item.condition}
-                            </span>
-                        </div>
-
-                        <!-- Book Thumbnail and Academic Metadata -->
-                        <div class="flex gap-3">
-                            <img src="${displayImg}" 
-                                 alt="${item.book.title}" 
-                                 class="w-16 h-22 object-cover rounded-lg shadow-xs flex-shrink-0 cursor-pointer border border-slate-100 group-hover:scale-105 transition-transform"
-                                 onclick="quickCompareBook('${item.book.isbn}')">
-                            
-                            <div class="flex-1 min-w-0">
-                                <h4 class="font-extrabold text-slate-900 text-xs leading-snug line-clamp-2 cursor-pointer hover:text-blue-700"
-                                    onclick="quickCompareBook('${item.book.isbn}')">
-                                    ${item.book.title}
-                                </h4>
-                                <p class="text-[11px] text-slate-500 line-clamp-1 mt-0.5">${item.book.author}</p>
-                                <div class="flex items-center gap-1.5 text-[10px] text-slate-500 mt-1 flex-wrap">
-                                    <span><i class="fa-solid fa-location-dot text-blue-600"></i> ${item.city}</span>
-                                    <span>•</span>
-                                    <span class="text-amber-500 font-semibold">★ ${item.seller_rating}</span>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Short AI Insight Line -->
-                        <div class="mt-2.5 p-1.5 bg-blue-50/90 rounded-lg border border-blue-100/90 flex items-center gap-1.5 text-[10px] text-blue-900 font-medium">
-                            <i class="fa-solid fa-lightbulb text-amber-500 text-[11px] shrink-0"></i>
-                            <span class="truncate">${insight}</span>
-                        </div>
-                    </div>
-
-                    <!-- Pricing & Action Buttons -->
-                    <div class="mt-3 pt-2 border-t border-slate-100 flex items-center justify-between">
-                        <div>
-                            <div class="flex items-baseline gap-1">
-                                ${isFree ? `
-                                    <span class="text-sm font-black text-emerald-700">Rs. 0</span>
-                                    <span class="text-[9px] font-black uppercase text-emerald-700 bg-emerald-100 px-1 py-0.2 rounded border border-emerald-300">100% Free</span>
-                                ` : `
-                                    <span class="text-sm font-black text-blue-900">Rs. ${parseFloat(item.price).toFixed(0)}</span>
-                                    ${retailPrice ? `<span class="text-[10px] text-slate-400 line-through">Rs. ${retailPrice}</span>` : ''}
-                                `}
-                            </div>
-                            ${item.savings_percentage > 0 && !isFree ? `
-                                <span class="text-[9px] font-extrabold text-blue-700">Save ${item.savings_percentage}%</span>
-                            ` : ''}
-                        </div>
-
-                        <div class="flex items-center gap-1">
-                            <button onclick="quickCompareBook('${item.book.isbn}')" class="px-2 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-[11px] font-semibold" title="Compare Prices">
-                                <i class="fa-solid fa-code-compare text-[10px]"></i>
-                            </button>
-                            <button onclick="openUnlockModal(${item.id})" class="px-2.5 py-1 ${isFree ? 'bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700' : 'bg-gradient-to-r from-blue-700 to-blue-600 hover:from-blue-800 hover:to-blue-700'} text-white rounded-lg text-[11px] font-bold shadow-xs flex items-center gap-1 transition-all">
-                                <i class="fa-solid fa-lock-open text-[9px]"></i> <span>${isFree ? 'Claim Free' : 'Contact'}</span>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            `;
-        }).join('');
+        container.innerHTML = data.recommendations.slice(0, 4).map(item => createBookCardHtml(item)).join('');
     } catch (e) {
         console.warn("AI Recommendations load error:", e);
         if (section) section.classList.add('hidden');

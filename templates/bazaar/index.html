@@ -4,62 +4,62 @@
 
 {% block content %}
 <!-- Top Global Controller Bar (Clean Royal Blue & White Design System) -->
-<header class="bg-gradient-to-r from-slate-900 via-blue-950 to-slate-900 text-white border-b border-blue-900/50 text-xs py-2 sm:py-2.5 px-3 sm:px-4 sticky top-0 z-[100] shadow-md">
-    <div class="max-w-7xl mx-auto flex items-center justify-between gap-2 sm:gap-3">
-        <!-- University & Platform Branding -->
-        <a href="/" class="flex items-center gap-2 sm:gap-2.5 hover:opacity-95 transition-opacity shrink-0">
-            <div class="w-7 h-7 sm:w-8 sm:h-8 bg-blue-600 rounded-xl flex items-center justify-center font-extrabold text-white shadow-sm ring-2 ring-blue-400/30 text-xs sm:text-sm">
+<header class="bg-gradient-to-r from-slate-900 via-blue-950 to-slate-900 text-white border-b border-blue-900/50 sticky top-0 z-[100] shadow-md backdrop-blur-md">
+    <div class="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8 py-3 flex items-center justify-between gap-4">
+        <!-- Logo & Branding (Left) -->
+        <a href="/" class="flex items-center gap-2.5 hover:opacity-95 transition-opacity shrink-0">
+            <div class="w-8 h-8 sm:w-9 sm:h-9 bg-blue-600 rounded-xl flex items-center justify-center font-extrabold text-white shadow-sm ring-2 ring-blue-400/30 text-xs sm:text-sm">
                 BZ
             </div>
             <div>
-                <span class="font-extrabold text-xs sm:text-sm tracking-tight text-white flex items-center gap-1.5" data-i18n="brand_name">
+                <span class="font-extrabold text-sm sm:text-base tracking-tight text-white flex items-center gap-1.5" data-i18n="brand_name">
                     Bookzy AI
                 </span>
-                <span class="text-[10px] text-blue-200/80 hidden sm:inline" data-i18n="brand_tagline">
+                <span class="text-[10px] text-blue-200/80 hidden lg:inline" data-i18n="brand_tagline">
                     Smart Book Marketplace & AI Reader Recommendations
                 </span>
             </div>
         </a>
 
-        <!-- Controls: User Badge, Age Group Badge, Update AI Profile, Account Menu, Language, Admin -->
-        <div class="flex items-center gap-1.5 sm:gap-2 shrink-0">
-            <!-- Active Logged-in User & AI Reader Badge (Desktop & Tablet) -->
-            <div class="hidden sm:flex items-center gap-2 bg-white/10 border border-white/20 text-white px-2.5 py-1.5 rounded-xl shadow-xs">
-                <div class="w-6 h-6 rounded-lg bg-blue-600 text-white flex items-center justify-center text-xs font-bold shrink-0">
-                    <i class="fa-solid fa-graduation-cap" id="top-user-avatar-icon"></i>
-                </div>
-                <div class="flex flex-col text-left leading-tight">
-                    <div class="flex items-center gap-1.5">
-                        <span id="top-user-display-name" class="font-extrabold text-xs max-w-[90px] sm:max-w-[130px] truncate text-white">Ayesha</span>
-                        <span id="top-user-age-badge" class="px-1.5 py-0.2 bg-blue-500/40 text-blue-100 border border-blue-400/30 rounded text-[9px] font-bold">Student (13–19)</span>
-                    </div>
-                    <div class="text-[10px] text-blue-200 flex items-center gap-1 mt-0.5">
-                        <span id="top-user-city-display">Lahore</span>
-                        <span>•</span>
-                        <span class="text-amber-300 font-extrabold" id="top-user-wallet-display">Rs. 250</span>
-                    </div>
-                </div>
+        <!-- Main Navigation Links (Center) -->
+        <nav class="hidden md:flex items-center gap-1 lg:gap-2">
+            <button type="button" onclick="switchTab('home')" class="nav-tab active px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold text-white hover:bg-white/10 transition-colors flex items-center gap-1.5" data-tab="home">
+                <i class="fa-solid fa-house text-xs text-blue-400"></i>
+                <span>Home</span>
+            </button>
+            <button type="button" onclick="switchTab('home'); scrollToBrowse();" class="nav-tab px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold text-blue-100 hover:text-white hover:bg-white/10 transition-colors flex items-center gap-1.5">
+                <i class="fa-solid fa-book-open text-xs text-blue-400"></i>
+                <span>Browse Books</span>
+            </button>
+            <button type="button" onclick="openSellSection()" class="nav-tab px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold text-blue-100 hover:text-white hover:bg-white/10 transition-colors flex items-center gap-1.5" data-tab="sell">
+                <i class="fa-solid fa-circle-plus text-xs text-amber-300"></i>
+                <span>Sell / Donate</span>
+            </button>
+            <button type="button" onclick="openDealsSection()" class="nav-tab px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold text-blue-100 hover:text-white hover:bg-white/10 transition-colors flex items-center gap-1.5" data-tab="deals">
+                <i class="fa-solid fa-handshake text-xs text-blue-400"></i>
+                <span>My Deals</span>
+            </button>
+        </nav>
+
+        <!-- Right Side: Wallet Balance & Profile Menu -->
+        <div class="flex items-center gap-2 sm:gap-3 shrink-0">
+            <!-- Active Wallet Balance Pill -->
+            <div class="flex items-center gap-1.5 sm:gap-2 bg-white/10 border border-white/20 text-white px-3 py-1.5 rounded-xl shadow-xs text-xs">
+                <i class="fa-solid fa-wallet text-amber-300 text-xs"></i>
+                <span class="text-[11px] text-blue-200 hidden sm:inline">Wallet:</span>
+                <span class="text-amber-300 font-extrabold text-xs" id="top-user-wallet-display">Rs. 250</span>
             </div>
 
-            <!-- ✨ Update AI Profile Button -->
-            <button type="button" onclick="openReaderOnboardingModal()" 
-                    class="px-2.5 py-1.5 bg-gradient-to-r from-blue-600 via-blue-500 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white border border-blue-400/40 rounded-xl font-extrabold text-[11px] sm:text-xs transition-all flex items-center gap-1.5 shadow-sm active:scale-95">
-                <i class="fa-solid fa-wand-magic-sparkles text-amber-300 text-xs"></i>
-                <span class="hidden sm:inline">✨ Update AI Profile</span>
-                <span class="sm:hidden">AI Profile</span>
-            </button>
-
-            <!-- Profile & Account Dropdown Menu (Fixes Top-Right Menu Visibility & Contrast) -->
+            <!-- Profile & Account Dropdown Menu -->
             <div class="relative" id="user-menu-container">
                 <button id="user-menu-btn" onclick="toggleUserDropdown()" 
-                        class="px-2.5 py-1.5 sm:px-3 sm:py-1.5 bg-white/10 hover:bg-white text-white hover:text-blue-900 border border-white/25 hover:border-white rounded-xl font-bold text-[11px] sm:text-xs transition-all flex items-center gap-1 sm:gap-1.5 focus:outline-none shadow-xs">
-                    <i class="fa-solid fa-circle-user text-blue-300 text-xs sm:text-sm"></i>
-                    <span id="auth-btn-label" class="max-w-[70px] sm:max-w-[120px] truncate">My Account</span>
-                    <span class="px-1.5 py-0.5 bg-blue-500/40 text-blue-100 rounded text-[9px] sm:text-[10px] font-extrabold hidden md:inline" id="top-user-balance">Rs. 0</span>
-                    <i class="fa-solid fa-chevron-down text-[8px] sm:text-[9px] text-blue-200"></i>
+                        class="px-3 py-1.5 bg-white/10 hover:bg-white text-white hover:text-blue-900 border border-white/25 hover:border-white rounded-xl font-bold text-xs transition-all flex items-center gap-1.5 focus:outline-none shadow-xs">
+                    <i class="fa-solid fa-circle-user text-blue-300 text-sm"></i>
+                    <span id="auth-btn-label" class="max-w-[70px] sm:max-w-[110px] truncate">My Account</span>
+                    <i class="fa-solid fa-chevron-down text-[9px] text-blue-200"></i>
                 </button>
 
-                <!-- Dropdown Menu Panel (Crisp White Surface, High Contrast Dark/Blue Text, Z-Index 110) -->
+                <!-- Dropdown Menu Panel -->
                 <div id="user-profile-dropdown" class="hidden absolute right-0 mt-2 w-72 bg-white rounded-2xl shadow-2xl border border-slate-200 z-[110] overflow-hidden text-slate-800">
                     <!-- Dropdown Header -->
                     <div class="p-3.5 bg-gradient-to-r from-blue-900 via-blue-800 to-indigo-900 text-white">
@@ -75,28 +75,6 @@
                         <div class="mt-3 pt-2.5 border-t border-white/15 flex items-center justify-between text-xs">
                             <span class="text-blue-200 font-medium">Refund Wallet:</span>
                             <span class="font-black text-amber-300 text-sm" id="dropdown-user-balance">Rs. 0.00</span>
-                        </div>
-                    </div>
-
-                    <!-- Mobile Reader Profile & Settings inside Dropdown -->
-                    <div class="p-2.5 bg-slate-50 border-b border-slate-100 sm:hidden space-y-2">
-                        <div class="flex items-center justify-between gap-2 text-xs">
-                            <span class="font-bold text-slate-700 flex items-center gap-1">
-                                <i class="fa-solid fa-graduation-cap text-blue-600"></i> AI Age Badge:
-                            </span>
-                            <span id="mobile-user-age-badge" class="px-2 py-0.5 bg-blue-100 text-blue-800 rounded font-bold text-[10px]">Student (13–19)</span>
-                        </div>
-                        <button type="button" onclick="openReaderOnboardingModal(); closeUserDropdown();" 
-                                class="w-full py-1.5 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-extrabold rounded-lg text-xs flex items-center justify-center gap-1.5 shadow-xs">
-                            <i class="fa-solid fa-wand-magic-sparkles text-amber-300"></i> ✨ Update AI Profile
-                        </button>
-                        <div class="flex items-center justify-between text-xs pt-1.5 border-t border-slate-200">
-                            <span class="font-bold text-slate-600 flex items-center gap-1">
-                                <i class="fa-solid fa-language text-blue-600"></i> Language:
-                            </span>
-                            <button onclick="toggleLanguage()" class="px-2.5 py-0.5 bg-white border border-slate-300 rounded-lg font-bold text-blue-700 hover:bg-blue-50 text-xs">
-                                <span id="mobile-lang-label">اردو / English</span>
-                            </button>
                         </div>
                     </div>
 
@@ -117,6 +95,9 @@
                         <button onclick="switchTab('profile'); closeUserDropdown();" class="navbar-dropdown-item w-full text-left">
                             <i class="fa-solid fa-id-card"></i> <span>Profile & Seller Dashboard</span>
                         </button>
+                        <button onclick="openReaderOnboardingModal(); closeUserDropdown();" class="navbar-dropdown-item w-full text-left">
+                            <i class="fa-solid fa-wand-magic-sparkles text-amber-500"></i> <span>✨ Update AI Profile</span>
+                        </button>
                     </div>
 
                     <!-- Dropdown Footer -->
@@ -131,138 +112,129 @@
                 </div>
             </div>
 
-            <!-- Language Switcher (Desktop) -->
+            <!-- Language Switcher -->
             <button id="lang-toggle-btn" onclick="toggleLanguage()" 
-                    class="hidden sm:inline-flex px-2 py-1 sm:px-2.5 sm:py-1.5 bg-white/10 hover:bg-white text-white hover:text-blue-900 border border-white/20 hover:border-white rounded-xl font-bold transition-all text-[11px] sm:text-xs"
+                    class="hidden sm:inline-flex px-2.5 py-1.5 bg-white/10 hover:bg-white text-white hover:text-blue-900 border border-white/20 hover:border-white rounded-xl font-bold transition-all text-xs"
                     title="Switch English / Urdu">
                 اردو
             </button>
 
-            <!-- Screen View Mode Toggle (Desktop only: hidden on mobile) -->
-            <button id="view-mode-btn" onclick="toggleViewMode()" 
-                    class="hidden md:inline-flex px-3 py-1.5 bg-white/10 hover:bg-white text-white hover:text-blue-900 border border-white/20 hover:border-white rounded-xl font-semibold transition-all items-center text-xs"
-                    title="Switch view between Full Screen and Phone Mockup">
-                <i class="fa-solid fa-mobile-screen mr-1.5"></i> <span data-i18n="view_toggle_mobile">Phone View</span>
+            <!-- Mobile Hamburger Toggle Button -->
+            <button type="button" id="mobile-menu-toggle-btn" onclick="toggleMobileNavMenu()" class="md:hidden p-2 text-white hover:bg-white/10 rounded-xl" title="Open Navigation">
+                <i class="fa-solid fa-bars text-sm"></i>
             </button>
         </div>
     </div>
+
+    <!-- Mobile Nav Dropdown Menu (only visible when toggled on small screens) -->
+    <div id="mobile-nav-dropdown" class="hidden md:hidden bg-slate-900/95 border-t border-blue-900/50 px-4 py-3 space-y-1 text-xs backdrop-blur-md">
+        <button onclick="switchTab('home'); toggleMobileNavMenu();" class="w-full text-left py-2 px-3 rounded-lg text-white font-bold hover:bg-white/10 flex items-center gap-2">
+            <i class="fa-solid fa-house text-blue-400"></i> <span>Home</span>
+        </button>
+        <button onclick="switchTab('home'); scrollToBrowse(); toggleMobileNavMenu();" class="w-full text-left py-2 px-3 rounded-lg text-blue-100 font-bold hover:bg-white/10 flex items-center gap-2">
+            <i class="fa-solid fa-book-open text-blue-400"></i> <span>Browse Books</span>
+        </button>
+        <button onclick="openSellSection(); toggleMobileNavMenu();" class="w-full text-left py-2 px-3 rounded-lg text-blue-100 font-bold hover:bg-white/10 flex items-center gap-2">
+            <i class="fa-solid fa-circle-plus text-amber-300"></i> <span>Sell / Donate</span>
+        </button>
+        <button onclick="openDealsSection(); toggleMobileNavMenu();" class="w-full text-left py-2 px-3 rounded-lg text-blue-100 font-bold hover:bg-white/10 flex items-center gap-2">
+            <i class="fa-solid fa-handshake text-blue-400"></i> <span>My Deals</span>
+        </button>
+        <button onclick="openReaderOnboardingModal(); toggleMobileNavMenu();" class="w-full text-left py-2 px-3 rounded-lg text-blue-100 font-bold hover:bg-white/10 flex items-center gap-2">
+            <i class="fa-solid fa-wand-magic-sparkles text-amber-300"></i> <span>✨ Update AI Profile</span>
+        </button>
+    </div>
 </header>
 
-<!-- Main App Wrapper (Default Full Screen Responsive Web; Phone frame togglable on desktop) -->
-<main id="app-shell" class="flex-1 flex flex-col items-center justify-start w-full p-0 md:p-4">
-    <div id="app-wrapper" class="app-content w-full max-w-6xl mx-auto my-0 sm:my-6 rounded-none sm:rounded-2xl shadow-none sm:shadow-2xl border-0 sm:border border-slate-200 bg-white min-h-[92vh] flex flex-col overflow-hidden relative">
-        
-        <!-- Mobile Notch & Speaker Simulator (Shown only when in Phone Mockup mode on desktop) -->
-        <div id="mobile-notch" class="mobile-notch hidden">
-            <div class="mobile-notch-speaker"></div>
-            <div class="mobile-notch-camera"></div>
-        </div>
+<!-- Main App Wrapper: Clean, Full-Width Responsive Layout (max-width: 1200px centered container) -->
+<main id="app-shell" class="flex-1 w-full max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10">
+    <div id="app-wrapper" class="w-full flex flex-col space-y-10 sm:space-y-12">
 
-        <!-- Mobile App Status Bar (Shown only when in Phone Mockup mode on desktop) -->
-        <div id="mobile-status-bar" class="hidden bg-blue-950 text-white px-5 pt-8 pb-2 flex items-center justify-between text-[11px] font-medium z-10 flex-shrink-0">
-            <span id="live-time">09:41</span>
-            <div class="flex items-center gap-2 text-xs">
-                <i class="fa-solid fa-signal text-[10px]"></i>
-                <i class="fa-solid fa-wifi text-[10px]"></i>
-                <i class="fa-solid fa-battery-full text-sm"></i>
-            </div>
-        </div>
+        <!-- ============================================== -->
+        <!-- TAB 1: HOME & BROWSE -->
+        <!-- ============================================== -->
+        <section id="tab-home" class="tab-page w-full flex flex-col space-y-8 sm:space-y-10">
 
-        <!-- Scrollable Tab Content Container -->
-        <div class="app-content flex-1 flex flex-col overflow-y-auto w-full bg-[#F8FAFC] p-3 sm:p-4 pb-20 relative">
+            <!-- Simplified Hero & Search Section (Requirement 3 & 4) -->
+            <div class="relative bg-gradient-to-br from-blue-700 via-blue-800 to-indigo-950 rounded-3xl p-6 sm:p-10 lg:p-12 text-white shadow-xl overflow-hidden border border-blue-500/25">
+                <!-- Subtle Decorative Glow Background -->
+                <div class="absolute -top-24 -right-24 w-80 h-80 bg-blue-500/20 rounded-full blur-3xl pointer-events-none"></div>
+                <div class="absolute -bottom-24 -left-24 w-80 h-80 bg-indigo-600/20 rounded-full blur-3xl pointer-events-none"></div>
 
-            <!-- ============================================== -->
-            <!-- TAB 1: HOME & BROWSE -->
-            <!-- ============================================== -->
-            <section id="tab-home" class="tab-page w-full flex flex-col">
-                <!-- Top Sponsor Banner Ad -->
-                <div id="banner-top-ad"></div>
+                <div class="relative z-10 max-w-3xl mx-auto text-center">
+                    <span class="inline-flex items-center gap-1.5 bg-white/15 text-blue-100 text-xs font-extrabold px-3 py-1 rounded-full mb-3 border border-white/20 backdrop-blur-xs">
+                        <i class="fa-solid fa-circle-check text-emerald-400 text-[10px]"></i>
+                        Pakistan's Verified Used Books Marketplace & AI Platform
+                    </span>
+                    <h1 class="text-2xl sm:text-4xl lg:text-5xl font-black leading-tight tracking-tight" data-i18n="hero_title">
+                        Buy, Sell & Donate Used Textbooks Across Pakistan
+                    </h1>
+                    <p class="text-xs sm:text-sm text-blue-100/90 mt-2 sm:mt-3 leading-relaxed max-w-2xl mx-auto" data-i18n="hero_subtitle">
+                        Instant ISBN lookup, verified student sellers, free community book donations, and AI-powered recommendations.
+                    </p>
 
-                <!-- Hero Section (Royal Blue Gradient with High Contrast Typography) -->
-                <div class="bg-gradient-to-br from-blue-700 via-blue-800 to-indigo-950 rounded-2xl p-4 sm:p-5 text-white shadow-md mb-3.5 relative overflow-hidden border border-blue-500/25">
-                    <div class="relative z-10">
-                        <span class="inline-block bg-white/15 text-blue-100 text-[10px] font-extrabold px-2.5 py-0.5 rounded-full mb-1.5 border border-white/20">
-                            Pakistan's Verified Used Books Marketplace
-                        </span>
-                        <h2 class="text-base sm:text-lg font-extrabold leading-tight" data-i18n="hero_title">
-                            Buy & Sell Used Textbooks Across Pakistan
-                        </h2>
-                        <p class="text-xs text-blue-100/90 mt-1 leading-relaxed" data-i18n="hero_subtitle">
-                            Scan any book barcode to compare prices or sell your used books in seconds.
-                        </p>
-
-                        <!-- Hero CTA Buttons -->
-                        <div class="flex gap-2 mt-3.5">
-                            <button id="hero-scan-btn" onclick="openBarcodeScanner()" class="flex-1 py-2.5 bg-white hover:bg-blue-50 text-blue-800 rounded-xl text-xs font-black shadow-sm flex items-center justify-center gap-1.5 transition-all">
-                                <i class="fa-solid fa-barcode text-sm"></i> <span data-i18n="scan_now_btn">Scan Barcode</span>
-                            </button>
-                            <button id="hero-sell-btn" onclick="openSellSection()" class="flex-1 py-2.5 bg-white/20 hover:bg-white/30 text-white border border-white/30 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all">
-                                <i class="fa-solid fa-gift text-sm"></i> <span data-i18n="sell_now_btn">Sell or Donate</span>
+                    <!-- Prominent Search Bar with Single Filters Toggle Button (Requirement 3 & 4) -->
+                    <div class="mt-6 sm:mt-8">
+                        <div class="flex items-center gap-2 bg-white p-2 rounded-2xl shadow-xl border border-blue-200/50">
+                            <div class="relative flex-1 flex items-center">
+                                <i class="fa-solid fa-magnifying-glass absolute left-3.5 sm:left-4 text-blue-600 text-sm sm:text-base pointer-events-none"></i>
+                                <input type="text" id="search-input" 
+                                       placeholder="Search by title, author, subject, or ISBN..." 
+                                       class="w-full pl-10 sm:pl-12 pr-4 py-2.5 sm:py-3 bg-transparent text-slate-800 text-xs sm:text-sm font-medium placeholder-slate-400 focus:outline-none">
+                            </div>
+                            <!-- Single Filters Toggle Button Next to Search Bar -->
+                            <button type="button" id="filter-toggle-btn" onclick="toggleAdvancedFilters()" 
+                                    class="px-3.5 sm:px-5 py-2.5 sm:py-3 bg-blue-50 hover:bg-blue-100 text-blue-700 font-bold rounded-xl text-xs sm:text-sm flex items-center gap-2 transition-all shrink-0 border border-blue-200 active:scale-95">
+                                <i class="fa-solid fa-sliders text-blue-600"></i>
+                                <span id="filter-toggle-label">Filters</span>
+                                <i class="fa-solid fa-chevron-down text-[10px] text-blue-500 transition-transform duration-200" id="filter-arrow-icon"></i>
                             </button>
                         </div>
                     </div>
-                </div>
 
-                <!-- Prominent Quick Action Dashboard -->
-                <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-4">
-                    <div id="quick-scan-card" onclick="openBarcodeScanner()" class="cursor-pointer bg-white p-2.5 sm:p-3 rounded-2xl border border-blue-100 hover:border-blue-300 shadow-xs hover:shadow-md transition-all text-center group">
-                        <div class="w-8 h-8 mx-auto rounded-xl bg-blue-50 group-hover:bg-blue-600 text-blue-600 group-hover:text-white flex items-center justify-center text-sm mb-1 transition-colors">
-                            <i class="fa-solid fa-barcode"></i>
-                        </div>
-                        <span class="block text-xs font-bold text-slate-800">Scan ISBN</span>
-                        <span class="block text-[10px] text-slate-400">Instant lookup</span>
-                    </div>
-
-                    <div id="quick-sell-card" onclick="openSellSection()" class="cursor-pointer bg-white p-2.5 sm:p-3 rounded-2xl border border-blue-100 hover:border-blue-300 shadow-xs hover:shadow-md transition-all text-center group">
-                        <div class="w-8 h-8 mx-auto rounded-xl bg-blue-50 group-hover:bg-blue-600 text-blue-600 group-hover:text-white flex items-center justify-center text-sm mb-1 transition-colors">
-                            <i class="fa-solid fa-hand-holding-heart"></i>
-                        </div>
-                        <span class="block text-xs font-bold text-slate-800">Sell / Donate</span>
-                        <span class="block text-[10px] text-emerald-600 font-semibold">Free Giveaway</span>
-                    </div>
-
-                    <div id="quick-deals-card" onclick="openDealsSection()" class="cursor-pointer bg-white p-2.5 sm:p-3 rounded-2xl border border-blue-100 hover:border-blue-300 shadow-xs hover:shadow-md transition-all text-center group">
-                        <div class="w-8 h-8 mx-auto rounded-xl bg-blue-50 group-hover:bg-blue-600 text-blue-600 group-hover:text-white flex items-center justify-center text-sm mb-1 transition-colors">
-                            <i class="fa-solid fa-handshake"></i>
-                        </div>
-                        <span class="block text-xs font-bold text-slate-800">My Deals</span>
-                        <span class="block text-[10px] text-blue-600 font-semibold">Rs. 50 Refund</span>
-                    </div>
-
-                    <div id="quick-free-books-card" onclick="filterShelfSection('free'); document.getElementById('free-books-section')?.scrollIntoView({behavior: 'smooth'});" class="cursor-pointer bg-white p-2.5 sm:p-3 rounded-2xl border border-emerald-100 hover:border-emerald-300 shadow-xs hover:shadow-md transition-all text-center group">
-                        <div class="w-8 h-8 mx-auto rounded-xl bg-emerald-50 group-hover:bg-emerald-600 text-emerald-600 group-hover:text-white flex items-center justify-center text-sm mb-1 transition-colors">
-                            <i class="fa-solid fa-gift"></i>
-                        </div>
-                        <span class="block text-xs font-bold text-slate-800">🎁 Free Books</span>
-                        <span class="block text-[10px] text-emerald-600 font-bold">Rs. 0 Giveaway</span>
+                    <!-- Two Clear Primary CTA Buttons (Requirement 3) -->
+                    <div class="flex flex-wrap items-center justify-center gap-3 sm:gap-4 mt-6">
+                        <button type="button" id="hero-browse-btn" onclick="scrollToBrowse()" 
+                                class="px-6 py-3 bg-white hover:bg-blue-50 text-blue-900 font-extrabold rounded-xl text-xs sm:text-sm shadow-md hover:shadow-lg transition-all flex items-center gap-2 active:scale-95">
+                            <i class="fa-solid fa-book-open text-blue-600"></i>
+                            <span>Browse Books</span>
+                        </button>
+                        <button type="button" id="hero-sell-btn" onclick="openSellSection()" 
+                                class="px-6 py-3 bg-blue-600/40 hover:bg-blue-600/60 text-white font-extrabold rounded-xl text-xs sm:text-sm border border-white/30 backdrop-blur-xs shadow-md hover:shadow-lg transition-all flex items-center gap-2 active:scale-95">
+                            <i class="fa-solid fa-gift text-amber-300"></i>
+                            <span>Sell / Donate a Book</span>
+                        </button>
                     </div>
                 </div>
 
-                <!-- Search & Filters Container -->
-                <div class="space-y-2 mb-3">
-                    <div class="relative">
-                        <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-3 text-blue-600 text-xs"></i>
-                        <input type="text" id="search-input" placeholder="Search title, author, subject, class, board or ISBN..." 
-                               class="w-full pl-9 pr-4 py-2.5 bg-white border border-blue-100 rounded-xl text-xs shadow-xs focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none text-slate-800 font-medium placeholder-slate-400">
+                <!-- Collapsible Filter Drawer / Panel (Requirement 4) -->
+                <div id="advanced-filters-box" class="hidden mt-6 bg-white p-5 sm:p-6 rounded-2xl border border-slate-200 shadow-xl transition-all text-slate-800">
+                    <div class="flex items-center justify-between pb-3 mb-4 border-b border-slate-100">
+                        <div class="flex items-center gap-2">
+                            <div class="w-7 h-7 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center text-xs">
+                                <i class="fa-solid fa-sliders"></i>
+                            </div>
+                            <h4 class="font-extrabold text-sm text-slate-900">Filter Books</h4>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <button type="button" onclick="toggleFavoritesFilter()" id="favorites-filter-btn" class="px-3 py-1.5 bg-slate-50 hover:bg-rose-50 text-slate-600 hover:text-rose-600 border border-slate-200 hover:border-rose-200 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all">
+                                <i class="fa-solid fa-heart text-xs text-rose-500"></i>
+                                <span id="fav-filter-text">Favourites</span>
+                            </button>
+                            <button type="button" onclick="resetFilters()" class="text-xs font-bold text-slate-500 hover:text-blue-700 px-2 py-1 transition-colors">
+                                Reset All
+                            </button>
+                            <button type="button" onclick="toggleAdvancedFilters()" class="w-7 h-7 bg-slate-100 hover:bg-slate-200 rounded-full flex items-center justify-center text-slate-500 text-xs transition-colors" title="Close Filters">
+                                <i class="fa-solid fa-xmark"></i>
+                            </button>
+                        </div>
                     </div>
 
-                    <!-- Filter Toggle & View Favorites Switch -->
-                    <div class="flex items-center justify-between text-xs py-1">
-                        <button onclick="toggleAdvancedFilters()" class="text-blue-700 font-bold hover:text-blue-900 flex items-center gap-1.5 transition-colors">
-                            <i class="fa-solid fa-sliders text-xs text-blue-600"></i>
-                            <span id="filter-toggle-label">Filters (Class, Board, City, Price)</span>
-                        </button>
-                        <button onclick="toggleFavoritesFilter()" id="favorites-filter-btn" class="px-2.5 py-1 bg-white border border-slate-200 hover:border-rose-300 text-slate-700 hover:text-rose-600 rounded-xl text-xs font-bold flex items-center gap-1 transition-all shadow-2xs">
-                            <i class="fa-solid fa-heart text-xs text-rose-500"></i>
-                            <span id="fav-filter-text">Favourites</span>
-                        </button>
-                    </div>
-
-                    <!-- Advanced Filter Bar (Collapsible / Dynamic) -->
-                    <div id="advanced-filters-box" class="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs bg-white p-3.5 rounded-2xl border border-blue-100 shadow-xs">
+                    <!-- 6 Filter Dropdowns in a Responsive Grid -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
                         <div>
-                            <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wide mb-1">Education Board</label>
-                            <select id="filter-board" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-1.5 text-slate-800 text-[11px] font-semibold focus:border-blue-500 focus:outline-none">
+                            <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-wide mb-1.5">Education Board</label>
+                            <select id="filter-board" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-2 text-slate-800 text-xs font-semibold focus:border-blue-500 focus:bg-white focus:outline-none transition-colors">
                                 <option value="All">All Boards</option>
                                 {% for b in boards %}
                                     <option value="{{ b }}">{{ b }}</option>
@@ -271,8 +243,8 @@
                         </div>
 
                         <div>
-                            <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wide mb-1">Class / Level</label>
-                            <select id="filter-class" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-1.5 text-slate-800 text-[11px] font-semibold focus:border-blue-500 focus:outline-none">
+                            <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-wide mb-1.5">Class / Level</label>
+                            <select id="filter-class" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-2 text-slate-800 text-xs font-semibold focus:border-blue-500 focus:bg-white focus:outline-none transition-colors">
                                 <option value="All">All Classes</option>
                                 {% for k in classes %}
                                     <option value="{{ k }}">{{ k }}</option>
@@ -281,8 +253,8 @@
                         </div>
 
                         <div>
-                            <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wide mb-1">Category</label>
-                            <select id="filter-category" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-1.5 text-slate-800 text-[11px] font-semibold focus:border-blue-500 focus:outline-none">
+                            <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-wide mb-1.5">Category</label>
+                            <select id="filter-category" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-2 text-slate-800 text-xs font-semibold focus:border-blue-500 focus:bg-white focus:outline-none transition-colors">
                                 <option value="All">All Categories</option>
                                 {% for c in categories %}
                                     <option value="{{ c }}">{{ c }}</option>
@@ -291,8 +263,8 @@
                         </div>
 
                         <div>
-                            <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wide mb-1">City</label>
-                            <select id="filter-city" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-1.5 text-slate-800 text-[11px] font-semibold focus:border-blue-500 focus:outline-none">
+                            <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-wide mb-1.5">City</label>
+                            <select id="filter-city" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-2 text-slate-800 text-xs font-semibold focus:border-blue-500 focus:bg-white focus:outline-none transition-colors">
                                 <option value="All">All Cities</option>
                                 {% for city in cities %}
                                     <option value="{{ city }}">{{ city }}</option>
@@ -301,8 +273,8 @@
                         </div>
 
                         <div>
-                            <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wide mb-1">Condition</label>
-                            <select id="filter-condition" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-1.5 text-slate-800 text-[11px] font-semibold focus:border-blue-500 focus:outline-none">
+                            <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-wide mb-1.5">Condition</label>
+                            <select id="filter-condition" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-2 text-slate-800 text-xs font-semibold focus:border-blue-500 focus:bg-white focus:outline-none transition-colors">
                                 <option value="All">All Conditions</option>
                                 {% for cond in conditions %}
                                     <option value="{{ cond }}">{{ cond }}</option>
@@ -311,16 +283,17 @@
                         </div>
 
                         <div>
-                            <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wide mb-1">Sort By</label>
-                            <select id="filter-sort" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-1.5 text-slate-800 text-[11px] font-semibold focus:border-blue-500 focus:outline-none">
-                                <option value="cheapest">Price: Lowest First</option>
-                                <option value="expensive">Price: Highest First</option>
+                            <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-wide mb-1.5">Sort By</label>
+                            <select id="filter-sort" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-2 text-slate-800 text-xs font-semibold focus:border-blue-500 focus:bg-white focus:outline-none transition-colors">
+                                <option value="cheapest">Price: Low to High</option>
+                                <option value="expensive">Price: High to Low</option>
                                 <option value="rating">Top Rated Sellers</option>
                                 <option value="newest">Newly Listed</option>
                             </select>
                         </div>
                     </div>
                 </div>
+            </div>
 
                 <!-- ============================================== -->
                 <!-- 📚 QUICK SHELF & CATEGORY NAVIGATOR PILLS -->
@@ -379,7 +352,7 @@
                             <i class="fa-solid fa-sliders text-[9px]"></i> Customize AI
                         </button>
                     </div>
-                    <div id="ai-recommendations-container" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div id="ai-recommendations-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                         <!-- Loaded by loadAiRecommendations() -->
                     </div>
                 </div>
@@ -387,25 +360,25 @@
                 <!-- ============================================== -->
                 <!-- 2. 🎁 FREE DONATED BOOKS (COMMUNITY GIVEAWAY - RS. 0) -->
                 <!-- ============================================== -->
-                <div id="free-books-section" class="shelf-section mb-6">
-                    <div class="flex items-center justify-between mb-2.5 bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-200 p-2.5 rounded-2xl">
-                        <div class="flex items-center gap-2.5">
-                            <div class="w-8 h-8 rounded-xl bg-emerald-600 text-white flex items-center justify-center text-sm shadow-xs shrink-0">
+                <div id="free-books-section" class="shelf-section mb-10 sm:mb-12">
+                    <div class="flex items-center justify-between mb-4 bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-200 p-3 sm:p-4 rounded-2xl">
+                        <div class="flex items-center gap-3">
+                            <div class="w-9 h-9 rounded-xl bg-emerald-600 text-white flex items-center justify-center text-sm shadow-xs shrink-0">
                                 <i class="fa-solid fa-gift"></i>
                             </div>
                             <div>
-                                <h3 class="text-xs font-black uppercase tracking-wider text-emerald-950 flex items-center gap-1.5">
+                                <h3 class="text-xs sm:text-sm font-black uppercase tracking-wider text-emerald-950 flex items-center gap-1.5">
                                     🎁 Free Donated Books (Community Giveaway — Rs. 0)
                                 </h3>
-                                <p class="text-[10px] text-emerald-800 font-medium">100% free community copies. Claim and arrange zero-cost pickup!</p>
+                                <p class="text-[11px] text-emerald-800 font-medium">100% free community copies. Claim and arrange zero-cost pickup!</p>
                             </div>
                         </div>
                         <button onclick="switchTab('sell'); toggleSellFreeDonation(true);" 
-                                class="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-[10px] font-extrabold shadow-xs transition-all flex items-center gap-1 shrink-0">
-                            <i class="fa-solid fa-plus text-[9px]"></i> Donate Free
+                                class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-extrabold shadow-xs transition-all flex items-center gap-1.5 shrink-0">
+                            <i class="fa-solid fa-plus text-xs"></i> <span>Donate Free</span>
                         </button>
                     </div>
-                    <div id="free-books-container" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div id="free-books-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                         <!-- Populated by JavaScript -->
                     </div>
                 </div>
@@ -413,30 +386,30 @@
                 <!-- ============================================== -->
                 <!-- 3. 📚 PUNJAB TEXTBOOKS (CLASS 1 TO FSC) -->
                 <!-- ============================================== -->
-                <div id="ptb-textbooks-section" class="shelf-section mb-6">
-                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2.5">
-                        <div class="flex items-center gap-2">
-                            <div class="w-7 h-7 rounded-xl bg-blue-600 text-white flex items-center justify-center text-xs shadow-xs">
+                <div id="ptb-textbooks-section" class="shelf-section mb-10 sm:mb-12">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+                        <div class="flex items-center gap-2.5">
+                            <div class="w-8 h-8 rounded-xl bg-blue-600 text-white flex items-center justify-center text-xs shadow-xs">
                                 <i class="fa-solid fa-book-bookmark"></i>
                             </div>
                             <div>
-                                <h3 class="text-xs font-black uppercase tracking-wider text-slate-900 flex items-center gap-1.5">
+                                <h3 class="text-xs sm:text-sm font-black uppercase tracking-wider text-slate-900 flex items-center gap-1.5">
                                     📚 Punjab Textbooks (Primary to FSc)
                                 </h3>
-                                <p class="text-[10px] text-slate-500 font-medium">Official Punjab Curriculum and Textbook Board (PCTB) books</p>
+                                <p class="text-[11px] text-slate-500 font-medium">Official Punjab Curriculum and Textbook Board (PCTB) books</p>
                             </div>
                         </div>
 
                         <!-- Quick Class Filter Pills -->
-                        <div class="flex items-center gap-1 overflow-x-auto pb-1 scrollbar-none text-[10px]" id="ptb-filter-pills">
-                            <button type="button" onclick="filterPtbByClass('all', this)" class="ptb-class-pill active px-2.5 py-0.5 rounded-full font-bold bg-blue-600 text-white shadow-xs">All PTB</button>
-                            <button type="button" onclick="filterPtbByClass('primary', this)" class="ptb-class-pill px-2.5 py-0.5 rounded-full font-bold bg-slate-100 text-slate-700 hover:bg-slate-200">Primary (1–5)</button>
-                            <button type="button" onclick="filterPtbByClass('middle', this)" class="ptb-class-pill px-2.5 py-0.5 rounded-full font-bold bg-slate-100 text-slate-700 hover:bg-slate-200">Middle (6–8)</button>
-                            <button type="button" onclick="filterPtbByClass('matric', this)" class="ptb-class-pill px-2.5 py-0.5 rounded-full font-bold bg-slate-100 text-slate-700 hover:bg-slate-200">Matric (9–10)</button>
-                            <button type="button" onclick="filterPtbByClass('fsc', this)" class="ptb-class-pill px-2.5 py-0.5 rounded-full font-bold bg-slate-100 text-slate-700 hover:bg-slate-200">FSc (11–12)</button>
+                        <div class="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none text-xs" id="ptb-filter-pills">
+                            <button type="button" onclick="filterPtbByClass('all', this)" class="ptb-class-pill active px-3 py-1 rounded-full font-bold bg-blue-600 text-white shadow-xs">All PTB</button>
+                            <button type="button" onclick="filterPtbByClass('primary', this)" class="ptb-class-pill px-3 py-1 rounded-full font-bold bg-slate-100 text-slate-700 hover:bg-slate-200">Primary (1–5)</button>
+                            <button type="button" onclick="filterPtbByClass('middle', this)" class="ptb-class-pill px-3 py-1 rounded-full font-bold bg-slate-100 text-slate-700 hover:bg-slate-200">Middle (6–8)</button>
+                            <button type="button" onclick="filterPtbByClass('matric', this)" class="ptb-class-pill px-3 py-1 rounded-full font-bold bg-slate-100 text-slate-700 hover:bg-slate-200">Matric (9–10)</button>
+                            <button type="button" onclick="filterPtbByClass('fsc', this)" class="ptb-class-pill px-3 py-1 rounded-full font-bold bg-slate-100 text-slate-700 hover:bg-slate-200">FSc (11–12)</button>
                         </div>
                     </div>
-                    <div id="ptb-textbooks-container" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div id="ptb-textbooks-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                         <!-- Populated by JavaScript -->
                     </div>
                 </div>
@@ -444,24 +417,24 @@
                 <!-- ============================================== -->
                 <!-- 4. 🧸 KIDS & STORY BOOKS -->
                 <!-- ============================================== -->
-                <div id="kids-books-section" class="shelf-section mb-6">
-                    <div class="flex items-center justify-between mb-2.5">
-                        <div class="flex items-center gap-2">
-                            <div class="w-7 h-7 rounded-xl bg-amber-500 text-white flex items-center justify-center text-xs shadow-xs">
+                <div id="kids-books-section" class="shelf-section mb-10 sm:mb-12">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="flex items-center gap-2.5">
+                            <div class="w-8 h-8 rounded-xl bg-amber-500 text-white flex items-center justify-center text-xs shadow-xs">
                                 <i class="fa-solid fa-shapes"></i>
                             </div>
                             <div>
-                                <h3 class="text-xs font-black uppercase tracking-wider text-slate-900 flex items-center gap-1.5">
+                                <h3 class="text-xs sm:text-sm font-black uppercase tracking-wider text-slate-900 flex items-center gap-1.5">
                                     🧸 Kids & Story Books
                                 </h3>
-                                <p class="text-[10px] text-slate-500 font-medium">Illustrated fairy tales, moral stories, and adventures for young readers (Age 5–12)</p>
+                                <p class="text-[11px] text-slate-500 font-medium">Illustrated fairy tales, moral stories, and adventures for young readers (Age 5–12)</p>
                             </div>
                         </div>
-                        <span class="text-[10px] font-bold text-amber-700 bg-amber-50 px-2 py-0.5 rounded-full border border-amber-200">
+                        <span class="text-[11px] font-bold text-amber-700 bg-amber-50 px-2.5 py-0.5 rounded-full border border-amber-200">
                             Age 5–12 yrs
                         </span>
                     </div>
-                    <div id="kids-books-container" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div id="kids-books-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                         <!-- Populated by JavaScript -->
                     </div>
                 </div>
@@ -469,24 +442,24 @@
                 <!-- ============================================== -->
                 <!-- 5. 📖 FICTION & NOVELS -->
                 <!-- ============================================== -->
-                <div id="fiction-novels-section" class="shelf-section mb-6">
-                    <div class="flex items-center justify-between mb-2.5">
-                        <div class="flex items-center gap-2">
-                            <div class="w-7 h-7 rounded-xl bg-purple-600 text-white flex items-center justify-center text-xs shadow-xs">
+                <div id="fiction-novels-section" class="shelf-section mb-10 sm:mb-12">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="flex items-center gap-2.5">
+                            <div class="w-8 h-8 rounded-xl bg-purple-600 text-white flex items-center justify-center text-xs shadow-xs">
                                 <i class="fa-solid fa-feather"></i>
                             </div>
                             <div>
-                                <h3 class="text-xs font-black uppercase tracking-wider text-slate-900 flex items-center gap-1.5">
+                                <h3 class="text-xs sm:text-sm font-black uppercase tracking-wider text-slate-900 flex items-center gap-1.5">
                                     📖 Fiction & Novels
                                 </h3>
-                                <p class="text-[10px] text-slate-500 font-medium">Bestselling Pakistani Urdu & English novels and timeless literary classics</p>
+                                <p class="text-[11px] text-slate-500 font-medium">Bestselling Pakistani Urdu & English novels and timeless literary classics</p>
                             </div>
                         </div>
-                        <span class="text-[10px] font-bold text-purple-700 bg-purple-50 px-2 py-0.5 rounded-full border border-purple-200">
+                        <span class="text-[11px] font-bold text-purple-700 bg-purple-50 px-2.5 py-0.5 rounded-full border border-purple-200">
                             Bestsellers
                         </span>
                     </div>
-                    <div id="fiction-novels-container" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div id="fiction-novels-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                         <!-- Populated by JavaScript -->
                     </div>
                 </div>
@@ -494,24 +467,24 @@
                 <!-- ============================================== -->
                 <!-- 6. 🏛️ HISTORY & LITERATURE -->
                 <!-- ============================================== -->
-                <div id="history-literature-section" class="shelf-section mb-6">
-                    <div class="flex items-center justify-between mb-2.5">
-                        <div class="flex items-center gap-2">
-                            <div class="w-7 h-7 rounded-xl bg-amber-800 text-white flex items-center justify-center text-xs shadow-xs">
+                <div id="history-literature-section" class="shelf-section mb-10 sm:mb-12">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="flex items-center gap-2.5">
+                            <div class="w-8 h-8 rounded-xl bg-amber-800 text-white flex items-center justify-center text-xs shadow-xs">
                                 <i class="fa-solid fa-landmark"></i>
                             </div>
                             <div>
-                                <h3 class="text-xs font-black uppercase tracking-wider text-slate-900 flex items-center gap-1.5">
+                                <h3 class="text-xs sm:text-sm font-black uppercase tracking-wider text-slate-900 flex items-center gap-1.5">
                                     🏛️ History & Literature
                                 </h3>
-                                <p class="text-[10px] text-slate-500 font-medium">Pakistan history, political movements, Iqbaliyat, and autobiographical memoirs</p>
+                                <p class="text-[11px] text-slate-500 font-medium">Pakistan history, political movements, Iqbaliyat, and autobiographical memoirs</p>
                             </div>
                         </div>
-                        <span class="text-[10px] font-bold text-amber-900 bg-amber-50 px-2 py-0.5 rounded-full border border-amber-200">
+                        <span class="text-[11px] font-bold text-amber-900 bg-amber-50 px-2.5 py-0.5 rounded-full border border-amber-200">
                             Historical & Heritage
                         </span>
                     </div>
-                    <div id="history-literature-container" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div id="history-literature-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                         <!-- Populated by JavaScript -->
                     </div>
                 </div>
@@ -519,17 +492,17 @@
                 <!-- ============================================== -->
                 <!-- 🔍 SEARCH / FILTERED RESULTS / ALL OFFERS VIEW -->
                 <!-- ============================================== -->
-                <div id="all-offers-section" class="shelf-section">
-                    <div class="flex items-center justify-between mb-2.5">
-                        <h3 class="text-xs font-black uppercase tracking-wider text-slate-800 flex items-center gap-1.5" id="listings-feed-title">
+                <div id="all-offers-section" class="shelf-section mb-10 sm:mb-12 scroll-mt-24">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-xs sm:text-sm font-black uppercase tracking-wider text-slate-800 flex items-center gap-1.5" id="listings-feed-title">
                             <i class="fa-solid fa-layer-group text-blue-600"></i> All Available Book Offers
                         </h3>
-                        <span class="text-[11px] text-blue-800 font-bold bg-blue-50 px-2.5 py-0.5 rounded-full border border-blue-200 flex items-center gap-1">
+                        <span class="text-xs text-blue-800 font-bold bg-blue-50 px-3 py-1 rounded-full border border-blue-200 flex items-center gap-1">
                             <i class="fa-solid fa-shield-halved text-blue-600 text-xs"></i> Rs. 50 Refundable Unlock Fee
                         </span>
                     </div>
                     <!-- Listings Container (Cards populated by JavaScript) -->
-                    <div id="listings-container" class="space-y-3">
+                    <div id="listings-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                         <!-- Populated by JavaScript -->
                     </div>
                 </div>
@@ -967,37 +940,34 @@
                     </div>
                 </div>
             </section>
-
-        </div>
-
-        <!-- Mobile Bottom Navigation Bar -->
-        <nav class="bg-white border-t border-slate-200 px-2 py-2 flex items-center justify-around z-20 flex-shrink-0 absolute bottom-0 inset-x-0 shadow-lg">
-            <button onclick="switchTab('home')" class="nav-tab active flex flex-col items-center justify-center flex-1 py-1 text-blue-700" data-tab="home">
-                <i class="fa-solid fa-house text-base"></i>
-                <span class="text-[10px] mt-0.5" data-i18n="nav_home">Home</span>
-            </button>
-            <button onclick="switchTab('scan')" class="nav-tab flex flex-col items-center justify-center flex-1 py-1 text-slate-400 hover:text-blue-700 transition-colors" data-tab="scan">
-                <i class="fa-solid fa-barcode text-base"></i>
-                <span class="text-[10px] mt-0.5" data-i18n="nav_scan">Scan</span>
-            </button>
-            <button onclick="switchTab('sell')" class="nav-tab flex flex-col items-center justify-center flex-1 py-1 text-slate-400" data-tab="sell">
-                <div class="w-8 h-8 rounded-full bg-gradient-to-tr from-blue-700 to-blue-600 text-white flex items-center justify-center shadow-md shadow-blue-500/25 -mt-3 border-2 border-white">
-                    <i class="fa-solid fa-plus text-sm"></i>
-                </div>
-                <span class="text-[10px] mt-0.5 font-bold" data-i18n="nav_sell">Sell / Donate</span>
-            </button>
-            <button onclick="switchTab('deals')" class="nav-tab flex flex-col items-center justify-center flex-1 py-1 text-slate-400 hover:text-blue-700 transition-colors" data-tab="deals">
-                <i class="fa-solid fa-handshake text-base"></i>
-                <span class="text-[10px] mt-0.5" data-i18n="nav_deals">Unlocks</span>
-            </button>
-            <button onclick="switchTab('profile')" class="nav-tab flex flex-col items-center justify-center flex-1 py-1 text-slate-400 hover:text-blue-700 transition-colors" data-tab="profile">
-                <i class="fa-solid fa-user text-base"></i>
-                <span class="text-[10px] mt-0.5" data-i18n="nav_profile">Profile</span>
-            </button>
-        </nav>
-
     </div>
 </main>
+
+<!-- Mobile Bottom Navigation Bar (Hidden on desktop - single top navigation bar only) -->
+<nav id="mobile-bottom-nav" class="md:hidden fixed bottom-0 inset-x-0 bg-white border-t border-slate-200 px-2 py-2 flex items-center justify-around z-40 shadow-lg">
+    <button onclick="switchTab('home')" class="nav-tab active flex flex-col items-center justify-center flex-1 py-1 text-blue-700" data-tab="home">
+        <i class="fa-solid fa-house text-base"></i>
+        <span class="text-[10px] mt-0.5" data-i18n="nav_home">Home</span>
+    </button>
+    <button onclick="switchTab('scan')" class="nav-tab flex flex-col items-center justify-center flex-1 py-1 text-slate-400 hover:text-blue-700 transition-colors" data-tab="scan">
+        <i class="fa-solid fa-barcode text-base"></i>
+        <span class="text-[10px] mt-0.5" data-i18n="nav_scan">Scan</span>
+    </button>
+    <button onclick="switchTab('sell')" class="nav-tab flex flex-col items-center justify-center flex-1 py-1 text-slate-400" data-tab="sell">
+        <div class="w-8 h-8 rounded-full bg-gradient-to-tr from-blue-700 to-blue-600 text-white flex items-center justify-center shadow-md shadow-blue-500/25 -mt-3 border-2 border-white">
+            <i class="fa-solid fa-plus text-sm"></i>
+        </div>
+        <span class="text-[10px] mt-0.5 font-bold" data-i18n="nav_sell">Sell / Donate</span>
+    </button>
+    <button onclick="switchTab('deals')" class="nav-tab flex flex-col items-center justify-center flex-1 py-1 text-slate-400 hover:text-blue-700 transition-colors" data-tab="deals">
+        <i class="fa-solid fa-handshake text-base"></i>
+        <span class="text-[10px] mt-0.5" data-i18n="nav_deals">Unlocks</span>
+    </button>
+    <button onclick="switchTab('profile')" class="nav-tab flex flex-col items-center justify-center flex-1 py-1 text-slate-400 hover:text-blue-700 transition-colors" data-tab="profile">
+        <i class="fa-solid fa-user text-base"></i>
+        <span class="text-[10px] mt-0.5" data-i18n="nav_profile">Profile</span>
+    </button>
+</nav>
 
 <!-- ============================================== -->
 <!-- MODAL: SECURE CONTACT UNLOCK -->

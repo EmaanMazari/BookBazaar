@@ -97,53 +97,22 @@ select option:checked {
     font-size: 0.875rem;
 }
 
-/* Mobile App Simulator Mockup Frame */
+/* Full-Width Responsive App Layout (max-width: 1200px centered) */
 .mobile-device-frame {
-    width: 100%;
-    max-width: 440px;
-    height: 900px;
-    max-height: 92vh;
-    border-radius: 46px;
-    box-shadow: 0 25px 60px -15px rgba(29, 78, 216, 0.18), 0 0 0 10px #0f172a, 0 0 0 13px #1e293b;
-    background: #ffffff;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-    position: relative;
-    margin: 1rem auto;
-    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    width: 100% !important;
+    max-width: 1200px !important;
+    height: auto !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    background: transparent !important;
+    margin: 0 auto !important;
 }
 
-.mobile-notch {
-    position: absolute;
-    top: 0;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 140px;
-    height: 26px;
-    background: #0f172a;
-    border-bottom-left-radius: 16px;
-    border-bottom-right-radius: 16px;
-    z-index: 50;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-}
-
-.mobile-notch-camera {
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
-    background: #1e293b;
-    border: 1px solid #334155;
-}
-
-.mobile-notch-speaker {
-    width: 40px;
-    height: 4px;
-    border-radius: 2px;
-    background: #334155;
+.mobile-notch,
+#mobile-notch,
+#mobile-status-bar,
+#view-mode-btn {
+    display: none !important;
 }
 
 /* Scanner Animation Beam (Royal Blue / Cyan) */
