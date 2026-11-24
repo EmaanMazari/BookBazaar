@@ -556,12 +556,77 @@ function renderShelves(listings) {
     const kidsContainer = document.getElementById('kids-books-container');
     const kidsSection = document.getElementById('kids-books-section');
     if (kidsContainer) {
-        const kidsItems = listings.filter(item => {
+        // Specifically prioritize and display genuine kids story books (Age 5–12)
+        const priorityKidsTitles = [
+            'sheikh chilli',
+            'taleem-o-tarbiyat',
+            'chalawa',
+            'alif laila',
+            'aesop',
+            'jungle book',
+            'cinderella'
+        ];
+
+        const rawKidsItems = listings.filter(item => {
             const cat = item.book?.category || '';
             const age = item.target_age_group || item.book?.target_age_group || '';
             const title = (item.book?.title || '').toLowerCase();
-            return cat === 'Story Books' || age === 'kids' || title.includes('kahani') || title.includes('story') || title.includes('bachon') || title.includes('jungle');
+            const subj = (item.book?.subject || '').toLowerCase();
+
+            // Explicitly exclude history books (avoid "history" matching "story")
+            if (cat === 'History' || title.includes('history') || title.includes('tareekh') || subj.includes('history') || title.includes('balochistan')) {
+                return false;
+            }
+            // Exclude school curriculum textbooks and non-kids genres
+            if (cat.includes('Textbook') || cat.includes('Matric') || cat.includes('FSc') || cat.includes('Accounting') || cat.includes('Engineering') || cat.includes('Medical') || title.includes('textbook') || title.includes('punjab board') || title.includes('class ')) {
+                return false;
+            }
+            if (age === 'general' || age === 'adult') {
+                return false;
+            }
+
+            // Must match authentic kids storybooks
+            const isMatch = cat === 'Story Books' || 
+                            title.includes('sheikh chilli') || 
+                            title.includes('taleem-o-tarbiyat') || 
+                            title.includes('chalawa') || 
+                            title.includes('alif laila') || 
+                            title.includes('aesop') || 
+                            title.includes('jungle book') || 
+                            title.includes('cinderella') || 
+                            title.includes('fairy tales') || 
+                            title.includes('fables') || 
+                            (title.includes('kahani') && !title.includes('history')) || 
+                            (title.includes('story') && !title.includes('history')) || 
+                            title.includes('bachon');
+
+            return isMatch;
         });
+
+        // Deduplicate distinct titles/ISBNs to showcase the 7 authentic stories in priority order
+        const seenIsbns = new Set();
+        const kidsItems = [];
+
+        for (const pk of priorityKidsTitles) {
+            for (const item of rawKidsItems) {
+                const isbn = item.book?.isbn;
+                const title = (item.book?.title || '').toLowerCase();
+                if (title.includes(pk) && isbn && !seenIsbns.has(isbn)) {
+                    kidsItems.append ? kidsItems.push(item) : kidsItems.push(item);
+                    seenIsbns.add(isbn);
+                    break;
+                }
+            }
+        }
+
+        for (const item of rawKidsItems) {
+            const isbn = item.book?.isbn;
+            if (isbn && !seenIsbns.has(isbn)) {
+                kidsItems.push(item);
+                seenIsbns.add(isbn);
+            }
+        }
+
         if (kidsItems.length > 0) {
             kidsContainer.innerHTML = kidsItems.slice(0, 8).map(item => createBookCardHtml(item)).join('');
             if (kidsSection) kidsSection.classList.remove('hidden');
@@ -594,7 +659,23 @@ function renderShelves(listings) {
             const cat = item.book?.category || '';
             const title = (item.book?.title || '').toLowerCase();
             const subj = (item.book?.subject || '').toLowerCase();
+
+            // Exclude sciences, maths, engineering, and general textbooks
+            if (title.includes('physics') || title.includes('chemistry') || title.includes('mathematics') || title.includes('biology') || title.includes('computer')) {
+                return false;
+            }
+            if (cat === 'Story Books' || cat === 'Fiction' || cat === 'Novels') {
+                return false;
+            }
+
             return cat === 'History' || subj.includes('history') || title.includes('history') || title.includes('tareekh') || title.includes('iqbal') || title.includes('balochistan') || title.includes('mehrgarh');
+        }).sort((a, b) => {
+            // Prioritize Balochistan history & key historical works
+            const titleA = (a.book?.title || '').toLowerCase();
+            const titleB = (b.book?.title || '').toLowerCase();
+            if (titleA.includes('balochistan') && !titleB.includes('balochistan')) return -1;
+            if (!titleA.includes('balochistan') && titleB.includes('balochistan')) return 1;
+            return 0;
         });
         if (histItems.length > 0) {
             historyContainer.innerHTML = histItems.slice(0, 8).map(item => createBookCardHtml(item)).join('');
@@ -628,9 +709,12 @@ function renderPtbShelf(listings, filterClass = 'all') {
     // Filter to PTB / Regional Board items
     const ptbItems = listings.filter(item => {
         const cat = item.book?.category || '';
+        if (cat === 'History' || cat === 'Story Books' || cat === 'Fiction' || cat === 'Novels' || cat === 'Urdu Literature & Novels') {
+            return false;
+        }
         const board = (item.book?.education_board || '').toLowerCase();
         const title = (item.book?.title || '').toLowerCase();
-        return cat === 'Punjab Textbooks (Primary to FSc)' || board.includes('punjab') || board.includes('balochistan') || title.includes('punjab') || title.includes('ptb') || title.includes('balochistan');
+        return cat === 'Punjab Textbooks (Primary to FSc)' || board.includes('punjab') || title.includes('punjab') || title.includes('ptb') || ((board.includes('balochistan') || title.includes('balochistan')) && (cat.includes('Textbook') || cat.includes('Matric') || cat.includes('FSc') || title.includes('class') || title.includes('grade')));
     });
 
     if (ptbItems.length === 0) {

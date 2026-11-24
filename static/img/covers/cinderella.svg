@@ -1,0 +1,118 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 560" width="400" height="560">
+  <defs>
+    <linearGradient id="fairyGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#DB2777"/>
+      <stop offset="45%" stop-color="#9D174D"/>
+      <stop offset="100%" stop-color="#4C0519"/>
+    </linearGradient>
+    <linearGradient id="goldBanner" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#FEF08A"/>
+      <stop offset="100%" stop-color="#F59E0B"/>
+    </linearGradient>
+    <linearGradient id="glassSlipper" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFFFFF"/>
+      <stop offset="50%" stop-color="#A5F3FC"/>
+      <stop offset="100%" stop-color="#38BDF8"/>
+    </linearGradient>
+    <radialGradient id="magicGlow" cx="50%" cy="32%" r="48%">
+      <stop offset="0%" stop-color="#FBCFE8" stop-opacity="0.85"/>
+      <stop offset="100%" stop-color="#DB2777" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="shadow">
+      <feDropShadow dx="0" dy="4" stdDeviation="6" flood-opacity="0.3"/>
+    </filter>
+  </defs>
+
+  <!-- Background -->
+  <rect width="400" height="560" rx="16" fill="url(#fairyGrad)"/>
+
+  <!-- Ornate Border -->
+  <rect x="14" y="14" width="372" height="532" rx="12" fill="none" stroke="#FBCFE8" stroke-width="2.5" stroke-dasharray="6,4" opacity="0.7"/>
+  <rect x="22" y="22" width="356" height="516" rx="8" fill="none" stroke="#FDE68A" stroke-width="1.5" opacity="0.4"/>
+
+  <!-- Magic Aura Glow -->
+  <circle cx="200" cy="180" r="130" fill="url(#magicGlow)"/>
+
+  <!-- Top Badge -->
+  <g filter="url(#shadow)">
+    <rect x="45" y="38" width="310" height="30" rx="15" fill="url(#goldBanner)"/>
+    <text x="200" y="58" font-family="'Segoe UI', Roboto, sans-serif" font-size="11" font-weight="800" fill="#831843" text-anchor="middle" letter-spacing="0.8">
+      ★ TIMELESS CLASSIC FAIRY TALES · AGE 5–12 ★
+    </text>
+  </g>
+
+  <!-- Central Illustrated Artwork: Fairytale Magic Castle & Glowing Glass Slipper -->
+  <g transform="translate(200, 180)" filter="url(#shadow)">
+    <!-- Twinkling Magic Stars -->
+    <polygon points="-75,-70 -71,-58 -59,-58 -69,-50 -65,-38 -75,-46 -85,-38 -81,-50 -91,-58 -79,-58" fill="#FDE047"/>
+    <polygon points="75,-65 78,-55 88,-55 80,-48 83,-38 75,-45 67,-38 70,-48 62,-55 72,-55" fill="#FDE047"/>
+    <polygon points="-90,20 -88,26 -82,26 -87,30 -85,36 -90,32 -95,36 -93,30 -98,26 -92,26" fill="#FFFFFF" opacity="0.8"/>
+    <polygon points="90,15 92,21 98,21 93,25 95,31 90,27 85,31 87,25 82,21 88,21" fill="#FFFFFF" opacity="0.8"/>
+
+    <!-- Fairy Godmother Magic Wand Trail -->
+    <path d="M-60,-20 Q -20,-75 35,-65 Q 70,-55 55,-25" fill="none" stroke="#FDE047" stroke-width="3" stroke-dasharray="4,3" stroke-linecap="round"/>
+    <polygon points="55,-25 57,-15 67,-15 59,-9 62,1 55,-5 48,1 51,-9 43,-15 53,-15" fill="#FFFFFF"/>
+
+    <!-- Enchanting Fairytale Castle Silhouette in Background -->
+    <path d="M-55,20 L-55,-15 L-45,-30 L-35,-15 L-35,20 Z" fill="#831843" opacity="0.6"/>
+    <path d="M35,20 L35,-15 L45,-30 L55,-15 L55,20 Z" fill="#831843" opacity="0.6"/>
+    <path d="M-25,20 L-25,-35 L0,-55 L25,-35 L25,20 Z" fill="#831843" opacity="0.75"/>
+    <rect x="-6" y="-8" width="12" height="18" rx="6" fill="#FDE047"/>
+
+    <!-- Royal Velvet Cushion for the Glass Slipper -->
+    <path d="M-65,35 Q 0,18 65,35 Q 75,55 60,65 Q 0,55 -60,65 Q -75,55 -65,35 Z" fill="#4A044E"/>
+    <path d="M-58,38 Q 0,25 58,38 Q 68,50 54,60 Q 0,48 -54,60 Q -68,50 -58,38 Z" fill="#701A75"/>
+    <!-- Gold Tassels on cushion corners -->
+    <circle cx="-64" cy="45" r="4" fill="#FDE047"/>
+    <circle cx="64" cy="45" r="4" fill="#FDE047"/>
+
+    <!-- Sparkling Glass Slipper -->
+    <g transform="translate(0, 22)">
+      <!-- Slipper Heel & Sole -->
+      <path d="M-36,12 C-38,20 -30,22 -22,22 L15,22 C30,22 42,12 40,2 C34,-5 20,4 10,8 C-5,14 -18,16 -24,8 L-28,12 Z" fill="url(#glassSlipper)" opacity="0.95"/>
+      <!-- Elegant High Stiletto Heel -->
+      <polygon points="-28,12 -24,25 -21,25 -23,12" fill="url(#glassSlipper)"/>
+      <!-- Sparkling Diamond Buckle on Toe -->
+      <polygon points="26,6 30,1 34,6 30,11" fill="#FFFFFF"/>
+      <polygon points="28,6 30,3 32,6 30,9" fill="#38BDF8"/>
+      <!-- Glass reflection highlight -->
+      <path d="M-10,12 Q 5,8 20,10" stroke="#FFFFFF" stroke-width="2" fill="none" stroke-linecap="round"/>
+    </g>
+  </g>
+
+  <!-- Urdu Nastaliq Banner -->
+  <rect x="40" y="295" width="320" height="38" rx="10" fill="#4C0519" opacity="0.9"/>
+  <text x="200" y="322" font-family="'Jameel Noori Nastaleeq', 'Urdu Typesetting', Arial, sans-serif" font-size="22" font-weight="bold" fill="#FDE047" text-anchor="middle">
+    سنڈریلا اور کلاسک پریوں کی کہانیاں
+  </text>
+
+  <!-- Main Title -->
+  <text x="200" y="375" font-family="'Segoe UI', Roboto, sans-serif" font-size="28" font-weight="900" fill="#FFFFFF" text-anchor="middle" letter-spacing="1" filter="url(#shadow)">
+    CINDERELLA
+  </text>
+  <text x="200" y="405" font-family="'Segoe UI', Roboto, sans-serif" font-size="16" font-weight="800" fill="#FBCFE8" text-anchor="middle" letter-spacing="0.5">
+    &amp; Classic Fairy Tales
+  </text>
+  <text x="200" y="430" font-family="'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="600" fill="#FCE7F3" text-anchor="middle">
+    Cinderella · Sleeping Beauty · Snow White &amp; Seven Dwarfs
+  </text>
+
+  <!-- Divider -->
+  <line x1="80" y1="448" x2="320" y2="448" stroke="#F472B6" stroke-width="1.5" stroke-linecap="round" opacity="0.6"/>
+
+  <!-- Details -->
+  <text x="200" y="475" font-family="'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="700" fill="#FFFFFF" text-anchor="middle">
+    Brothers Grimm &amp; Charles Perrault Classics
+  </text>
+  <text x="200" y="495" font-family="'Segoe UI', Roboto, sans-serif" font-size="11" font-weight="500" fill="#FBCFE8" text-anchor="middle">
+    Full-Color Illustrated Treasury of Magic &amp; Hope
+  </text>
+
+  <!-- Bottom Publisher Seal -->
+  <g transform="translate(200, 526)">
+    <rect x="-85" y="-14" width="170" height="22" rx="11" fill="#831843"/>
+    <text x="0" y="2" font-family="'Segoe UI', Roboto, sans-serif" font-size="9" font-weight="800" fill="#FEF08A" text-anchor="middle" letter-spacing="0.8">
+      FAIRY TALE TREASURY
+    </text>
+  </g>
+</svg>

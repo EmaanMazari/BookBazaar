@@ -1,0 +1,130 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 560" width="400" height="560">
+  <defs>
+    <linearGradient id="jungleGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#065F46"/>
+      <stop offset="50%" stop-color="#047857"/>
+      <stop offset="100%" stop-color="#022C22"/>
+    </linearGradient>
+    <linearGradient id="leafGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#34D399"/>
+      <stop offset="100%" stop-color="#059669"/>
+    </linearGradient>
+    <linearGradient id="goldRibbon" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#FBBF24"/>
+      <stop offset="100%" stop-color="#F59E0B"/>
+    </linearGradient>
+    <radialGradient id="sunGlow" cx="50%" cy="30%" r="45%">
+      <stop offset="0%" stop-color="#FEF08A" stop-opacity="0.8"/>
+      <stop offset="100%" stop-color="#065F46" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="shadow">
+      <feDropShadow dx="0" dy="4" stdDeviation="6" flood-opacity="0.3"/>
+    </filter>
+  </defs>
+
+  <!-- Background -->
+  <rect width="400" height="560" rx="16" fill="url(#jungleGrad)"/>
+
+  <!-- Ornate Jungle Vine Border -->
+  <rect x="14" y="14" width="372" height="532" rx="12" fill="none" stroke="#6EE7B7" stroke-width="2.5" stroke-dasharray="6,4" opacity="0.6"/>
+  <rect x="22" y="22" width="356" height="516" rx="8" fill="none" stroke="#FDE68A" stroke-width="1.5" opacity="0.4"/>
+
+  <!-- Sun Canopy Glow -->
+  <circle cx="200" cy="180" r="130" fill="url(#sunGlow)"/>
+
+  <!-- Top Badge -->
+  <g filter="url(#shadow)">
+    <rect x="45" y="38" width="310" height="30" rx="15" fill="url(#goldRibbon)"/>
+    <text x="200" y="58" font-family="'Segoe UI', Roboto, sans-serif" font-size="11" font-weight="800" fill="#022C22" text-anchor="middle" letter-spacing="0.8">
+      ★ WORLD FAMOUS KIDS ADVENTURE CLASSIC · AGE 5–12 ★
+    </text>
+  </g>
+
+  <!-- Central Illustrated Artwork: Friendly Baloo the Bear & Little Mowgli under Tropical Palm Leaves -->
+  <g transform="translate(200, 180)" filter="url(#shadow)">
+    <!-- Tropical Palm Fronds framing top -->
+    <path d="M-80,-70 Q -30,-90 0,-70 Q 30,-90 80,-70 Q 40,-50 0,-55 Q -40,-50 -80,-70 Z" fill="url(#leafGrad)"/>
+    <path d="M-110,-40 Q -70,-60 -50,-30 Q -80,-30 -110,-40 Z" fill="#10B981"/>
+    <path d="M110,-40 Q 70,-60 50,-30 Q 80,-30 110,-40 Z" fill="#10B981"/>
+
+    <!-- Tropical Jungle Flowers -->
+    <circle cx="-65" cy="-35" r="7" fill="#F43F5E"/>
+    <circle cx="-65" cy="-35" r="3" fill="#FEF08A"/>
+    <circle cx="65" cy="-35" r="7" fill="#FB923C"/>
+    <circle cx="65" cy="-35" r="3" fill="#FEF08A"/>
+
+    <!-- Big Friendly Baloo Bear Head & Shoulders -->
+    <ellipse cx="0" cy="18" rx="64" ry="52" fill="#334155"/>
+    <circle cx="0" cy="-6" r="42" fill="#334155"/>
+    <!-- Bear Round Ears -->
+    <circle cx="-35" cy="-38" r="15" fill="#334155"/>
+    <circle cx="-35" cy="-38" r="9" fill="#94A3B8"/>
+    <circle cx="35" cy="-38" r="15" fill="#334155"/>
+    <circle cx="35" cy="-38" r="9" fill="#94A3B8"/>
+    <!-- Bear Muzzle & Nose -->
+    <ellipse cx="0" cy="4" rx="24" ry="18" fill="#CBD5E1"/>
+    <ellipse cx="0" cy="-2" rx="9" ry="6" fill="#0F172A"/>
+    <!-- Cute Smile -->
+    <path d="M-10,10 Q 0,22 10,10" stroke="#0F172A" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+    <!-- Friendly Bear Eyes -->
+    <ellipse cx="-16" cy="-14" rx="6" ry="8" fill="#FFFFFF"/>
+    <ellipse cx="16" cy="-14" rx="6" ry="8" fill="#FFFFFF"/>
+    <circle cx="-14" cy="-13" r="3.5" fill="#0F172A"/>
+    <circle cx="18" cy="-13" r="3.5" fill="#0F172A"/>
+    <circle cx="-12" cy="-15" r="1.5" fill="#FFFFFF"/>
+    <circle cx="20" cy="-15" r="1.5" fill="#FFFFFF"/>
+
+    <!-- Little Mowgli (Boy smiling happily on Baloo's shoulder) -->
+    <g transform="translate(-40, 0)">
+      <circle cx="0" cy="0" r="18" fill="#FBBF24"/>
+      <!-- Wild Dark Hair -->
+      <path d="M-18,-4 Q -12,-22 0,-18 Q 12,-22 18,-4 Q 10,-12 0,-12 Q -10,-12 -18,-4 Z" fill="#0F172A"/>
+      <!-- Cheerful Face -->
+      <circle cx="-6" cy="-2" r="2" fill="#0F172A"/>
+      <circle cx="6" cy="-2" r="2" fill="#0F172A"/>
+      <path d="M-5,5 Q 0,11 5,5" stroke="#DC2626" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+      <!-- Red Loincloth / Jungle Scarf -->
+      <path d="M-8,16 L8,16 L4,32 L-4,32 Z" fill="#DC2626"/>
+    </g>
+
+    <!-- Jungle Vines hanging down -->
+    <path d="M-85,-65 Q -95,10 -80,60" stroke="#059669" stroke-width="3" fill="none"/>
+    <path d="M85,-65 Q 95,10 80,60" stroke="#059669" stroke-width="3" fill="none"/>
+  </g>
+
+  <!-- Urdu Nastaliq Banner -->
+  <rect x="40" y="295" width="320" height="38" rx="10" fill="#022C22" opacity="0.9"/>
+  <text x="200" y="322" font-family="'Jameel Noori Nastaleeq', 'Urdu Typesetting', Arial, sans-serif" font-size="22" font-weight="bold" fill="#FDE047" text-anchor="middle">
+    دی جنگل بک : موگلی اور باگھیرا کی مہمات
+  </text>
+
+  <!-- Main Title -->
+  <text x="200" y="375" font-family="'Segoe UI', Roboto, sans-serif" font-size="28" font-weight="900" fill="#FFFFFF" text-anchor="middle" letter-spacing="1" filter="url(#shadow)">
+    THE JUNGLE BOOK
+  </text>
+  <text x="200" y="405" font-family="'Segoe UI', Roboto, sans-serif" font-size="16" font-weight="800" fill="#6EE7B7" text-anchor="middle" letter-spacing="0.5">
+    Illustrated Kids Edition
+  </text>
+  <text x="200" y="430" font-family="'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="600" fill="#D1FAE5" text-anchor="middle">
+    Mowgli, Baloo, Bagheera &amp; Shere Khan in the Wilderness
+  </text>
+
+  <!-- Divider -->
+  <line x1="80" y1="448" x2="320" y2="448" stroke="#34D399" stroke-width="1.5" stroke-linecap="round" opacity="0.6"/>
+
+  <!-- Author & Info -->
+  <text x="200" y="475" font-family="'Segoe UI', Roboto, sans-serif" font-size="13" font-weight="800" fill="#FFFFFF" text-anchor="middle">
+    By Rudyard Kipling
+  </text>
+  <text x="200" y="495" font-family="'Segoe UI', Roboto, sans-serif" font-size="11" font-weight="500" fill="#A7F3D0" text-anchor="middle">
+    Special Full-Color Illustrated Edition for Young Explorers
+  </text>
+
+  <!-- Bottom Publisher Seal -->
+  <g transform="translate(200, 526)">
+    <rect x="-85" y="-14" width="170" height="22" rx="11" fill="#064E3B"/>
+    <text x="0" y="2" font-family="'Segoe UI', Roboto, sans-serif" font-size="9" font-weight="800" fill="#FEF08A" text-anchor="middle" letter-spacing="0.8">
+      PUFFIN CHILDREN CLASSICS
+    </text>
+  </g>
+</svg>

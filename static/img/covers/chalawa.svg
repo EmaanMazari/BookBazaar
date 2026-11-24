@@ -1,0 +1,108 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 560" width="400" height="560">
+  <defs>
+    <linearGradient id="purpleGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#7C3AED"/>
+      <stop offset="45%" stop-color="#5B21B6"/>
+      <stop offset="100%" stop-color="#1E1B4B"/>
+    </linearGradient>
+    <linearGradient id="amberBadge" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#FBBF24"/>
+      <stop offset="100%" stop-color="#F59E0B"/>
+    </linearGradient>
+    <radialGradient id="mysteryBeam" cx="50%" cy="32%" r="45%">
+      <stop offset="0%" stop-color="#DDD6FE" stop-opacity="0.8"/>
+      <stop offset="100%" stop-color="#7C3AED" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="shadow">
+      <feDropShadow dx="0" dy="4" stdDeviation="6" flood-opacity="0.3"/>
+    </filter>
+  </defs>
+
+  <!-- Background -->
+  <rect width="400" height="560" rx="16" fill="url(#purpleGrad)"/>
+
+  <!-- Ornate Border -->
+  <rect x="14" y="14" width="372" height="532" rx="12" fill="none" stroke="#C4B5FD" stroke-width="2.5" stroke-dasharray="6,4" opacity="0.6"/>
+  <rect x="22" y="22" width="356" height="516" rx="8" fill="none" stroke="#FDE68A" stroke-width="1.5" opacity="0.4"/>
+
+  <!-- Mystery Glow Circle -->
+  <circle cx="200" cy="180" r="130" fill="url(#mysteryBeam)"/>
+
+  <!-- Top Badge -->
+  <g filter="url(#shadow)">
+    <rect x="50" y="38" width="300" height="30" rx="15" fill="url(#amberBadge)"/>
+    <text x="200" y="58" font-family="'Segoe UI', Roboto, sans-serif" font-size="11" font-weight="800" fill="#451A03" text-anchor="middle" letter-spacing="0.8">
+      ★ THRILLING KIDS ADVENTURE &amp; MYSTERY · AGE 5–12 ★
+    </text>
+  </g>
+
+  <!-- Central Illustrated Artwork: Whimsical Friendly Mystery Phantom & Detective Magnifying Glass -->
+  <g transform="translate(200, 180)" filter="url(#shadow)">
+    <!-- Stars & Moon in background -->
+    <path d="M-80,-60 A 25 25 0 0 0 -50,-80 A 30 30 0 0 1 -80,-60 Z" fill="#FDE047"/>
+    <polygon points="60,-70 64,-58 76,-58 66,-50 70,-38 60,-46 50,-38 54,-50 44,-58 56,-58" fill="#FDE047"/>
+    <polygon points="-75,40 -72,48 -64,48 -70,54 -68,62 -75,57 -82,62 -80,54 -86,48 -78,48" fill="#FFFFFF" opacity="0.8"/>
+    <polygon points="85,30 87,36 94,36 89,40 91,47 85,43 79,47 81,40 76,36 83,36" fill="#FFFFFF" opacity="0.8"/>
+
+    <!-- Friendly Flying "Chalawa" (Playful Cloud Phantom) -->
+    <path d="M0,-50 C-40,-50 -60,-20 -55,15 C-52,40 -35,65 0,72 C35,65 52,40 55,15 C60,-20 40,-50 0,-50 Z" fill="#EDE9FE" opacity="0.95"/>
+    <path d="M-40,55 Q -20,78 -10,65 Q 10,80 30,65 Q 45,78 40,55 Z" fill="#EDE9FE"/>
+    
+    <!-- Big Friendly Cartoon Eyes -->
+    <ellipse cx="-16" cy="-6" rx="9" ry="12" fill="#1E1B4B"/>
+    <ellipse cx="16" cy="-6" rx="9" ry="12" fill="#1E1B4B"/>
+    <circle cx="-13" cy="-9" r="4" fill="#FFFFFF"/>
+    <circle cx="19" cy="-9" r="4" fill="#FFFFFF"/>
+    <circle cx="-16" cy="-3" r="1.5" fill="#FFFFFF"/>
+    <circle cx="16" cy="-3" r="1.5" fill="#FFFFFF"/>
+
+    <!-- Cute Smiling Mouth -->
+    <path d="M-10,14 Q 0,26 10,14 Z" fill="#BE185D"/>
+    <!-- Cheeks -->
+    <circle cx="-26" cy="6" r="6" fill="#F472B6" opacity="0.6"/>
+    <circle cx="26" cy="6" r="6" fill="#F472B6" opacity="0.6"/>
+
+    <!-- Golden Detective Magnifying Glass held in hand -->
+    <g transform="translate(38, 15) rotate(-20)">
+      <circle cx="0" cy="0" r="26" fill="#67E8F9" fill-opacity="0.3" stroke="#F59E0B" stroke-width="5"/>
+      <line x1="18" y1="18" x2="42" y2="42" stroke="#B45309" stroke-width="7" stroke-linecap="round"/>
+      <path d="M-8,-12 Q 2,-16 10,-10" stroke="#FFFFFF" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+    </g>
+  </g>
+
+  <!-- Urdu Nastaliq Banner -->
+  <rect x="40" y="295" width="320" height="38" rx="10" fill="#2E1065" opacity="0.85"/>
+  <text x="200" y="322" font-family="'Jameel Noori Nastaleeq', 'Urdu Typesetting', Arial, sans-serif" font-size="22" font-weight="bold" fill="#FDE047" text-anchor="middle">
+    چھلاوہ : بچوں کی سسپنس اور اخلاقی کہانیاں
+  </text>
+
+  <!-- Main Title -->
+  <text x="200" y="375" font-family="'Segoe UI', Roboto, sans-serif" font-size="30" font-weight="900" fill="#FFFFFF" text-anchor="middle" letter-spacing="1" filter="url(#shadow)">
+    CHALAWA
+  </text>
+  <text x="200" y="405" font-family="'Segoe UI', Roboto, sans-serif" font-size="16" font-weight="800" fill="#FBBF24" text-anchor="middle" letter-spacing="0.5">
+    Bachon Ki Kahaniyan
+  </text>
+  <text x="200" y="430" font-family="'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="600" fill="#EDE9FE" text-anchor="middle">
+    Courage, Truth &amp; Exciting Detective Adventures
+  </text>
+
+  <!-- Divider -->
+  <line x1="80" y1="448" x2="320" y2="448" stroke="#A78BFA" stroke-width="1.5" stroke-linecap="round" opacity="0.6"/>
+
+  <!-- Author & Info -->
+  <text x="200" y="475" font-family="'Segoe UI', Roboto, sans-serif" font-size="14" font-weight="800" fill="#FFFFFF" text-anchor="middle">
+    By Ishtiaq Ahmed (اشتیاق احمد)
+  </text>
+  <text x="200" y="495" font-family="'Segoe UI', Roboto, sans-serif" font-size="11" font-weight="500" fill="#DDD6FE" text-anchor="middle">
+    Pakistan's Master Storyteller for Young Readers
+  </text>
+
+  <!-- Bottom Publisher Seal -->
+  <g transform="translate(200, 526)">
+    <rect x="-85" y="-14" width="170" height="22" rx="11" fill="#4C1D95"/>
+    <text x="0" y="2" font-family="'Segoe UI', Roboto, sans-serif" font-size="9" font-weight="800" fill="#FDE047" text-anchor="middle" letter-spacing="0.8">
+      MAKTABA-E-DASTAN CLASSIC
+    </text>
+  </g>
+</svg>

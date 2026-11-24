@@ -1,0 +1,127 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 560" width="400" height="560">
+  <defs>
+    <linearGradient id="skyGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0284C7"/>
+      <stop offset="50%" stop-color="#0369A1"/>
+      <stop offset="100%" stop-color="#0F172A"/>
+    </linearGradient>
+    <linearGradient id="bookGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#FFFFFF"/>
+      <stop offset="100%" stop-color="#F1F5F9"/>
+    </linearGradient>
+    <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#FDE047"/>
+      <stop offset="100%" stop-color="#F59E0B"/>
+    </linearGradient>
+    <radialGradient id="sunBurst" cx="50%" cy="30%" r="50%">
+      <stop offset="0%" stop-color="#BAE6FD" stop-opacity="0.9"/>
+      <stop offset="100%" stop-color="#0284C7" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="glow">
+      <feDropShadow dx="0" dy="4" stdDeviation="6" flood-opacity="0.3"/>
+    </filter>
+  </defs>
+
+  <!-- Background -->
+  <rect width="400" height="560" rx="16" fill="url(#skyGrad)"/>
+  
+  <!-- Outer Ornate Border -->
+  <rect x="14" y="14" width="372" height="532" rx="12" fill="none" stroke="#BAE6FD" stroke-width="2" stroke-dasharray="8,4" opacity="0.7"/>
+  <rect x="22" y="22" width="356" height="516" rx="8" fill="none" stroke="#FFFFFF" stroke-width="1.5" opacity="0.3"/>
+
+  <!-- Radiant Glow behind Book -->
+  <circle cx="200" cy="180" r="130" fill="url(#sunBurst)"/>
+
+  <!-- Top Badge -->
+  <g filter="url(#glow)">
+    <rect x="55" y="38" width="290" height="30" rx="15" fill="url(#goldGrad)"/>
+    <text x="200" y="58" font-family="'Segoe UI', Roboto, sans-serif" font-size="11" font-weight="800" fill="#78350F" text-anchor="middle" letter-spacing="0.8">
+      ★ PAKISTAN'S FAVORITE CHILDREN STORIES · AGE 5–12 ★
+    </text>
+  </g>
+
+  <!-- Central Illustrated Artwork: Open Magical Storybook with Sparkles & Rainbow -->
+  <g transform="translate(200, 180)" filter="url(#glow)">
+    <!-- Rainbow arch -->
+    <path d="M-90,-20 A 90 90 0 0 1 90,-20" fill="none" stroke="#F43F5E" stroke-width="5" opacity="0.8"/>
+    <path d="M-84,-20 A 84 84 0 0 1 84,-20" fill="none" stroke="#F59E0B" stroke-width="5" opacity="0.8"/>
+    <path d="M-78,-20 A 78 78 0 0 1 78,-20" fill="none" stroke="#10B981" stroke-width="5" opacity="0.8"/>
+    <path d="M-72,-20 A 72 72 0 0 1 72,-20" fill="none" stroke="#38BDF8" stroke-width="5" opacity="0.8"/>
+
+    <!-- Radiant Magic Stars -->
+    <path d="M-60,-70 L-56,-58 L-44,-58 L-54,-50 L-50,-38 L-60,-46 L-70,-38 L-66,-50 L-76,-58 L-64,-58 Z" fill="#FDE047"/>
+    <path d="M60,-65 L63,-55 L73,-55 L65,-48 L68,-38 L60,-45 L52,-38 L55,-48 L47,-55 L57,-55 Z" fill="#FDE047"/>
+    <circle cx="0" cy="-80" r="4" fill="#FFFFFF"/>
+    <circle cx="-30" cy="-85" r="2.5" fill="#FDE047"/>
+    <circle cx="35" cy="-82" r="3" fill="#FDE047"/>
+
+    <!-- Open Book Cover Backing -->
+    <path d="M-82,-6 Q 0,-24 82,-6 L76,64 Q 0,46 -76,64 Z" fill="#D97706"/>
+    <!-- Left Page -->
+    <path d="M-78,-3 Q -38,-16 -4,-4 L-4,58 Q -38,46 -72,60 Z" fill="url(#bookGrad)"/>
+    <!-- Right Page -->
+    <path d="M78,-3 Q 38,-16 4,-4 L4,58 Q 38,46 72,60 Z" fill="url(#bookGrad)"/>
+    <!-- Center Spine & Ribbon Bookmark -->
+    <line x1="0" y1="-8" x2="0" y2="60" stroke="#94A3B8" stroke-width="3"/>
+    <path d="M0,58 Q 8,82 12,96 L0,88 L-12,96 Q -8,82 0,58 Z" fill="#DC2626"/>
+
+    <!-- Page Text/Drawings simulation -->
+    <line x1="-60" y1="12" x2="-16" y2="12" stroke="#94A3B8" stroke-width="2" stroke-linecap="round"/>
+    <line x1="-60" y1="22" x2="-20" y2="22" stroke="#94A3B8" stroke-width="2" stroke-linecap="round"/>
+    <line x1="-60" y1="32" x2="-24" y2="32" stroke="#94A3B8" stroke-width="2" stroke-linecap="round"/>
+    <circle cx="42" cy="22" r="14" fill="#FEF08A"/>
+    <path d="M36,26 L42,16 L48,26 Z" fill="#10B981"/>
+
+    <!-- Wise Little Owl perched on top -->
+    <g transform="translate(0, -28)">
+      <ellipse cx="0" cy="0" rx="16" ry="19" fill="#92400E"/>
+      <ellipse cx="0" cy="3" rx="11" ry="12" fill="#FEF3C7"/>
+      <!-- Owl Eyes -->
+      <circle cx="-6" cy="-4" r="6" fill="#FFFFFF"/>
+      <circle cx="6" cy="-4" r="6" fill="#FFFFFF"/>
+      <circle cx="-5" cy="-4" r="3" fill="#1E293B"/>
+      <circle cx="7" cy="-4" r="3" fill="#1E293B"/>
+      <!-- Beak -->
+      <polygon points="0,-1 -3,3 3,3" fill="#F59E0B"/>
+      <!-- Graduation / Student Cap -->
+      <polygon points="0,-16 -16,-10 0,-4 16,-10" fill="#0F172A"/>
+      <path d="M12,-8 L15,2" stroke="#FDE047" stroke-width="1.5"/>
+    </g>
+  </g>
+
+  <!-- Urdu Nastaliq Banner -->
+  <rect x="40" y="295" width="320" height="38" rx="10" fill="#0C4A6E" opacity="0.85"/>
+  <text x="200" y="322" font-family="'Jameel Noori Nastaleeq', 'Urdu Typesetting', Arial, sans-serif" font-size="22" font-weight="bold" fill="#FEF08A" text-anchor="middle">
+    تعلیم و تربیت : بچوں کی اخلاقی کہانیاں
+  </text>
+
+  <!-- Main Title -->
+  <text x="200" y="375" font-family="'Segoe UI', Roboto, sans-serif" font-size="25" font-weight="900" fill="#FFFFFF" text-anchor="middle" letter-spacing="-0.5" filter="url(#glow)">
+    TALEEM-O-TARBIYAT
+  </text>
+  <text x="200" y="405" font-family="'Segoe UI', Roboto, sans-serif" font-size="18" font-weight="800" fill="#38BDF8" text-anchor="middle" letter-spacing="0.5">
+    Moral Stories for Kids
+  </text>
+  <text x="200" y="430" font-family="'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="600" fill="#E0F2FE" text-anchor="middle">
+    Character Building, Honesty &amp; Kindness
+  </text>
+
+  <!-- Decorative Divider -->
+  <line x1="80" y1="448" x2="320" y2="448" stroke="#38BDF8" stroke-width="1.5" stroke-linecap="round" opacity="0.6"/>
+
+  <!-- Edition & Details -->
+  <text x="200" y="475" font-family="'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="700" fill="#FFFFFF" text-anchor="middle">
+    Ferozsons Children Editorial Board
+  </text>
+  <text x="200" y="495" font-family="'Segoe UI', Roboto, sans-serif" font-size="11" font-weight="500" fill="#BAE6FD" text-anchor="middle">
+    Special 4-Color Illustrated Edition for Young Readers
+  </text>
+
+  <!-- Bottom Publisher Seal -->
+  <g transform="translate(200, 526)">
+    <rect x="-85" y="-14" width="170" height="22" rx="11" fill="#0369A1"/>
+    <text x="0" y="2" font-family="'Segoe UI', Roboto, sans-serif" font-size="9" font-weight="800" fill="#FFFFFF" text-anchor="middle" letter-spacing="0.8">
+      FEROZSONS LAHORE
+    </text>
+  </g>
+</svg>

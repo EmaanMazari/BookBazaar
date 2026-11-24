@@ -245,8 +245,8 @@ DEMO_TEXTBOOKS = [
         'target_age_group': 'kids',
         'city': 'Islamabad',
         'pickup': 'F-7 Markaz / Jinnah Super',
-        'desc': 'Timeless illustrated adventure classic following Mowgli, Baloo, and Bagheera in the wilderness. High quality color prints and easy English vocabulary for children.',
-        'photo': 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=500&auto=format&fit=crop&q=80',
+        'desc': 'The Jungle Book (Illustrated Kids Edition). Timeless adventure classic following Mowgli, Baloo, and Bagheera in the wilderness. High quality color prints and easy English vocabulary for children.',
+        'photo': '/static/img/covers/jungle_book.svg',
         'is_sponsored': False,
         'views': 95
     },
@@ -258,11 +258,11 @@ DEMO_TEXTBOOKS = [
         'is_free': False,
         'target_age_group': 'kids',
         'city': 'Lahore',
-        'pickup': 'Model Town Library / Link Road',
+        'pickup': 'Ferozsons Mall Road / Anarkali',
         'desc': 'Delightful Urdu poems and moral story book for young kids by renowned poet Sufi Tabassum. Features Tot Batot tales, animals, humor, and moral lessons.',
-        'photo': 'https://images.unsplash.com/photo-1512820790803-83ca734da794?w=500&auto=format&fit=crop&q=80',
+        'photo': '/static/img/covers/sheikh_chilli.svg',
         'is_sponsored': False,
-        'views': 88
+        'views': 64
     },
     {
         'isbn': '9789695840369',
@@ -501,8 +501,8 @@ DEMO_TEXTBOOKS = [
         'target_age_group': 'general',
         'city': 'Quetta',
         'pickup': 'University of Balochistan (UoB) Sariab Road / Jinnah Road',
-        'desc': 'Original print of Sardar Khan Baluch’s masterwork on Balochistan history. Intact binding, clean pages, essential for CSS Pakistan Affairs and regional history researchers in Quetta.',
-        'photo': 'https://images.unsplash.com/photo-1461360370896-922624d12aa1?w=500&auto=format&fit=crop&q=80',
+        'desc': 'Comprehensive history of Balochistan by Muhammad Sardar Khan Baluch. Official Balochistan Board regional history reference copy in Quetta.',
+        'photo': '/static/img/covers/history_balochistan.svg',
         'is_sponsored': True,
         'views': 165
     },
@@ -1015,20 +1015,6 @@ DEMO_TEXTBOOKS = [
     # 🧸 KIDS & STORY BOOKS (Age 5-12)
     # ========================================================
     {
-        'isbn': '9789695840413',
-        'seller_username': 'ali_seller',
-        'condition': 'Like New',
-        'price': Decimal('180.00'),
-        'is_free': False,
-        'target_age_group': 'kids',
-        'city': 'Lahore',
-        'pickup': 'Ferozsons Mall Road / Anarkali',
-        'desc': 'Taleem-o-Tarbiyat: Selected Moral Stories for Children. Colorful full-page illustrations promoting honesty, hard work, and good manners.',
-        'photo': 'https://images.unsplash.com/photo-1512820790803-83ca734da794?w=500&auto=format&fit=crop&q=80',
-        'is_sponsored': False,
-        'views': 78
-    },
-    {
         'isbn': '9789695840420',
         'seller_username': 'zainab_rwp',
         'condition': 'Good',
@@ -1037,38 +1023,24 @@ DEMO_TEXTBOOKS = [
         'target_age_group': 'kids',
         'city': 'Rawalpindi',
         'pickup': 'Saddar Rawalpindi / Cantt Library',
-        'desc': 'Sheikh Chilli ke Qissay (Classic Folk Tales of Pakistan). Illustrated humorous traditional stories for kids aged 6 to 12.',
-        'photo': 'https://images.unsplash.com/photo-1503676260728-1c00da094a0b?w=500&auto=format&fit=crop&q=80',
+        'desc': 'Sheikh Chilli ke Qissay (Classic Pakistani Folk Tales). Illustrated humorous traditional stories for kids aged 6 to 12.',
+        'photo': '/static/img/covers/sheikh_chilli.svg',
         'is_sponsored': False,
         'views': 85
     },
     {
-        'isbn': '9789695840437',
-        'seller_username': 'fatima_z',
-        'condition': 'Brand New',
-        'price': Decimal('220.00'),
-        'is_free': False,
-        'target_age_group': 'kids',
-        'city': 'Islamabad',
-        'pickup': 'F-7 Markaz / Jinnah Super Market',
-        'desc': "Aesop's Fables Illustrated for Pakistani Children (Urdu & English). Bilingual illustrated edition with classic moral lessons.",
-        'photo': 'https://images.unsplash.com/photo-1512820790803-83ca734da794?w=500&auto=format&fit=crop&q=80',
-        'is_sponsored': True,
-        'views': 125
-    },
-    {
-        'isbn': '9789695840444',
-        'seller_username': 'usman_mul',
+        'isbn': '9789695840413',
+        'seller_username': 'ali_seller',
         'condition': 'Like New',
-        'price': Decimal('250.00'),
+        'price': Decimal('180.00'),
         'is_free': False,
         'target_age_group': 'kids',
-        'city': 'Multan',
-        'pickup': 'Gulgasht Colony / BZU Multan',
-        'desc': 'Alif Laila Kids Edition (One Thousand and One Nights). Aladdin, Ali Baba, and Sinbad tales adapted in simple Urdu for children.',
-        'photo': 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=500&auto=format&fit=crop&q=80',
+        'city': 'Lahore',
+        'pickup': 'Ferozsons Mall Road / Anarkali',
+        'desc': 'Taleem-o-Tarbiyat: Moral Stories for Kids (Ferozsons). Colorful full-page illustrations promoting honesty, hard work, and good manners.',
+        'photo': '/static/img/covers/taleem_tarbiyat.svg',
         'is_sponsored': False,
-        'views': 94
+        'views': 78
     },
     {
         'isbn': '9789695840451',
@@ -1079,24 +1051,66 @@ DEMO_TEXTBOOKS = [
         'target_age_group': 'kids',
         'city': 'Bahawalpur',
         'pickup': 'IUB Baghdad Campus / Library',
-        'desc': 'Moral Stories for Young Readers (Ikhlaqi Kahaniyan by Ishtiaq Ahmed). Exciting adventure stories teaching character and empathy.',
-        'photo': 'https://images.unsplash.com/photo-1503676260728-1c00da094a0b?w=500&auto=format&fit=crop&q=80',
+        'desc': 'Chalawa / Bachon Ki Kahaniyan by Ishtiaq Ahmed. Exciting adventure and mystery stories teaching courage and empathy.',
+        'photo': '/static/img/covers/chalawa.svg',
         'is_sponsored': False,
         'views': 72
     },
     {
-        'isbn': '9789695840468',
+        'isbn': '9789695840444',
+        'seller_username': 'usman_mul',
+        'condition': 'Like New',
+        'price': Decimal('250.00'),
+        'is_free': False,
+        'target_age_group': 'kids',
+        'city': 'Multan',
+        'pickup': 'Gulgasht Colony / BZU Multan',
+        'desc': 'Alif Laila: Illustrated Stories for Children. Aladdin, Ali Baba, and Sinbad tales adapted in simple Urdu for children.',
+        'photo': '/static/img/covers/alif_laila.svg',
+        'is_sponsored': False,
+        'views': 94
+    },
+    {
+        'isbn': '9789695840437',
+        'seller_username': 'fatima_z',
+        'condition': 'Brand New',
+        'price': Decimal('220.00'),
+        'is_free': False,
+        'target_age_group': 'kids',
+        'city': 'Islamabad',
+        'pickup': 'F-7 Markaz / Jinnah Super Market',
+        'desc': "Aesop's Fables Illustrated for Young Readers. Bilingual illustrated edition with classic moral lessons.",
+        'photo': '/static/img/covers/aesop_fables.svg',
+        'is_sponsored': True,
+        'views': 125
+    },
+    {
+        'isbn': '9780141325293',
         'seller_username': 'ayesha_khi',
         'condition': 'Like New',
-        'price': Decimal('200.00'),
+        'price': Decimal('240.00'),
         'is_free': False,
         'target_age_group': 'kids',
         'city': 'Karachi',
         'pickup': 'Bahria University / Karsaz Karachi',
-        'desc': 'Bachon Ki Dunya: Illustrated Animal Adventures. Exciting stories featuring Markhor, Snow Leopard, and Indus River Dolphin.',
-        'photo': 'https://images.unsplash.com/photo-1512820790803-83ca734da794?w=500&auto=format&fit=crop&q=80',
+        'desc': 'The Jungle Book (Illustrated Kids Edition). Timeless adventure classic following Mowgli, Baloo, and Bagheera in the wilderness.',
+        'photo': '/static/img/covers/jungle_book.svg',
         'is_sponsored': False,
-        'views': 88
+        'views': 110
+    },
+    {
+        'isbn': '9780141325309',
+        'seller_username': 'fatima_z',
+        'condition': 'Like New',
+        'price': Decimal('210.00'),
+        'is_free': False,
+        'target_age_group': 'kids',
+        'city': 'Islamabad',
+        'pickup': 'F-7 Markaz / Jinnah Super Market',
+        'desc': 'Cinderella & Classic Fairy Tales. Enchanting illustrated edition featuring Cinderella, Sleeping Beauty, and Snow White.',
+        'photo': '/static/img/covers/cinderella.svg',
+        'is_sponsored': False,
+        'views': 98
     },
 
     # ========================================================
@@ -1570,8 +1584,11 @@ def ensure_demo_listings(force=False):
                     if listing.city != l['city']:
                         listing.city = l['city']
                         needs_save = True
+                    if l.get('photo') and listing.photo_url != l['photo']:
+                        listing.photo_url = l['photo']
+                        needs_save = True
                     if needs_save:
-                        listing.save(update_fields=['status', 'price', 'is_free', 'target_age_group', 'city'])
+                        listing.save(update_fields=['status', 'price', 'is_free', 'target_age_group', 'city', 'photo_url'])
 
         final_count = Listing.objects.filter(status='active').count()
         logger.info(f"Bookzy AI auto-seed completed successfully. Active listings: {final_count}")

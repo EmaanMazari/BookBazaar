@@ -1,0 +1,107 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 560" width="400" height="560">
+  <defs>
+    <linearGradient id="maroonGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#881337"/>
+      <stop offset="45%" stop-color="#4C0519"/>
+      <stop offset="100%" stop-color="#1C050D"/>
+    </linearGradient>
+    <linearGradient id="sandGold" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#FEF08A"/>
+      <stop offset="50%" stop-color="#F59E0B"/>
+      <stop offset="100%" stop-color="#D97706"/>
+    </linearGradient>
+    <radialGradient id="archGlow" cx="50%" cy="32%" r="48%">
+      <stop offset="0%" stop-color="#FEF3C7" stop-opacity="0.7"/>
+      <stop offset="100%" stop-color="#881337" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="shadow">
+      <feDropShadow dx="0" dy="4" stdDeviation="6" flood-opacity="0.35"/>
+    </filter>
+  </defs>
+
+  <!-- Background -->
+  <rect width="400" height="560" rx="16" fill="url(#maroonGrad)"/>
+
+  <!-- Ornate Frame Border -->
+  <rect x="14" y="14" width="372" height="532" rx="12" fill="none" stroke="#FDE68A" stroke-width="2.5" stroke-dasharray="8,4" opacity="0.6"/>
+  <rect x="22" y="22" width="356" height="516" rx="8" fill="none" stroke="#FBBF24" stroke-width="1.5" opacity="0.4"/>
+
+  <!-- Warm Arch Glow -->
+  <circle cx="200" cy="180" r="130" fill="url(#archGlow)"/>
+
+  <!-- Top Badge -->
+  <g filter="url(#shadow)">
+    <rect x="35" y="38" width="330" height="30" rx="15" fill="url(#sandGold)"/>
+    <text x="200" y="58" font-family="'Segoe UI', Roboto, sans-serif" font-size="10" font-weight="900" fill="#4C0519" text-anchor="middle" letter-spacing="1">
+      ★ BALOCHISTAN BOARD · REGIONAL HISTORY · QUETTA ★
+    </text>
+  </g>
+
+  <!-- Central Illustrated Artwork: Historic Mehrgarh Emblem, Arch & Fortress of Balochistan -->
+  <g transform="translate(200, 180)" filter="url(#shadow)">
+    <!-- Traditional Historical Horseshoe Arch Outline -->
+    <path d="M-75,55 L-75,-10 C-75,-65 -35,-85 0,-85 C35,-85 75,-65 75,-10 L75,55 Z" fill="none" stroke="#FDE047" stroke-width="3" opacity="0.8"/>
+    <path d="M-65,55 L-65,-8 C-65,-55 -30,-75 0,-75 C30,-75 65,-55 65,-8 L65,55 Z" fill="none" stroke="#D97706" stroke-width="1.5" opacity="0.6"/>
+
+    <!-- Rugged Quetta Mountains (Chiltan & Zarghoon) in backdrop -->
+    <polygon points="-80,55 -35,5 -10,30 25,-10 80,55" fill="#4C0519" opacity="0.8"/>
+    <polygon points="-70,55 -35,15 -10,38 25,2 70,55" fill="#881337" opacity="0.6"/>
+
+    <!-- Historical Fortress Bastion & Traditional Watchtower -->
+    <rect x="-24" y="-2" width="48" height="57" fill="#B45309"/>
+    <!-- Battlements / Merlons -->
+    <rect x="-24" y="-10" width="10" height="10" fill="#B45309"/>
+    <rect x="-5" y="-10" width="10" height="10" fill="#B45309"/>
+    <rect x="14" y="-10" width="10" height="10" fill="#B45309"/>
+    <!-- Grand Fortress Gate -->
+    <path d="M-12,55 L-12,26 Q 0,16 12,26 L12,55 Z" fill="#1C050D"/>
+    <!-- Cross Arrows / Ancient Crest -->
+    <circle cx="0" cy="5" r="5" fill="#FDE047"/>
+
+    <!-- Mehrgarh Ancient Sun Symbol -->
+    <circle cx="0" cy="-45" r="16" fill="#FDE047" opacity="0.9"/>
+    <circle cx="0" cy="-45" r="10" fill="#881337"/>
+    <circle cx="0" cy="-45" r="4" fill="#FDE047"/>
+    <!-- Sun Rays radiating around symbol -->
+    <line x1="0" y1="-67" x2="0" y2="-63" stroke="#FDE047" stroke-width="2"/>
+    <line x1="0" y1="-27" x2="0" y2="-23" stroke="#FDE047" stroke-width="2"/>
+    <line x1="-22" y1="-45" x2="-18" y2="-45" stroke="#FDE047" stroke-width="2"/>
+    <line x1="18" y1="-45" x2="22" y2="-45" stroke="#FDE047" stroke-width="2"/>
+  </g>
+
+  <!-- Urdu Nastaliq Banner -->
+  <rect x="40" y="295" width="320" height="38" rx="10" fill="#2A0410" opacity="0.95"/>
+  <text x="200" y="322" font-family="'Jameel Noori Nastaleeq', 'Urdu Typesetting', Arial, sans-serif" font-size="22" font-weight="bold" fill="#FDE047" text-anchor="middle">
+    تاریخِ بلوچستان : جامع تاریخی و تحقیقی دستاویز
+  </text>
+
+  <!-- Main Title -->
+  <text x="200" y="375" font-family="'Segoe UI', Roboto, sans-serif" font-size="24" font-weight="900" fill="#FFFFFF" text-anchor="middle" letter-spacing="0.5" filter="url(#shadow)">
+    THE HISTORY OF
+  </text>
+  <text x="200" y="405" font-family="'Segoe UI', Roboto, sans-serif" font-size="22" font-weight="900" fill="#FDE047" text-anchor="middle" letter-spacing="1">
+    BALOCHISTAN
+  </text>
+  <text x="200" y="430" font-family="'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="600" fill="#FEF3C7" text-anchor="middle">
+    Origins, Tribes, Khanate of Kalat, Treaties &amp; Modern Era
+  </text>
+
+  <!-- Divider -->
+  <line x1="80" y1="448" x2="320" y2="448" stroke="#FBBF24" stroke-width="1.5" stroke-linecap="round" opacity="0.6"/>
+
+  <!-- Author & Info -->
+  <text x="200" y="475" font-family="'Segoe UI', Roboto, sans-serif" font-size="13" font-weight="800" fill="#FFFFFF" text-anchor="middle">
+    By Muhammad Sardar Khan Baluch
+  </text>
+  <text x="200" y="495" font-family="'Segoe UI', Roboto, sans-serif" font-size="11" font-weight="600" fill="#FDE68A" text-anchor="middle">
+    Official Balochistan Board &amp; University Research Reference
+  </text>
+
+  <!-- Bottom Publisher Seal -->
+  <g transform="translate(200, 526)">
+    <rect x="-95" y="-14" width="190" height="22" rx="11" fill="#4C0519"/>
+    <text x="0" y="2" font-family="'Segoe UI', Roboto, sans-serif" font-size="9" font-weight="800" fill="#FDE047" text-anchor="middle" letter-spacing="0.8">
+      BALUCHI ACADEMY / QUETTA
+    </text>
+  </g>
+</svg>

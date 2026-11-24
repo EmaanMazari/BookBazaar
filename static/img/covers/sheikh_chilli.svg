@@ -1,0 +1,115 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 560" width="400" height="560">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#F59E0B"/>
+      <stop offset="50%" stop-color="#D97706"/>
+      <stop offset="100%" stop-color="#B45309"/>
+    </linearGradient>
+    <linearGradient id="badgeGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#FEF3C7"/>
+      <stop offset="100%" stop-color="#FDE68A"/>
+    </linearGradient>
+    <radialGradient id="sunGlow" cx="50%" cy="35%" r="45%">
+      <stop offset="0%" stop-color="#FEF08A" stop-opacity="0.8"/>
+      <stop offset="100%" stop-color="#F59E0B" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="4" stdDeviation="6" flood-opacity="0.25"/>
+    </filter>
+  </defs>
+
+  <!-- Background -->
+  <rect width="400" height="560" rx="16" fill="url(#bgGrad)"/>
+  
+  <!-- Decorative Pattern Frame -->
+  <rect x="14" y="14" width="372" height="532" rx="12" fill="none" stroke="#FEF3C7" stroke-width="2.5" stroke-dasharray="6,4" opacity="0.6"/>
+  <rect x="22" y="22" width="356" height="516" rx="8" fill="none" stroke="#FFFFFF" stroke-width="1.5" opacity="0.4"/>
+
+  <!-- Sun Glow -->
+  <circle cx="200" cy="210" r="140" fill="url(#sunGlow)"/>
+
+  <!-- Top Badge -->
+  <g filter="url(#shadow)">
+    <rect x="65" y="38" width="270" height="30" rx="15" fill="url(#badgeGrad)"/>
+    <text x="200" y="58" font-family="'Segoe UI', Roboto, sans-serif" font-size="11" font-weight="800" fill="#92400E" text-anchor="middle" letter-spacing="1">
+      ★ CLASSIC PAKISTANI FOLK TALES · AGE 5–12 ★
+    </text>
+  </g>
+
+  <!-- Illustrated Character Icon (Whimsical Sheikh Chilli with Colorful Turban) -->
+  <g transform="translate(200, 200)" filter="url(#shadow)">
+    <!-- Aura stars -->
+    <path d="M-90,-70 L-85,-55 L-70,-55 L-82,-45 L-77,-30 L-90,-40 L-103,-30 L-98,-45 L-110,-55 L-95,-55 Z" fill="#FEF08A" opacity="0.8"/>
+    <path d="M90,-60 L94,-48 L106,-48 L96,-40 L100,-28 L90,-36 L80,-28 L84,-40 L74,-48 L86,-48 Z" fill="#FEF08A" opacity="0.8"/>
+    <path d="M-110,30 L-106,40 L-95,40 L-104,47 L-100,58 L-110,51 L-120,58 L-116,47 L-125,40 L-114,40 Z" fill="#FFFFFF" opacity="0.7"/>
+    <path d="M105,25 L108,33 L117,33 L109,39 L112,48 L105,42 L98,48 L101,39 L93,33 L102,33 Z" fill="#FFFFFF" opacity="0.7"/>
+
+    <!-- Crescent Moon of Stories -->
+    <path d="M-40,-85 A 35 35 0 0 0 20,-100 A 45 45 0 0 1 -40,-85 Z" fill="#FEF08A" opacity="0.9"/>
+
+    <!-- Colorful Turban -->
+    <ellipse cx="0" cy="-45" rx="58" ry="34" fill="#DC2626"/>
+    <ellipse cx="-15" cy="-52" rx="42" ry="24" fill="#F59E0B"/>
+    <ellipse cx="18" cy="-50" rx="38" ry="22" fill="#10B981"/>
+    <!-- Turban Gem & Plume -->
+    <ellipse cx="0" cy="-56" rx="8" ry="10" fill="#3B82F6"/>
+    <circle cx="0" cy="-56" r="4" fill="#FFFFFF"/>
+    <path d="M0,-66 Q -8,-95 -20,-105 Q 0,-85 2,-66 Z" fill="#FDE047"/>
+
+    <!-- Friendly Face -->
+    <circle cx="0" cy="0" r="44" fill="#FED7AA"/>
+    <!-- Cheerful Big Eyes -->
+    <ellipse cx="-16" cy="-4" rx="7" ry="9" fill="#FFFFFF"/>
+    <ellipse cx="16" cy="-4" rx="7" ry="9" fill="#FFFFFF"/>
+    <circle cx="-15" cy="-3" r="4" fill="#1E293B"/>
+    <circle cx="17" cy="-3" r="4" fill="#1E293B"/>
+    <circle cx="-13" cy="-5" r="1.5" fill="#FFFFFF"/>
+    <circle cx="19" cy="-5" r="1.5" fill="#FFFFFF"/>
+    <!-- Rosy Cheeks -->
+    <ellipse cx="-26" cy="10" rx="6" ry="4" fill="#FB7185" opacity="0.7"/>
+    <ellipse cx="26" cy="10" rx="6" ry="4" fill="#FB7185" opacity="0.7"/>
+    <!-- Quirky Mustache -->
+    <path d="M-22,12 Q -8,18 0,14 Q 8,18 22,12 Q 28,6 30,12 Q 18,25 0,18 Q -18,25 -30,12 Q -28,6 -22,12 Z" fill="#475569"/>
+    <!-- Big Smile -->
+    <path d="M-12,22 Q 0,34 12,22 Z" fill="#DC2626"/>
+    <!-- Traditional Vest & Kurta Collar -->
+    <path d="M-36,36 L-44,70 L44,70 L36,36 Q 0,48 -36,36 Z" fill="#4338CA"/>
+    <polygon points="0,42 -10,70 10,70" fill="#FDE047"/>
+  </g>
+
+  <!-- Urdu Nastaliq Banner -->
+  <rect x="40" y="300" width="320" height="36" rx="10" fill="#78350F" opacity="0.6"/>
+  <text x="200" y="325" font-family="'Jameel Noori Nastaleeq', 'Urdu Typesetting', Arial, sans-serif" font-size="20" font-weight="bold" fill="#FEF08A" text-anchor="middle">
+    شیخ چلی کے دلچسپ اور مزاحیہ قصے
+  </text>
+
+  <!-- Main English Title -->
+  <text x="200" y="375" font-family="'Segoe UI', Roboto, sans-serif" font-size="24" font-weight="900" fill="#FFFFFF" text-anchor="middle" letter-spacing="-0.5" filter="url(#shadow)">
+    SHEIKH CHILLI
+  </text>
+  <text x="200" y="405" font-family="'Segoe UI', Roboto, sans-serif" font-size="20" font-weight="800" fill="#FEF08A" text-anchor="middle" letter-spacing="0.5" filter="url(#shadow)">
+    KE QISSAY
+  </text>
+  <text x="200" y="430" font-family="'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="600" fill="#FFFBEB" text-anchor="middle">
+    Illustrated Folk Tales of Wit &amp; Humor
+  </text>
+
+  <!-- Divider -->
+  <line x1="80" y1="448" x2="320" y2="448" stroke="#FDE68A" stroke-width="1.5" stroke-linecap="round" opacity="0.7"/>
+
+  <!-- Author & Classic Series -->
+  <text x="200" y="475" font-family="'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="700" fill="#FFFFFF" text-anchor="middle">
+    By Sufi Ghulam Mustafa Tabassum
+  </text>
+  <text x="200" y="495" font-family="'Segoe UI', Roboto, sans-serif" font-size="11" font-weight="500" fill="#FEF3C7" text-anchor="middle">
+    adapted from Traditional Pakistan Folk Lore
+  </text>
+
+  <!-- Bottom Publisher Seal -->
+  <g transform="translate(200, 526)">
+    <rect x="-85" y="-14" width="170" height="22" rx="11" fill="#78350F"/>
+    <text x="0" y="2" font-family="'Segoe UI', Roboto, sans-serif" font-size="9" font-weight="800" fill="#FEF08A" text-anchor="middle" letter-spacing="0.8">
+      FEROZSONS CHILDREN CLASSIC
+    </text>
+  </g>
+</svg>
