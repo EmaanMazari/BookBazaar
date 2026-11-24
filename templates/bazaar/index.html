@@ -21,15 +21,15 @@
             </div>
         </a>
 
-        <!-- Main Navigation Links (Center) -->
+        <!-- Main Navigation Links (Center: Clean Single Navigation Bar) -->
         <nav class="hidden md:flex items-center gap-1 lg:gap-2">
             <button type="button" onclick="switchTab('home')" class="nav-tab active px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold text-white hover:bg-white/10 transition-colors flex items-center gap-1.5" data-tab="home">
                 <i class="fa-solid fa-house text-xs text-blue-400"></i>
                 <span>Home</span>
             </button>
-            <button type="button" onclick="switchTab('home'); scrollToBrowse();" class="nav-tab px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold text-blue-100 hover:text-white hover:bg-white/10 transition-colors flex items-center gap-1.5">
-                <i class="fa-solid fa-book-open text-xs text-blue-400"></i>
-                <span>Browse Books</span>
+            <button type="button" onclick="openBarcodeScanner()" class="nav-tab px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold text-blue-100 hover:text-white hover:bg-white/10 transition-colors flex items-center gap-1.5" data-tab="scan" id="nav-scan-btn">
+                <i class="fa-solid fa-barcode text-xs text-blue-400"></i>
+                <span>Scan ISBN</span>
             </button>
             <button type="button" onclick="openSellSection()" class="nav-tab px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold text-blue-100 hover:text-white hover:bg-white/10 transition-colors flex items-center gap-1.5" data-tab="sell">
                 <i class="fa-solid fa-circle-plus text-xs text-amber-300"></i>
@@ -131,8 +131,8 @@
         <button onclick="switchTab('home'); toggleMobileNavMenu();" class="w-full text-left py-2 px-3 rounded-lg text-white font-bold hover:bg-white/10 flex items-center gap-2">
             <i class="fa-solid fa-house text-blue-400"></i> <span>Home</span>
         </button>
-        <button onclick="switchTab('home'); scrollToBrowse(); toggleMobileNavMenu();" class="w-full text-left py-2 px-3 rounded-lg text-blue-100 font-bold hover:bg-white/10 flex items-center gap-2">
-            <i class="fa-solid fa-book-open text-blue-400"></i> <span>Browse Books</span>
+        <button onclick="openBarcodeScanner(); toggleMobileNavMenu();" class="w-full text-left py-2 px-3 rounded-lg text-blue-100 font-bold hover:bg-white/10 flex items-center gap-2">
+            <i class="fa-solid fa-barcode text-blue-400"></i> <span>Scan ISBN Barcode</span>
         </button>
         <button onclick="openSellSection(); toggleMobileNavMenu();" class="w-full text-left py-2 px-3 rounded-lg text-blue-100 font-bold hover:bg-white/10 flex items-center gap-2">
             <i class="fa-solid fa-circle-plus text-amber-300"></i> <span>Sell / Donate</span>
@@ -192,15 +192,20 @@
                         </div>
                     </div>
 
-                    <!-- Two Clear Primary CTA Buttons (Requirement 3) -->
+                    <!-- Clear Primary CTA Buttons -->
                     <div class="flex flex-wrap items-center justify-center gap-3 sm:gap-4 mt-6">
                         <button type="button" id="hero-browse-btn" onclick="scrollToBrowse()" 
-                                class="px-6 py-3 bg-white hover:bg-blue-50 text-blue-900 font-extrabold rounded-xl text-xs sm:text-sm shadow-md hover:shadow-lg transition-all flex items-center gap-2 active:scale-95">
+                                class="px-5 sm:px-6 py-2.5 sm:py-3 bg-white hover:bg-blue-50 text-blue-900 font-extrabold rounded-xl text-xs sm:text-sm shadow-md hover:shadow-lg transition-all flex items-center gap-2 active:scale-95">
                             <i class="fa-solid fa-book-open text-blue-600"></i>
                             <span>Browse Books</span>
                         </button>
+                        <button type="button" id="hero-scan-btn" onclick="openBarcodeScanner()" 
+                                class="px-5 sm:px-6 py-2.5 sm:py-3 bg-blue-500/30 hover:bg-blue-500/50 text-white font-extrabold rounded-xl text-xs sm:text-sm border border-white/30 backdrop-blur-xs shadow-md hover:shadow-lg transition-all flex items-center gap-2 active:scale-95">
+                            <i class="fa-solid fa-barcode text-blue-200"></i>
+                            <span data-i18n="scan_now_btn">Scan Barcode</span>
+                        </button>
                         <button type="button" id="hero-sell-btn" onclick="openSellSection()" 
-                                class="px-6 py-3 bg-blue-600/40 hover:bg-blue-600/60 text-white font-extrabold rounded-xl text-xs sm:text-sm border border-white/30 backdrop-blur-xs shadow-md hover:shadow-lg transition-all flex items-center gap-2 active:scale-95">
+                                class="px-5 sm:px-6 py-2.5 sm:py-3 bg-blue-600/40 hover:bg-blue-600/60 text-white font-extrabold rounded-xl text-xs sm:text-sm border border-white/30 backdrop-blur-xs shadow-md hover:shadow-lg transition-all flex items-center gap-2 active:scale-95">
                             <i class="fa-solid fa-gift text-amber-300"></i>
                             <span>Sell / Donate a Book</span>
                         </button>
@@ -525,94 +530,165 @@
             <!-- TAB 2: BARCODE (ISBN) SCANNER & PRICE COMPARISON -->
             <!-- ============================================== -->
             <section id="tab-scan" class="tab-page hidden w-full flex flex-col">
-                <div class="bg-white rounded-2xl border border-blue-100 p-4 shadow-sm mb-4">
-                    <div class="flex items-center justify-between mb-3">
-                        <div>
-                            <h2 class="text-sm font-extrabold text-slate-900 flex items-center gap-1.5" data-i18n="scan_title">
-                                <i class="fa-solid fa-barcode text-blue-700"></i> Scan Book Barcode
-                            </h2>
-                            <p class="text-[11px] text-slate-500 mt-0.5" data-i18n="scan_desc">
-                                Point camera at the ISBN barcode on the back of any textbook.
-                            </p>
+                <div class="bg-white rounded-2xl border border-blue-100 p-5 sm:p-6 shadow-sm mb-4">
+                    <!-- Scanner Header with Back Button and Flashlight -->
+                    <div class="flex items-center justify-between pb-3.5 mb-4 border-b border-slate-100">
+                        <div class="flex items-center gap-3">
+                            <button type="button" onclick="switchTab('home')" class="w-8 h-8 rounded-xl bg-slate-100 hover:bg-blue-50 hover:text-blue-700 text-slate-600 flex items-center justify-center text-xs transition-colors" title="Back to Home">
+                                <i class="fa-solid fa-arrow-left"></i>
+                            </button>
+                            <div>
+                                <h2 class="text-base font-extrabold text-slate-900 flex items-center gap-2" data-i18n="scan_title">
+                                    <i class="fa-solid fa-barcode text-blue-600"></i> Scan Book Barcode
+                                </h2>
+                                <p class="text-xs text-slate-500 mt-0.5" data-i18n="scan_desc">
+                                    Point camera at the ISBN barcode, upload a photo, or lookup any textbook instantly.
+                                </p>
+                            </div>
                         </div>
-                        <button id="torch-btn" onclick="toggleTorch()" class="p-2 bg-slate-100 hover:bg-blue-50 hover:text-blue-700 rounded-lg text-slate-700 text-xs font-semibold transition-colors" title="Flashlight Torch">
-                            <i class="fa-solid fa-lightbulb"></i>
-                        </button>
+                        <div class="flex items-center gap-2">
+                            <button id="torch-btn" type="button" onclick="toggleTorch()" class="p-2 bg-slate-100 hover:bg-amber-50 hover:text-amber-700 text-slate-600 rounded-xl text-xs font-semibold transition-colors" title="Flashlight Torch">
+                                <i class="fa-solid fa-lightbulb"></i>
+                            </button>
+                        </div>
                     </div>
 
-                    <!-- Camera Scanner Viewport Simulator -->
-                    <div class="scanner-container bg-slate-900 rounded-xl h-52 relative flex items-center justify-center overflow-hidden border-2 border-slate-800">
-                        <video id="scanner-video" autoplay playsinline class="w-full h-full object-cover"></video>
-                        <div class="scanner-laser"></div>
+                    <!-- Camera Scanner Viewport & Photo Upload Surface -->
+                    <div id="scanner-viewport" class="scanner-container bg-slate-950 rounded-2xl h-60 sm:h-72 relative flex items-center justify-center overflow-hidden border-2 border-slate-800 shadow-inner">
+                        <!-- Live Video Feed -->
+                        <video id="scanner-video" autoplay playsinline muted class="w-full h-full object-cover hidden"></video>
+
+                        <!-- Uploaded Image Preview -->
+                        <img id="scanner-preview-img" class="w-full h-full object-contain hidden" alt="Uploaded Barcode Preview">
+
+                        <!-- Inactive Camera Placeholder -->
+                        <div id="scanner-placeholder" class="flex flex-col items-center justify-center text-center p-6 text-slate-400 select-none">
+                            <div class="w-16 h-16 rounded-2xl bg-slate-800/80 text-blue-400 flex items-center justify-center text-2xl mb-3 shadow-md border border-slate-700/60">
+                                <i class="fa-solid fa-camera"></i>
+                            </div>
+                            <h4 class="text-sm font-extrabold text-white">Live Camera is Inactive</h4>
+                            <p class="text-xs text-slate-400 mt-1 max-w-sm">Click "Start Live Camera" to scan in real-time, or upload a photo of the book barcode.</p>
+                            <div class="flex items-center gap-2.5 mt-4">
+                                <button type="button" onclick="toggleCameraScanner()" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl text-xs flex items-center gap-1.5 shadow-sm transition-all active:scale-95">
+                                    <i class="fa-solid fa-video"></i> Start Live Camera
+                                </button>
+                                <label for="scan-file-input" class="cursor-pointer px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold rounded-xl text-xs flex items-center gap-1.5 border border-slate-700 transition-all active:scale-95">
+                                    <i class="fa-solid fa-cloud-arrow-up text-blue-400"></i> Upload Photo
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Animated Laser Line -->
+                        <div id="scanner-laser" class="scanner-laser hidden pointer-events-none"></div>
                         
-                        <!-- Target Box Corners -->
-                        <div class="absolute inset-x-8 inset-y-6 border-2 border-blue-400/80 rounded-lg pointer-events-none flex flex-col justify-between p-2">
+                        <!-- Target Box Corners & Center Reticle -->
+                        <div id="scanner-guide" class="absolute inset-x-8 sm:inset-x-24 inset-y-6 sm:inset-y-10 border border-blue-400/40 rounded-xl pointer-events-none flex flex-col justify-between p-3 hidden">
                             <div class="flex justify-between">
-                                <span class="w-4 h-4 border-t-2 border-l-2 border-blue-400"></span>
-                                <span class="w-4 h-4 border-t-2 border-r-2 border-blue-400"></span>
+                                <span class="w-5 h-5 border-t-2 border-l-2 border-blue-400 rounded-tl"></span>
+                                <span class="w-5 h-5 border-t-2 border-r-2 border-blue-400 rounded-tr"></span>
                             </div>
-                            <p class="text-center text-[10px] text-blue-300 font-mono bg-black/60 py-0.5 rounded px-2 self-center">
-                                ALIGN ISBN-13 BARCODE
-                            </p>
+                            <div class="text-center">
+                                <span class="text-[10px] text-blue-300 font-mono font-bold bg-black/70 py-1 px-3 rounded-full backdrop-blur-xs border border-blue-400/30">
+                                    ALIGN ISBN-13 BARCODE
+                                </span>
+                            </div>
                             <div class="flex justify-between">
-                                <span class="w-4 h-4 border-b-2 border-l-2 border-blue-400"></span>
-                                <span class="w-4 h-4 border-b-2 border-r-2 border-blue-400"></span>
+                                <span class="w-5 h-5 border-b-2 border-l-2 border-blue-400 rounded-bl"></span>
+                                <span class="w-5 h-5 border-b-2 border-r-2 border-blue-400 rounded-br"></span>
                             </div>
                         </div>
+
+                        <!-- Off-screen Canvas for Frame Capture & Decoding -->
+                        <canvas id="scanner-canvas" class="hidden"></canvas>
                     </div>
 
-                    <!-- Camera Control Button -->
-                    <div class="mt-2.5 flex items-center justify-between">
-                        <button onclick="toggleCameraScanner()" class="px-3 py-1.5 bg-blue-900 hover:bg-blue-800 text-white rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-colors">
-                            <i class="fa-solid fa-camera"></i> Toggle Live Camera
+                    <!-- Scanner Controls Toolbar -->
+                    <div class="mt-3 flex flex-wrap items-center justify-between gap-2.5">
+                        <div class="flex items-center flex-wrap gap-2">
+                            <!-- Toggle Camera Button -->
+                            <button type="button" id="toggle-camera-btn" onclick="toggleCameraScanner()" 
+                                    class="px-4 py-2 bg-blue-700 hover:bg-blue-800 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-sm transition-all active:scale-95">
+                                <i class="fa-solid fa-video" id="camera-btn-icon"></i>
+                                <span id="camera-btn-text">Start Live Camera</span>
+                            </button>
+
+                            <!-- Manual Snapshot / Capture & Scan Button (active during live video) -->
+                            <button type="button" id="capture-scan-btn" onclick="captureAndScanBarcode()" 
+                                    class="hidden px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-sm transition-all active:scale-95">
+                                <i class="fa-solid fa-camera-retro"></i>
+                                <span>Capture & Scan Frame</span>
+                            </button>
+
+                            <!-- Upload Book/Barcode Photo Button -->
+                            <label for="scan-file-input" 
+                                   class="cursor-pointer px-4 py-2 bg-slate-100 hover:bg-blue-50 text-slate-700 hover:text-blue-700 border border-slate-200 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all active:scale-95">
+                                <i class="fa-solid fa-cloud-arrow-up text-blue-600"></i>
+                                <span>Upload Barcode Photo</span>
+                            </label>
+                            <input type="file" id="scan-file-input" accept="image/*" class="hidden" onchange="handleScanImageUpload(event)">
+                        </div>
+
+                        <!-- Reset / Clear Preview Button -->
+                        <button type="button" id="scanner-reset-btn" onclick="resetScannerView()" 
+                                class="hidden text-xs text-slate-500 hover:text-blue-700 font-semibold px-2.5 py-1.5 rounded-lg hover:bg-slate-50 transition-colors">
+                            <i class="fa-solid fa-rotate-left mr-1"></i> Reset View
                         </button>
-                        <span id="scanner-status" class="text-[11px] text-slate-500 italic">Click quick test buttons below for instant scan</span>
+                    </div>
+
+                    <!-- Live Scanner Status Feedback Card -->
+                    <div id="scanner-status-card" class="mt-3 p-3 bg-slate-50 border border-slate-200 rounded-xl flex items-center justify-between text-xs transition-colors">
+                        <div class="flex items-center gap-2.5">
+                            <span id="scanner-pulse" class="w-2.5 h-2.5 rounded-full bg-slate-400 shrink-0"></span>
+                            <span id="scanner-status" class="text-slate-600 font-medium">Ready. Turn on camera, upload a photo, or enter an ISBN below.</span>
+                        </div>
+                        <span id="scan-feedback-badge" class="hidden text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-blue-100 text-blue-800 border border-blue-200"></span>
                     </div>
 
                     <!-- Manual ISBN Entry -->
-                    <div class="mt-4 pt-3 border-t border-slate-100">
-                        <label class="block text-xs font-bold text-slate-700 mb-1" data-i18n="manual_entry">
+                    <div class="mt-5 pt-4 border-t border-slate-100">
+                        <label class="block text-xs font-bold text-slate-700 mb-1.5" data-i18n="manual_entry">
                             Or Enter ISBN Number Manually
                         </label>
                         <div class="flex gap-2">
                             <input type="text" id="manual-isbn-input" placeholder="e.g. 9780132350884" 
                                    onkeydown="if(event.key==='Enter'){event.preventDefault(); scanIsbnQuery(this.value);}"
-                                   class="flex-1 px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs font-mono focus:ring-2 focus:ring-blue-500 focus:outline-none">
-                            <button onclick="scanIsbnQuery(document.getElementById('manual-isbn-input').value)" 
-                                    class="px-4 py-2 bg-blue-700 hover:bg-blue-800 text-white rounded-xl text-xs font-bold shadow-xs transition-colors">
-                                Lookup
+                                   class="flex-1 px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs font-mono focus:ring-2 focus:ring-blue-500 focus:bg-white focus:outline-none transition-colors">
+                            <button type="button" id="manual-lookup-btn" onclick="scanIsbnQuery(document.getElementById('manual-isbn-input').value)" 
+                                    class="px-5 py-2.5 bg-blue-700 hover:bg-blue-800 text-white rounded-xl text-xs font-bold shadow-xs transition-colors flex items-center gap-1.5 active:scale-95">
+                                <i class="fa-solid fa-magnifying-glass text-xs"></i>
+                                <span>Lookup</span>
                             </button>
                         </div>
                     </div>
 
-                    <!-- Sample Books for Instant Lookup -->
-                    <div class="mt-4 pt-3 border-t border-slate-100">
-                        <span class="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-2">
+                    <!-- Sample Books for Instant Testing -->
+                    <div class="mt-5 pt-4 border-t border-slate-100">
+                        <span class="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-2.5">
                             <i class="fa-solid fa-wand-magic-sparkles text-amber-500 mr-1"></i> Sample Books (Click to Test Instant Lookup):
                         </span>
-                        <div class="grid grid-cols-2 gap-1.5">
-                            <button onclick="scanIsbnQuery('9780132350884')" class="text-left p-2.5 bg-blue-50/70 hover:bg-blue-100 rounded-xl border border-blue-200 text-xs transition-colors">
-                                <span class="font-bold text-blue-950 block truncate">Clean Code (Agile)</span>
+                        <div class="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                            <button type="button" onclick="quickScanSampleBook('9780132350884')" class="text-left p-3 bg-blue-50/70 hover:bg-blue-100 rounded-xl border border-blue-200 text-xs transition-all hover:shadow-xs group">
+                                <span class="font-bold text-blue-950 block truncate group-hover:text-blue-800">Clean Code (Agile)</span>
                                 <span class="text-[10px] text-blue-700 font-mono">9780132350884</span>
                             </button>
-                            <button onclick="scanIsbnQuery('9780078022128')" class="text-left p-2.5 bg-blue-50/70 hover:bg-blue-100 rounded-xl border border-blue-200 text-xs transition-colors">
-                                <span class="font-bold text-blue-950 block truncate">Software Eng. (Pressman)</span>
+                            <button type="button" onclick="quickScanSampleBook('9780078022128')" class="text-left p-3 bg-blue-50/70 hover:bg-blue-100 rounded-xl border border-blue-200 text-xs transition-all hover:shadow-xs group">
+                                <span class="font-bold text-blue-950 block truncate group-hover:text-blue-800">Software Eng. (Pressman)</span>
                                 <span class="text-[10px] text-blue-700 font-mono">9780078022128</span>
                             </button>
-                            <button onclick="scanIsbnQuery('9781118063330')" class="text-left p-2.5 bg-blue-50/70 hover:bg-blue-100 rounded-xl border border-blue-200 text-xs transition-colors">
-                                <span class="font-bold text-blue-950 block truncate">Operating Systems (Silb.)</span>
+                            <button type="button" onclick="quickScanSampleBook('9781118063330')" class="text-left p-3 bg-blue-50/70 hover:bg-blue-100 rounded-xl border border-blue-200 text-xs transition-all hover:shadow-xs group">
+                                <span class="font-bold text-blue-950 block truncate group-hover:text-blue-800">Operating Systems (Silb.)</span>
                                 <span class="text-[10px] text-blue-700 font-mono">9781118063330</span>
                             </button>
-                            <button onclick="scanIsbnQuery('9780262033848')" class="text-left p-2.5 bg-blue-50/70 hover:bg-blue-100 rounded-xl border border-blue-200 text-xs transition-colors">
-                                <span class="font-bold text-blue-950 block truncate">Algorithms (CLRS)</span>
+                            <button type="button" onclick="quickScanSampleBook('9780262033848')" class="text-left p-3 bg-blue-50/70 hover:bg-blue-100 rounded-xl border border-blue-200 text-xs transition-all hover:shadow-xs group">
+                                <span class="font-bold text-blue-950 block truncate group-hover:text-blue-800">Algorithms (CLRS)</span>
                                 <span class="text-[10px] text-blue-700 font-mono">9780262033848</span>
                             </button>
-                            <button onclick="scanIsbnQuery('9789694370002')" class="text-left p-2.5 bg-slate-50 hover:bg-blue-50 rounded-xl border border-slate-200 text-xs transition-colors">
-                                <span class="font-bold text-slate-900 block truncate">Peer-e-Kamil (Novel)</span>
+                            <button type="button" onclick="quickScanSampleBook('9789694370002')" class="text-left p-3 bg-slate-50 hover:bg-blue-50 rounded-xl border border-slate-200 text-xs transition-all hover:shadow-xs group">
+                                <span class="font-bold text-slate-900 block truncate group-hover:text-blue-800">Peer-e-Kamil (Novel)</span>
                                 <span class="text-[10px] text-blue-700 font-mono">9789694370002</span>
                             </button>
-                            <button onclick="scanIsbnQuery('9789695840123')" class="text-left p-2.5 bg-slate-50 hover:bg-blue-50 rounded-xl border border-slate-200 text-xs transition-colors">
-                                <span class="font-bold text-slate-900 block truncate">ICS Computer Class 12 PTB</span>
+                            <button type="button" onclick="quickScanSampleBook('9789695840123')" class="text-left p-3 bg-slate-50 hover:bg-blue-50 rounded-xl border border-slate-200 text-xs transition-all hover:shadow-xs group">
+                                <span class="font-bold text-slate-900 block truncate group-hover:text-blue-800">ICS Computer 12 PTB</span>
                                 <span class="text-[10px] text-blue-700 font-mono">9789695840123</span>
                             </button>
                         </div>
@@ -620,9 +696,12 @@
                 </div>
 
                 <!-- Scanner Loading Spinner -->
-                <div id="scan-loader" class="hidden text-center py-6">
-                    <i class="fa-solid fa-spinner fa-spin text-2xl text-blue-700"></i>
-                    <p class="text-xs text-slate-600 mt-2 font-medium">Fetching book metadata & comparing seller offers...</p>
+                <div id="scan-loader" class="hidden text-center py-8">
+                    <div class="inline-flex items-center justify-center p-3 rounded-full bg-blue-50 text-blue-700 mb-2">
+                        <i class="fa-solid fa-spinner fa-spin text-2xl"></i>
+                    </div>
+                    <p class="text-xs text-slate-700 font-bold">Scanning & Comparing Book Prices...</p>
+                    <p class="text-[11px] text-slate-500 mt-0.5">Querying book catalog & active seller listings</p>
                 </div>
 
                 <!-- Dynamic Scan & Price Comparison Results -->
@@ -944,7 +1023,7 @@
 </main>
 
 <!-- Mobile Bottom Navigation Bar (Hidden on desktop - single top navigation bar only) -->
-<nav id="mobile-bottom-nav" class="md:hidden fixed bottom-0 inset-x-0 bg-white border-t border-slate-200 px-2 py-2 flex items-center justify-around z-40 shadow-lg">
+<nav id="mobile-bottom-nav" class="flex md:hidden lg:hidden xl:hidden 2xl:hidden fixed bottom-0 inset-x-0 bg-white border-t border-slate-200 px-2 py-2 items-center justify-around z-40 shadow-lg">
     <button onclick="switchTab('home')" class="nav-tab active flex flex-col items-center justify-center flex-1 py-1 text-blue-700" data-tab="home">
         <i class="fa-solid fa-house text-base"></i>
         <span class="text-[10px] mt-0.5" data-i18n="nav_home">Home</span>
@@ -1023,10 +1102,10 @@
                 </div>
             </div>
 
-            <!-- In-Modal Error Alert (Hidden by default) -->
-            <div id="unlock-error-banner" class="hidden bg-rose-50 border border-rose-200 text-rose-800 rounded-xl p-2.5 mb-3 text-xs flex items-center gap-2">
+            <!-- In-Modal Error Alert (Strictly hidden by default; only displayed on actual payment failure) -->
+            <div id="unlock-error-banner" class="hidden bg-rose-50 border border-rose-200 text-rose-800 rounded-xl p-2.5 mb-3 text-xs items-center gap-2" style="display: none !important;">
                 <i class="fa-solid fa-circle-exclamation text-rose-600 text-sm"></i>
-                <span id="unlock-error-message" class="text-[11px] font-semibold">Payment error occurred.</span>
+                <span id="unlock-error-message" class="text-[11px] font-semibold"></span>
             </div>
 
             <!-- Payment Method Selector (JazzCash, Easypaisa, Card, Wallet) -->

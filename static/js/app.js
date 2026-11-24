@@ -21,6 +21,8 @@ const STATE = {
     activeListingForUnlock: null,
     currentScanResult: null,
     cameraStream: null,
+    scanInterval: null,
+    barcodeDetector: null,
     torchOn: false
 };
 
@@ -363,163 +365,102 @@ function toggleViewMode() {
 }
 window.toggleViewMode = toggleViewMode;
 
-// Open/activate Scanner section, smoothly scroll down and focus manual input
+// Open/activate Scanner section, smoothly scroll up and focus manual input
 function openBarcodeScanner() {
-    STATE.activeTab = 'scan';
-
-    // Ensure tab-scan is visible
-    const scanSection = document.getElementById('tab-scan');
-    if (scanSection) {
-        scanSection.classList.remove('hidden');
-        scanSection.style.setProperty('display', 'flex', 'important');
-
-        // Smoothly scroll down to the scanner section
-        const scrollContainer = scanSection.closest('.overflow-y-auto') || document.querySelector('.app-content.overflow-y-auto');
-        if (scrollContainer) {
-            const topOffset = scanSection.offsetTop - 12;
-            scrollContainer.scrollTo({ top: Math.max(0, topOffset), behavior: 'smooth' });
-        } else {
-            scanSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }
-    }
-
-    // Highlight bottom nav scan tab
-    document.querySelectorAll('.nav-tab').forEach(tab => {
-        if (tab.getAttribute('data-tab') === 'scan') {
-            tab.classList.add('active', 'text-blue-700');
-            tab.classList.remove('text-slate-400');
-        } else if (tab.getAttribute('data-tab') === 'home') {
-            tab.classList.remove('active', 'text-blue-700');
-            tab.classList.add('text-slate-400');
-        }
-    });
-
-    // Smoothly focus manual ISBN input
-    setTimeout(() => {
-        const input = document.getElementById('manual-isbn-input');
-        if (input) {
-            input.focus();
-        }
-    }, 280);
+    switchTab('scan');
 }
 window.openBarcodeScanner = openBarcodeScanner;
+window.openScanModal = openBarcodeScanner;
+window.closeScanModal = () => switchTab('home');
 
-// Open/activate Sell or Donate section, smoothly scroll down and focus book title input
+// Open/activate Sell or Donate section
 function openSellSection() {
-    STATE.activeTab = 'sell';
-
-    // Ensure tab-sell is visible
-    const sellSection = document.getElementById('tab-sell');
-    if (sellSection) {
-        sellSection.classList.remove('hidden');
-        sellSection.style.setProperty('display', 'flex', 'important');
-
-        // Smoothly scroll down to the sell section
-        const scrollContainer = sellSection.closest('.overflow-y-auto') || document.querySelector('.app-content.overflow-y-auto');
-        if (scrollContainer) {
-            const topOffset = sellSection.offsetTop - 12;
-            scrollContainer.scrollTo({ top: Math.max(0, topOffset), behavior: 'smooth' });
-        } else {
-            sellSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }
-    }
-
-    // Highlight bottom nav sell tab
-    document.querySelectorAll('.nav-tab').forEach(tab => {
-        if (tab.getAttribute('data-tab') === 'sell') {
-            tab.classList.add('active', 'text-blue-700');
-            tab.classList.remove('text-slate-400');
-        } else if (tab.getAttribute('data-tab') === 'home') {
-            tab.classList.remove('active', 'text-blue-700');
-            tab.classList.add('text-slate-400');
-        }
-    });
-
-    // Smoothly focus book title input
-    setTimeout(() => {
-        const titleInput = document.getElementById('sell-title-input');
-        if (titleInput) {
-            titleInput.focus();
-        }
-    }, 280);
+    switchTab('sell');
 }
 window.openSellSection = openSellSection;
 
-// Open/activate My Deals & Unlocks section, smoothly scroll down and fetch deals
+// Open/activate My Deals & Unlocks section
 function openDealsSection() {
-    STATE.activeTab = 'deals';
-
-    // Ensure tab-deals is visible
-    const dealsSection = document.getElementById('tab-deals');
-    if (dealsSection) {
-        dealsSection.classList.remove('hidden');
-        dealsSection.style.setProperty('display', 'flex', 'important');
-
-        // Smoothly scroll down to the deals section
-        const scrollContainer = dealsSection.closest('.overflow-y-auto') || document.querySelector('.app-content.overflow-y-auto');
-        if (scrollContainer) {
-            const topOffset = dealsSection.offsetTop - 12;
-            scrollContainer.scrollTo({ top: Math.max(0, topOffset), behavior: 'smooth' });
-        } else {
-            dealsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }
-    }
-
-    // Highlight bottom nav deals tab
-    document.querySelectorAll('.nav-tab').forEach(tab => {
-        if (tab.getAttribute('data-tab') === 'deals') {
-            tab.classList.add('active', 'text-blue-700');
-            tab.classList.remove('text-slate-400');
-        } else if (tab.getAttribute('data-tab') === 'home') {
-            tab.classList.remove('active', 'text-blue-700');
-            tab.classList.add('text-slate-400');
-        }
-    });
-
-    if (typeof loadUserDeals === 'function') {
-        loadUserDeals();
-    }
+    switchTab('deals');
 }
 window.openDealsSection = openDealsSection;
 
-// Tab Switching
+// Tab Switching (Centralized & Clean)
 function switchTab(tabId) {
-    if (tabId === 'scan') {
-        openBarcodeScanner();
-        return;
+    // If navigating away from scanner and camera is active, turn it off
+    if (STATE.activeTab === 'scan' && tabId !== 'scan') {
+        if (typeof stopCameraScanner === 'function') {
+            stopCameraScanner();
+        }
     }
-    if (tabId === 'sell') {
-        openSellSection();
-        return;
-    }
-    if (tabId === 'deals') {
-        openDealsSection();
-        return;
-    }
-    STATE.activeTab = tabId;
-    document.querySelectorAll('.tab-page').forEach(page => page.classList.add('hidden'));
-    const targetPage = document.getElementById(`tab-${tabId}`);
-    if (targetPage) targetPage.classList.remove('hidden');
 
+    STATE.activeTab = tabId;
+
+    // Cleanly hide all tab sections and remove any conflicting inline display styles
+    document.querySelectorAll('.tab-page').forEach(page => {
+        page.classList.add('hidden');
+        page.style.removeProperty('display');
+    });
+
+    const targetPage = document.getElementById(`tab-${tabId}`);
+    if (targetPage) {
+        targetPage.classList.remove('hidden');
+        targetPage.style.display = 'flex';
+    }
+
+    // Scroll smoothly to top of viewport
+    window.scrollTo({ top: 0, behavior: 'smooth' });
     const scrollContainer = document.querySelector('.app-content.overflow-y-auto') || document.querySelector('.overflow-y-auto');
-    if (scrollContainer && (tabId === 'home' || tabId === 'profile')) {
+    if (scrollContainer) {
         scrollContainer.scrollTop = 0;
     }
 
+    // Update active nav link styling across desktop header and mobile bottom bar
     document.querySelectorAll('.nav-tab').forEach(tab => {
+        const isHeader = Boolean(tab.closest('header'));
         if (tab.getAttribute('data-tab') === tabId) {
-            tab.classList.add('active', 'text-blue-700');
-            tab.classList.remove('text-slate-400');
+            tab.classList.add('active');
+            if (isHeader) {
+                tab.classList.add('text-white', 'bg-white/10');
+                tab.classList.remove('text-blue-100');
+            } else {
+                tab.classList.add('text-blue-700');
+                tab.classList.remove('text-slate-400');
+            }
         } else {
-            tab.classList.remove('active', 'text-blue-700');
-            tab.classList.add('text-slate-400');
+            tab.classList.remove('active');
+            if (isHeader) {
+                tab.classList.remove('text-white', 'bg-white/10');
+                tab.classList.add('text-blue-100');
+            } else {
+                tab.classList.remove('text-blue-700');
+                tab.classList.add('text-slate-400');
+            }
         }
     });
 
-    if (tabId === 'profile') {
-        loadMySellerListings();
+    // Tab-specific initializations
+    if (tabId === 'scan') {
+        setTimeout(() => {
+            const input = document.getElementById('manual-isbn-input');
+            if (input) input.focus();
+        }, 150);
+    } else if (tabId === 'sell') {
+        setTimeout(() => {
+            const titleInput = document.getElementById('sell-title-input');
+            if (titleInput) titleInput.focus();
+        }, 150);
+    } else if (tabId === 'deals') {
+        if (typeof loadUserDeals === 'function') {
+            loadUserDeals();
+        }
+    } else if (tabId === 'profile') {
+        if (typeof loadMySellerListings === 'function') {
+            loadMySellerListings();
+        }
     }
 }
+window.switchTab = switchTab;
 
 // Dedicated Reusable Book Card Component
 // Dedicated Reusable Minimalist Book Card Component (Requirement 5)
@@ -931,32 +872,682 @@ async function trackAdClick(adId) {
     }
 }
 
-// Barcode Scanner & Price Comparison
-async function scanIsbnQuery(isbn) {
+// ==========================================
+// BARCODE (ISBN) SCANNER, CAMERA & UPLOAD PROCESSING
+// ==========================================
+
+async function initBarcodeDetector() {
+    if ('BarcodeDetector' in window) {
+        try {
+            const supported = await BarcodeDetector.getSupportedFormats();
+            const preferred = ['ean_13', 'ean_8', 'upc_a', 'upc_e', 'code_128', 'code_39', 'qr_code'];
+            const formats = preferred.filter(f => supported.includes(f));
+            if (formats.length > 0) {
+                STATE.barcodeDetector = new BarcodeDetector({ formats });
+            }
+        } catch (e) {
+            console.warn("BarcodeDetector setup error:", e);
+        }
+    }
+}
+
+// Pure JS EAN-13 / UPC Barcode Decoder Fallback
+function decodeEan13Scanline(imgData, width) {
+    if (!imgData || width < 100) return null;
+
+    const gray = new Uint8Array(width);
+    let sumGray = 0;
+    for (let x = 0; x < width; x++) {
+        const idx = x * 4;
+        const g = (imgData[idx] * 299 + imgData[idx + 1] * 587 + imgData[idx + 2] * 114) / 1000;
+        gray[x] = g;
+        sumGray += g;
+    }
+    const threshold = sumGray / width;
+
+    const runs = [];
+    let curBit = gray[0] < threshold ? 1 : 0;
+    let curLen = 0;
+    for (let x = 0; x < width; x++) {
+        const bit = gray[x] < threshold ? 1 : 0;
+        if (bit === curBit) {
+            curLen++;
+        } else {
+            runs.push({ bit: curBit, len: curLen });
+            curBit = bit;
+            curLen = 1;
+        }
+    }
+    runs.push({ bit: curBit, len: curLen });
+
+    if (runs.length < 59) return null;
+
+    const L_CODES = ['0001101', '0011001', '0010011', '0111101', '0100011', '0110001', '0101111', '0111011', '0110111', '0001011'];
+    const G_CODES = ['0100111', '0110011', '0011011', '0100001', '0011101', '0111001', '0000101', '0010001', '0001001', '0010111'];
+    const R_CODES = ['1110010', '1100110', '1101100', '1000010', '1011100', '1001110', '1010000', '1000100', '1001000', '1110100'];
+    const FIRST_DIGIT_PARITY = [
+        'LLLLLL', 'LLGLGG', 'LLGGLG', 'LLGGGL', 'LGLLGG',
+        'LGGLLG', 'LGGGLL', 'LGLGLG', 'LGLGGL', 'LGGLGL'
+    ];
+
+    function matchPattern(fourRuns, moduleWidth, isRight) {
+        let pattern = '';
+        for (let r = 0; r < 4; r++) {
+            const count = Math.max(1, Math.min(4, Math.round(fourRuns[r].len / moduleWidth)));
+            pattern += String(fourRuns[r].bit).repeat(count);
+        }
+        if (pattern.length !== 7) return null;
+
+        if (isRight) {
+            const idx = R_CODES.indexOf(pattern);
+            return idx !== -1 ? { digit: idx, parity: 'R' } : null;
+        } else {
+            let idx = L_CODES.indexOf(pattern);
+            if (idx !== -1) return { digit: idx, parity: 'L' };
+            idx = G_CODES.indexOf(pattern);
+            if (idx !== -1) return { digit: idx, parity: 'G' };
+            return null;
+        }
+    }
+
+    for (let i = 1; i < runs.length - 58; i++) {
+        if (runs[i].bit === 1 && runs[i + 1].bit === 0 && runs[i + 2].bit === 1) {
+            const moduleWidth = (runs[i].len + runs[i + 1].len + runs[i + 2].len) / 3;
+            if (moduleWidth < 0.5) continue;
+
+            let idx = i + 3;
+            const leftDigits = [];
+            const leftParity = [];
+            let valid = true;
+
+            for (let d = 0; d < 6; d++) {
+                if (idx + 3 >= runs.length) { valid = false; break; }
+                const res = matchPattern([runs[idx], runs[idx + 1], runs[idx + 2], runs[idx + 3]], moduleWidth, false);
+                if (!res) { valid = false; break; }
+                leftDigits.push(res.digit);
+                leftParity.push(res.parity);
+                idx += 4;
+            }
+            if (!valid) continue;
+
+            if (idx + 4 >= runs.length || runs[idx].bit !== 0 || runs[idx + 1].bit !== 1 || runs[idx + 2].bit !== 0 || runs[idx + 3].bit !== 1 || runs[idx + 4].bit !== 0) {
+                continue;
+            }
+            idx += 5;
+
+            const rightDigits = [];
+            for (let d = 0; d < 6; d++) {
+                if (idx + 3 >= runs.length) { valid = false; break; }
+                const res = matchPattern([runs[idx], runs[idx + 1], runs[idx + 2], runs[idx + 3]], moduleWidth, true);
+                if (!res) { valid = false; break; }
+                rightDigits.push(res.digit);
+                idx += 4;
+            }
+            if (!valid) continue;
+
+            const parityStr = leftParity.join('');
+            const firstDigit = FIRST_DIGIT_PARITY.indexOf(parityStr);
+            if (firstDigit === -1) continue;
+
+            const allDigits = [firstDigit, ...leftDigits, ...rightDigits];
+            let sum = 0;
+            for (let k = 0; k < 12; k++) {
+                sum += allDigits[k] * (k % 2 === 0 ? 1 : 3);
+            }
+            const check = (10 - (sum % 10)) % 10;
+            if (check === allDigits[12]) {
+                return allDigits.join('');
+            }
+        }
+    }
+    return null;
+}
+
+function decodeBarcodeFromCanvas(canvas) {
+    if (!canvas || canvas.width === 0 || canvas.height === 0) return null;
+    const ctx = canvas.getContext('2d', { willReadFrequently: true });
+    if (!ctx) return null;
+
+    const width = canvas.width;
+    const height = canvas.height;
+    const scanRows = [
+        Math.floor(height * 0.5),
+        Math.floor(height * 0.4),
+        Math.floor(height * 0.6),
+        Math.floor(height * 0.45),
+        Math.floor(height * 0.55),
+        Math.floor(height * 0.35),
+        Math.floor(height * 0.65)
+    ];
+
+    for (const y of scanRows) {
+        const imgData = ctx.getImageData(0, y, width, 1).data;
+        const result = decodeEan13Scanline(imgData, width);
+        if (result && result.length >= 12) {
+            return result;
+        }
+    }
+    return null;
+}
+
+// Toggle Live Camera Stream
+async function toggleCameraScanner() {
+    if (STATE.cameraStream) {
+        stopCameraScanner();
+        return;
+    }
+
+    const video = document.getElementById('scanner-video');
+    const placeholder = document.getElementById('scanner-placeholder');
+    const previewImg = document.getElementById('scanner-preview-img');
+    const laser = document.getElementById('scanner-laser');
+    const guide = document.getElementById('scanner-guide');
+    const captureBtn = document.getElementById('capture-scan-btn');
+    const resetBtn = document.getElementById('scanner-reset-btn');
+    const cameraBtnText = document.getElementById('camera-btn-text');
+    const cameraBtnIcon = document.getElementById('camera-btn-icon');
+    const status = document.getElementById('scanner-status');
+    const pulse = document.getElementById('scanner-pulse');
+    const feedbackBadge = document.getElementById('scan-feedback-badge');
+
+    if (feedbackBadge) feedbackBadge.classList.add('hidden');
+
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        if (status) {
+            status.innerHTML = `<span class="text-rose-600 font-bold"><i class="fa-solid fa-circle-exclamation"></i> Camera API not supported in this browser. Please use photo upload or manual lookup!</span>`;
+        }
+        return;
+    }
+
+    if (status) {
+        status.innerHTML = `<span class="text-blue-600 font-bold"><i class="fa-solid fa-spinner fa-spin"></i> Initializing camera stream...</span>`;
+    }
+
+    try {
+        const constraints = {
+            video: {
+                facingMode: { ideal: 'environment' },
+                width: { ideal: 1280 },
+                height: { ideal: 720 }
+            }
+        };
+
+        const stream = await navigator.mediaDevices.getUserMedia(constraints);
+        STATE.cameraStream = stream;
+
+        if (video) {
+            video.srcObject = stream;
+            video.classList.remove('hidden');
+            await video.play().catch(e => console.warn("Video play error:", e));
+        }
+
+        if (placeholder) placeholder.classList.add('hidden');
+        if (previewImg) previewImg.classList.add('hidden');
+        if (laser) laser.classList.remove('hidden');
+        if (guide) guide.classList.remove('hidden');
+        if (captureBtn) captureBtn.classList.remove('hidden');
+        if (resetBtn) resetBtn.classList.remove('hidden');
+
+        if (cameraBtnText) cameraBtnText.textContent = "Stop Camera";
+        if (cameraBtnIcon) cameraBtnIcon.className = "fa-solid fa-video-slash";
+        if (pulse) pulse.className = "w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse shrink-0";
+        if (status) {
+            status.innerHTML = `<span class="text-emerald-700 font-bold"><i class="fa-solid fa-circle-dot"></i> Live camera active. Align ISBN barcode inside target frame.</span>`;
+        }
+
+        if (!STATE.barcodeDetector && 'BarcodeDetector' in window) {
+            await initBarcodeDetector();
+        }
+
+        startLiveScanningLoop();
+    } catch (err) {
+        console.warn("Camera access failed:", err);
+        if (status) {
+            status.innerHTML = `<span class="text-amber-700 font-bold"><i class="fa-solid fa-triangle-exclamation"></i> Camera not accessible (${err.name || 'Permission denied'}). Use photo upload or test barcodes below!</span>`;
+        }
+        if (pulse) pulse.className = "w-2.5 h-2.5 rounded-full bg-amber-500 shrink-0";
+    }
+}
+window.toggleCameraScanner = toggleCameraScanner;
+
+// Stop Live Camera Stream
+function stopCameraScanner() {
+    if (STATE.scanInterval) {
+        clearInterval(STATE.scanInterval);
+        STATE.scanInterval = null;
+    }
+
+    if (STATE.cameraStream) {
+        STATE.cameraStream.getTracks().forEach(t => t.stop());
+        STATE.cameraStream = null;
+    }
+
+    const video = document.getElementById('scanner-video');
+    const placeholder = document.getElementById('scanner-placeholder');
+    const previewImg = document.getElementById('scanner-preview-img');
+    const laser = document.getElementById('scanner-laser');
+    const guide = document.getElementById('scanner-guide');
+    const captureBtn = document.getElementById('capture-scan-btn');
+    const cameraBtnText = document.getElementById('camera-btn-text');
+    const cameraBtnIcon = document.getElementById('camera-btn-icon');
+    const status = document.getElementById('scanner-status');
+    const pulse = document.getElementById('scanner-pulse');
+
+    if (video) {
+        video.srcObject = null;
+        video.classList.add('hidden');
+    }
+
+    if (!previewImg || previewImg.classList.contains('hidden')) {
+        if (placeholder) placeholder.classList.remove('hidden');
+    }
+
+    if (laser) laser.classList.add('hidden');
+    if (guide) guide.classList.add('hidden');
+    if (captureBtn) captureBtn.classList.add('hidden');
+
+    if (cameraBtnText) cameraBtnText.textContent = "Start Live Camera";
+    if (cameraBtnIcon) cameraBtnIcon.className = "fa-solid fa-video";
+    if (pulse) pulse.className = "w-2.5 h-2.5 rounded-full bg-slate-400 shrink-0";
+    if (status && (!previewImg || previewImg.classList.contains('hidden'))) {
+        status.textContent = "Camera Off. Turn on camera, upload a photo, or enter ISBN below.";
+    }
+
+    STATE.torchOn = false;
+    const torchBtn = document.getElementById('torch-btn');
+    if (torchBtn) {
+        torchBtn.classList.remove('bg-amber-400', 'text-slate-900');
+    }
+}
+window.stopCameraScanner = stopCameraScanner;
+
+// Continuous Background Frame Detection Loop
+function startLiveScanningLoop() {
+    if (STATE.scanInterval) {
+        clearInterval(STATE.scanInterval);
+    }
+
+    STATE.scanInterval = setInterval(async () => {
+        if (!STATE.cameraStream) {
+            clearInterval(STATE.scanInterval);
+            return;
+        }
+
+        const video = document.getElementById('scanner-video');
+        if (!video || video.readyState < 2) return;
+
+        // 1. Native BarcodeDetector (Chrome/Edge/Android)
+        if (STATE.barcodeDetector) {
+            try {
+                const barcodes = await STATE.barcodeDetector.detect(video);
+                if (barcodes && barcodes.length > 0) {
+                    const rawVal = barcodes[0].rawValue || '';
+                    const clean = rawVal.replace(/[^0-9X]/gi, '');
+                    if (clean.length >= 10) {
+                        onBarcodeDetected(clean, 'Live Camera');
+                        return;
+                    }
+                }
+            } catch (e) {}
+        }
+
+        // 2. Fallback Canvas Frame Analysis
+        const canvas = document.getElementById('scanner-canvas');
+        if (canvas) {
+            try {
+                canvas.width = Math.min(video.videoWidth || 640, 640);
+                canvas.height = Math.min(video.videoHeight || 480, 480);
+                const ctx = canvas.getContext('2d', { willReadFrequently: true });
+                if (ctx) {
+                    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+                    const decoded = decodeBarcodeFromCanvas(canvas);
+                    if (decoded && decoded.length >= 10) {
+                        onBarcodeDetected(decoded, 'Live Camera (Canvas)');
+                    }
+                }
+            } catch (e) {}
+        }
+    }, 280);
+}
+
+// Manual Capture & Scan Button
+async function captureAndScanBarcode() {
+    const video = document.getElementById('scanner-video');
+    const canvas = document.getElementById('scanner-canvas');
+    const status = document.getElementById('scanner-status');
+    const feedbackBadge = document.getElementById('scan-feedback-badge');
+
+    if (!video || video.readyState < 2) {
+        if (status) {
+            status.innerHTML = `<span class="text-amber-600 font-bold"><i class="fa-solid fa-triangle-exclamation"></i> Camera not ready yet. Please wait a moment.</span>`;
+        }
+        return;
+    }
+
+    if (status) {
+        status.innerHTML = `<span class="text-blue-600 font-bold"><i class="fa-solid fa-spinner fa-spin"></i> Processing captured frame...</span>`;
+    }
+
+    canvas.width = video.videoWidth || 640;
+    canvas.height = video.videoHeight || 480;
+    const ctx = canvas.getContext('2d', { willReadFrequently: true });
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+    const previewImg = document.getElementById('scanner-preview-img');
+    if (previewImg) {
+        previewImg.src = canvas.toDataURL('image/jpeg', 0.85);
+        previewImg.classList.remove('hidden');
+        video.classList.add('hidden');
+    }
+
+    // Try BarcodeDetector
+    if (!STATE.barcodeDetector && 'BarcodeDetector' in window) {
+        await initBarcodeDetector();
+    }
+
+    if (STATE.barcodeDetector) {
+        try {
+            const barcodes = await STATE.barcodeDetector.detect(canvas);
+            if (barcodes && barcodes.length > 0) {
+                const detected = barcodes[0].rawValue.replace(/[^0-9X]/gi, '');
+                if (detected.length >= 10) {
+                    onBarcodeDetected(detected, 'Captured Frame');
+                    return;
+                }
+            }
+        } catch (e) {
+            console.warn("Capture BarcodeDetector:", e);
+        }
+    }
+
+    // Try canvas 1D decoder
+    const decoded = decodeBarcodeFromCanvas(canvas);
+    if (decoded && decoded.length >= 10) {
+        onBarcodeDetected(decoded, 'Captured Frame');
+        return;
+    }
+
+    if (status) {
+        status.innerHTML = `<span class="text-amber-700 font-bold"><i class="fa-solid fa-circle-question"></i> No barcode detected in captured frame. Hold closer or enter ISBN manually.</span>`;
+    }
+    if (feedbackBadge) {
+        feedbackBadge.className = "text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-800 border border-amber-200";
+        feedbackBadge.textContent = "Frame Captured (No Barcode)";
+        feedbackBadge.classList.remove('hidden');
+    }
+    const input = document.getElementById('manual-isbn-input');
+    if (input) input.focus();
+}
+window.captureAndScanBarcode = captureAndScanBarcode;
+
+// Photo Upload Handler for Barcode & Book Photos
+async function handleScanImageUpload(event) {
+    const file = event.target.files && event.target.files[0];
+    if (!file) return;
+
+    stopCameraScanner();
+
+    const placeholder = document.getElementById('scanner-placeholder');
+    const previewImg = document.getElementById('scanner-preview-img');
+    const laser = document.getElementById('scanner-laser');
+    const resetBtn = document.getElementById('scanner-reset-btn');
+    const status = document.getElementById('scanner-status');
+    const pulse = document.getElementById('scanner-pulse');
+    const feedbackBadge = document.getElementById('scan-feedback-badge');
+
+    if (placeholder) placeholder.classList.add('hidden');
+    if (laser) laser.classList.remove('hidden');
+    if (resetBtn) resetBtn.classList.remove('hidden');
+    if (pulse) pulse.className = "w-2.5 h-2.5 rounded-full bg-blue-500 animate-pulse shrink-0";
+    if (status) {
+        status.innerHTML = `<span class="text-blue-600 font-bold"><i class="fa-solid fa-spinner fa-spin"></i> Reading uploaded barcode image (${file.name})...</span>`;
+    }
+
+    const reader = new FileReader();
+    reader.onload = async (e) => {
+        const dataUrl = e.target.result;
+        if (previewImg) {
+            previewImg.src = dataUrl;
+            previewImg.classList.remove('hidden');
+        }
+
+        const img = new Image();
+        img.onload = async () => {
+            const canvas = document.getElementById('scanner-canvas');
+            canvas.width = img.naturalWidth || img.width;
+            canvas.height = img.naturalHeight || img.height;
+            const ctx = canvas.getContext('2d', { willReadFrequently: true });
+            ctx.drawImage(img, 0, 0);
+
+            if (!STATE.barcodeDetector && 'BarcodeDetector' in window) {
+                await initBarcodeDetector();
+            }
+
+            if (STATE.barcodeDetector) {
+                try {
+                    const barcodes = await STATE.barcodeDetector.detect(img);
+                    if (barcodes && barcodes.length > 0) {
+                        const clean = barcodes[0].rawValue.replace(/[^0-9X]/gi, '');
+                        if (clean.length >= 10) {
+                            onBarcodeDetected(clean, 'Uploaded Image');
+                            return;
+                        }
+                    }
+                } catch (err) {
+                    console.warn("Uploaded image BarcodeDetector error:", err);
+                }
+            }
+
+            const decoded = decodeBarcodeFromCanvas(canvas);
+            if (decoded && decoded.length >= 10) {
+                onBarcodeDetected(decoded, 'Uploaded Image');
+                return;
+            }
+
+            const filenameMatch = file.name.match(/(97[89][0-9]{10}|[0-9]{10})/);
+            if (filenameMatch) {
+                onBarcodeDetected(filenameMatch[1], 'Image Filename');
+                return;
+            }
+
+            if (laser) laser.classList.add('hidden');
+            if (pulse) pulse.className = "w-2.5 h-2.5 rounded-full bg-amber-500 shrink-0";
+            if (status) {
+                status.innerHTML = `<span class="text-amber-700 font-bold"><i class="fa-solid fa-triangle-exclamation"></i> Image loaded. Could not auto-detect barcode. Please enter ISBN printed on book.</span>`;
+            }
+            if (feedbackBadge) {
+                feedbackBadge.className = "text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-800 border border-amber-200";
+                feedbackBadge.textContent = "Photo Ready (Manual ISBN needed)";
+                feedbackBadge.classList.remove('hidden');
+            }
+            const input = document.getElementById('manual-isbn-input');
+            if (input) input.focus();
+        };
+        img.src = dataUrl;
+    };
+    reader.readAsDataURL(file);
+}
+window.handleScanImageUpload = handleScanImageUpload;
+
+// Reset Scanner View
+function resetScannerView() {
+    stopCameraScanner();
+
+    const video = document.getElementById('scanner-video');
+    const placeholder = document.getElementById('scanner-placeholder');
+    const previewImg = document.getElementById('scanner-preview-img');
+    const laser = document.getElementById('scanner-laser');
+    const guide = document.getElementById('scanner-guide');
+    const captureBtn = document.getElementById('capture-scan-btn');
+    const resetBtn = document.getElementById('scanner-reset-btn');
+    const status = document.getElementById('scanner-status');
+    const pulse = document.getElementById('scanner-pulse');
+    const feedbackBadge = document.getElementById('scan-feedback-badge');
+    const fileInput = document.getElementById('scan-file-input');
+
+    if (video) video.classList.add('hidden');
+    if (previewImg) {
+        previewImg.src = '';
+        previewImg.classList.add('hidden');
+    }
+    if (placeholder) placeholder.classList.remove('hidden');
+    if (laser) laser.classList.add('hidden');
+    if (guide) guide.classList.add('hidden');
+    if (captureBtn) captureBtn.classList.add('hidden');
+    if (resetBtn) resetBtn.classList.add('hidden');
+    if (feedbackBadge) feedbackBadge.classList.add('hidden');
+    if (fileInput) fileInput.value = '';
+
+    if (pulse) pulse.className = "w-2.5 h-2.5 rounded-full bg-slate-400 shrink-0";
+    if (status) status.textContent = "Ready. Turn on camera, upload a photo, or enter an ISBN below.";
+}
+window.resetScannerView = resetScannerView;
+
+// Callback when Barcode is identified
+function onBarcodeDetected(isbn, source = 'Scanner') {
+    stopCameraScanner();
+
+    const laser = document.getElementById('scanner-laser');
+    if (laser) laser.classList.add('hidden');
+
+    const pulse = document.getElementById('scanner-pulse');
+    if (pulse) pulse.className = "w-2.5 h-2.5 rounded-full bg-emerald-500 shrink-0";
+
+    const feedbackBadge = document.getElementById('scan-feedback-badge');
+    if (feedbackBadge) {
+        feedbackBadge.className = "text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-200";
+        feedbackBadge.textContent = `Barcode Detected via ${source}`;
+        feedbackBadge.classList.remove('hidden');
+    }
+
+    const status = document.getElementById('scanner-status');
+    if (status) {
+        status.innerHTML = `<span class="text-emerald-700 font-bold"><i class="fa-solid fa-circle-check"></i> Scanned: <span class="font-mono">${isbn}</span>! Comparing offers...</span>`;
+    }
+
+    const input = document.getElementById('manual-isbn-input');
+    if (input) input.value = isbn;
+
+    scanIsbnQuery(isbn);
+}
+window.onBarcodeDetected = onBarcodeDetected;
+
+// Flashlight / Torch Controller
+async function toggleTorch() {
+    STATE.torchOn = !STATE.torchOn;
+    const btn = document.getElementById('torch-btn');
+    if (btn) {
+        btn.classList.toggle('bg-amber-400', STATE.torchOn);
+        btn.classList.toggle('text-slate-900', STATE.torchOn);
+    }
+
+    if (STATE.cameraStream) {
+        const track = STATE.cameraStream.getVideoTracks()[0];
+        if (track && track.getCapabilities) {
+            const capabilities = track.getCapabilities();
+            if (capabilities.torch) {
+                try {
+                    await track.applyConstraints({ advanced: [{ torch: STATE.torchOn }] });
+                } catch (e) {
+                    console.warn("Torch constraint error:", e);
+                }
+            }
+        }
+    }
+}
+window.toggleTorch = toggleTorch;
+
+// Sample Books Quick Click Handler
+function quickScanSampleBook(isbn) {
     if (!isbn) return;
+    const input = document.getElementById('manual-isbn-input');
+    if (input) input.value = isbn;
+    const status = document.getElementById('scanner-status');
+    if (status) {
+        status.innerHTML = `<span class="text-blue-700 font-bold"><i class="fa-solid fa-bolt"></i> Sample Book Selected (${isbn})</span>`;
+    }
+    scanIsbnQuery(isbn);
+}
+window.quickScanSampleBook = quickScanSampleBook;
+
+function quickCompareBook(isbn) {
+    switchTab('scan');
+    quickScanSampleBook(isbn);
+}
+window.quickCompareBook = quickCompareBook;
+
+// Query Scan API & Compare Seller Offers
+async function scanIsbnQuery(isbn) {
+    if (!isbn) {
+        alert("Please enter or scan a valid ISBN.");
+        return;
+    }
+    const cleanIsbn = String(isbn).trim().replace(/[^0-9X]/gi, '');
+    if (!cleanIsbn) {
+        alert("Please enter a valid numeric ISBN (10 or 13 digits).");
+        return;
+    }
+
+    const input = document.getElementById('manual-isbn-input');
+    if (input && input.value !== cleanIsbn) {
+        input.value = cleanIsbn;
+    }
+
     const resultBox = document.getElementById('scan-result-container');
     const loader = document.getElementById('scan-loader');
+    const status = document.getElementById('scanner-status');
+    const badge = document.getElementById('scan-feedback-badge');
 
     if (loader) loader.classList.remove('hidden');
     if (resultBox) resultBox.classList.add('hidden');
+    if (status) {
+        status.innerHTML = `<span class="text-blue-700 font-bold"><i class="fa-solid fa-spinner fa-spin"></i> Looking up ISBN: ${cleanIsbn}...</span>`;
+    }
+    if (badge) {
+        badge.className = "text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-blue-100 text-blue-800 border border-blue-200";
+        badge.textContent = `Querying: ${cleanIsbn}`;
+        badge.classList.remove('hidden');
+    }
 
     try {
-        const res = await fetch(`/api/books/scan/?isbn=${encodeURIComponent(isbn)}`);
+        const res = await fetch(`/api/books/scan/?isbn=${encodeURIComponent(cleanIsbn)}`);
         const data = await res.json();
         if (loader) loader.classList.add('hidden');
 
         if (res.ok && data.book) {
             STATE.currentScanResult = data;
+            if (status) {
+                status.innerHTML = `<span class="text-emerald-700 font-bold"><i class="fa-solid fa-circle-check"></i> Found: ${data.book.title}</span>`;
+            }
+            if (badge) {
+                badge.className = "text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-200";
+                badge.textContent = data.found_in_catalog ? 'Catalog Match' : 'Online Book Match';
+                badge.classList.remove('hidden');
+            }
             renderScanResult(data);
         } else {
-            alert(data.error || "Book not found. You can enter details manually in the Sell tab!");
+            if (status) {
+                status.innerHTML = `<span class="text-amber-700 font-bold"><i class="fa-solid fa-triangle-exclamation"></i> ${data.error || 'Book not found'}</span>`;
+            }
+            if (badge) {
+                badge.className = "text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-800 border border-amber-200";
+                badge.textContent = 'Not Found';
+                badge.classList.remove('hidden');
+            }
+            alert(data.error || "Book not found in database. You can enter details manually in the Sell tab!");
         }
     } catch (err) {
+        console.error("Scan query error:", err);
         if (loader) loader.classList.add('hidden');
+        if (status) {
+            status.innerHTML = `<span class="text-rose-700 font-bold"><i class="fa-solid fa-circle-xmark"></i> Network error during book lookup.</span>`;
+        }
         alert("Lookup failed. Please check network or enter manual ISBN.");
     }
 }
+window.scanIsbnQuery = scanIsbnQuery;
 
+// Render Detailed Scan Results & Multi-Seller Comparison
 function renderScanResult(data) {
     const resultBox = document.getElementById('scan-result-container');
     if (!resultBox) return;
@@ -967,136 +1558,108 @@ function renderScanResult(data) {
 
     resultBox.classList.remove('hidden');
     resultBox.innerHTML = `
-        <div class="bg-white rounded-2xl border border-slate-200 p-4 shadow-md">
-            <div class="flex items-center justify-between pb-3 border-b border-slate-100 mb-3">
+        <div class="bg-white rounded-2xl border border-blue-100 p-5 sm:p-6 shadow-md transition-all">
+            <!-- Header Bar -->
+            <div class="flex items-center justify-between pb-3.5 border-b border-slate-100 mb-4">
                 <span class="text-xs font-bold text-blue-700 uppercase tracking-wide flex items-center gap-1.5">
-                    <i class="fa-solid fa-barcode text-sm"></i> Barcode Verified: ${book.isbn}
+                    <i class="fa-solid fa-barcode text-sm"></i> Barcode Verified: <span class="font-mono">${book.isbn}</span>
                 </span>
-                <span class="text-[11px] bg-blue-50 text-blue-700 font-semibold px-2 py-0.5 rounded-full border border-blue-200">
-                    ${data.found_in_catalog ? 'Catalog Match' : 'Manual Entry'}
+                <span class="text-[11px] bg-blue-50 text-blue-700 font-bold px-2.5 py-0.5 rounded-full border border-blue-200">
+                    ${data.found_in_catalog ? 'Catalog Match' : 'Verified Metadata'}
                 </span>
             </div>
 
-            <div class="flex gap-4">
+            <!-- Book Details Card -->
+            <div class="flex flex-col sm:flex-row gap-5">
                 <img src="${book.cover_image || 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=300'}" 
-                     class="w-24 h-36 object-cover rounded-xl shadow-md flex-shrink-0">
-                <div class="flex-1">
-                    <h3 class="font-bold text-base text-slate-900 leading-snug">${book.title}</h3>
-                    <p class="text-xs text-slate-600 mt-1"><span class="font-semibold">Author:</span> ${book.author}</p>
-                    <p class="text-xs text-slate-500 mt-0.5"><span class="font-semibold">Publisher:</span> ${book.publisher || 'N/A'}</p>
-                    <p class="text-xs text-slate-500 mt-0.5"><span class="font-semibold">Category:</span> ${book.category}</p>
+                     alt="${book.title}"
+                     class="w-28 sm:w-32 h-40 sm:h-44 object-cover rounded-xl shadow-md border border-slate-200 flex-shrink-0 self-center sm:self-start">
+                <div class="flex-1 min-w-0">
+                    <h3 class="font-black text-base sm:text-lg text-slate-900 leading-snug">${book.title}</h3>
+                    <p class="text-xs text-slate-600 mt-1"><span class="font-bold text-slate-700">Author:</span> ${book.author || 'Unknown Author'}</p>
+                    <p class="text-xs text-slate-500 mt-0.5"><span class="font-bold text-slate-700">Publisher:</span> ${book.publisher || 'N/A'}</p>
+                    <p class="text-xs text-slate-500 mt-0.5"><span class="font-bold text-slate-700">Category:</span> ${book.category || 'General'}</p>
+                    ${book.education_board && book.education_board !== 'General / None' ? `
+                        <p class="text-xs text-slate-500 mt-0.5"><span class="font-bold text-slate-700">Board / Class:</span> ${book.education_board} (${book.grade_class || 'All'})</p>
+                    ` : ''}
 
+                    <!-- Price Comparison Stats Banner -->
                     ${stats.lowest_price ? `
-                        <div class="mt-3 bg-blue-50 border border-blue-200 rounded-xl p-3">
-                            <div class="flex items-center justify-between">
-                                <span class="text-xs text-blue-900 font-bold">Lowest Used Offer:</span>
-                                <span class="text-base font-black text-blue-900">Rs. ${stats.lowest_price}</span>
+                        <div class="mt-3.5 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-3.5 flex items-center justify-between">
+                            <div>
+                                <span class="text-xs text-blue-900 font-extrabold block">Lowest Used Price</span>
+                                <span class="text-lg font-black text-blue-900">Rs. ${parseFloat(stats.lowest_price).toFixed(0)}</span>
                             </div>
-                            <div class="flex items-center justify-between text-[11px] text-slate-500 mt-0.5">
-                                <span>New Retail: Rs. ${stats.retail_price}</span>
-                                <span class="font-bold text-blue-700">Save ${stats.max_savings_percent}%</span>
+                            <div class="text-right">
+                                <span class="text-[11px] text-slate-500 block">Retail: Rs. ${parseFloat(stats.retail_price || 0).toFixed(0)}</span>
+                                <span class="text-xs font-black text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded border border-emerald-300">Save ${stats.max_savings_percent}%</span>
                             </div>
                         </div>
                     ` : `
-                        <div class="mt-3 bg-amber-50 border border-amber-200 text-amber-800 rounded-xl p-2.5 text-xs">
-                            No current sellers. Be the first to sell this book!
+                        <div class="mt-3.5 bg-amber-50 border border-amber-200 text-amber-900 rounded-xl p-3 text-xs flex items-center gap-2">
+                            <i class="fa-solid fa-circle-info text-amber-600"></i>
+                            <span>No active seller listings for this book currently. Be the first to list it!</span>
                         </div>
                     `}
                 </div>
             </div>
 
             <!-- Price Comparison Table: Multiple sellers for same book -->
-            <div class="mt-4 pt-4 border-t border-slate-100">
-                <div class="flex items-center justify-between mb-2.5">
-                    <h4 class="font-bold text-xs uppercase tracking-wider text-slate-700">
-                        <i class="fa-solid fa-users text-blue-700 mr-1"></i> Available Seller Offers (${listings.length})
+            <div class="mt-6 pt-5 border-t border-slate-100">
+                <div class="flex items-center justify-between mb-3">
+                    <h4 class="font-black text-xs uppercase tracking-wider text-slate-800 flex items-center gap-1.5">
+                        <i class="fa-solid fa-users text-blue-600"></i> Available Seller Offers (${listings.length})
                     </h4>
                     <span class="text-[11px] text-slate-400">Sorted by lowest price</span>
                 </div>
 
                 ${listings.length > 0 ? `
-                    <div class="space-y-2">
-                        ${listings.map(l => `
-                            <div class="p-3 bg-slate-50 hover:bg-slate-100 rounded-xl border border-slate-200 flex items-center justify-between transition-colors">
-                                <div>
-                                    <div class="flex items-center gap-2">
-                                        <span class="font-bold text-xs text-slate-900">${l.seller_name}</span>
-                                        <span class="text-amber-500 font-semibold text-xs">★ ${l.seller_rating}</span>
-                                        <span class="text-[10px] bg-slate-200 text-slate-700 px-1.5 py-0.2 rounded font-medium">${l.condition}</span>
+                    <div class="space-y-2.5">
+                        ${listings.map(l => {
+                            const isFree = Boolean(l.is_free || parseFloat(l.price) === 0);
+                            return `
+                                <div class="p-3.5 bg-slate-50 hover:bg-blue-50/50 rounded-xl border border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3 transition-colors">
+                                    <div>
+                                        <div class="flex items-center gap-2 flex-wrap">
+                                            <span class="font-extrabold text-xs text-slate-900">${l.seller_name}</span>
+                                            <span class="text-amber-500 font-bold text-xs">★ ${l.seller_rating}</span>
+                                            <span class="text-[10px] bg-slate-200 text-slate-700 px-1.5 py-0.5 rounded font-bold">${l.condition}</span>
+                                            ${isFree ? `<span class="text-[10px] bg-emerald-100 text-emerald-800 border border-emerald-300 px-1.5 py-0.5 rounded font-black">🎁 FREE DONATION</span>` : ''}
+                                        </div>
+                                        <p class="text-xs text-slate-500 mt-1 flex items-center gap-1">
+                                            <i class="fa-solid fa-location-dot text-blue-600"></i> ${l.city} ${l.pickup_location ? `• ${l.pickup_location}` : ''}
+                                        </p>
                                     </div>
-                                    <p class="text-[11px] text-slate-500 mt-0.5">
-                                        <i class="fa-solid fa-location-dot text-blue-600"></i> ${l.city} (${l.pickup_location})
-                                    </p>
-                                </div>
-                                <div class="text-right flex items-center gap-2">
-                                    <div class="text-right mr-1">
-                                        <span class="block text-sm font-black text-blue-800">Rs. ${parseFloat(l.price).toFixed(0)}</span>
-                                        <span class="text-[10px] text-slate-400">${l.seller_reviews_count} sales</span>
+                                    <div class="flex items-center justify-between sm:justify-end gap-3 pt-2 sm:pt-0 border-t sm:border-t-0 border-slate-200">
+                                        <div class="text-left sm:text-right">
+                                            <span class="block text-base font-black ${isFree ? 'text-emerald-700' : 'text-blue-900'}">${isFree ? 'Rs. 0' : 'Rs. ' + parseFloat(l.price).toFixed(0)}</span>
+                                            <span class="text-[10px] text-slate-400">${l.seller_reviews_count || 0} reviews</span>
+                                        </div>
+                                        <button onclick="openUnlockModal(${l.id})" class="px-4 py-2 ${isFree ? 'bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700' : 'bg-gradient-to-r from-blue-700 to-blue-600 hover:from-blue-800'} text-white rounded-xl text-xs font-extrabold shadow-sm transition-all flex items-center gap-1.5 active:scale-95">
+                                            <i class="fa-solid fa-lock-open text-xs"></i>
+                                            <span>${isFree ? 'Claim Free' : 'Unlock Contact'}</span>
+                                        </button>
                                     </div>
-                                    <button onclick="openUnlockModal(${l.id})" class="px-3.5 py-1.5 bg-gradient-to-r from-blue-700 to-blue-600 hover:from-blue-800 hover:to-blue-700 text-white rounded-xl text-xs font-bold shadow-sm transition-all">
-                                        Unlock Contact (Rs. 50)
-                                    </button>
                                 </div>
-                            </div>
-                        `).join('')}
+                            `;
+                        }).join('')}
                     </div>
-                ` : `
-                    <button onclick="prefillSellForm('${book.isbn}')" class="w-full py-2 bg-blue-600 text-white rounded-xl text-xs font-bold hover:bg-blue-700">
-                        List This Book For Sale Now
+                ` : ''}
+
+                <!-- CTA to List This Book for Sale -->
+                <div class="mt-4 pt-3.5 border-t border-slate-100 flex items-center justify-between flex-wrap gap-2">
+                    <span class="text-xs text-slate-600">Have a copy of this book?</span>
+                    <button type="button" onclick="prefillSellForm('${book.isbn}')" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold transition-all shadow-xs flex items-center gap-1.5 active:scale-95">
+                        <i class="fa-solid fa-circle-plus"></i> List This Book For Sale or Free Donation
                     </button>
-                `}
+                </div>
             </div>
         </div>
     `;
 
-    resultBox.scrollIntoView({ behavior: 'smooth' });
+    resultBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 }
-
-function quickCompareBook(isbn) {
-    switchTab('scan');
-    const input = document.getElementById('manual-isbn-input');
-    if (input) input.value = isbn;
-    scanIsbnQuery(isbn);
-}
-
-// Camera Simulator
-function toggleCameraScanner() {
-    const video = document.getElementById('scanner-video');
-    const status = document.getElementById('scanner-status');
-
-    if (STATE.cameraStream) {
-        STATE.cameraStream.getTracks().forEach(t => t.stop());
-        STATE.cameraStream = null;
-        if (video) video.srcObject = null;
-        if (status) status.textContent = "Camera Off. Click to activate live scanner.";
-        return;
-    }
-
-    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-        navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
-            .then(stream => {
-                STATE.cameraStream = stream;
-                if (video) video.srcObject = stream;
-                if (status) status.textContent = "Live camera scanning... Align barcode inside green frame.";
-            })
-            .catch(err => {
-                console.warn("Camera access denied or unavailable:", err);
-                if (status) status.textContent = "Camera not accessible. Use quick-scan test barcodes below!";
-            });
-    } else {
-        if (status) status.textContent = "Camera API not supported. Use quick-scan test barcodes below.";
-    }
-}
-
-function toggleTorch() {
-    STATE.torchOn = !STATE.torchOn;
-    const btn = document.getElementById('torch-btn');
-    if (btn) {
-        btn.classList.toggle('bg-yellow-400', STATE.torchOn);
-        btn.classList.toggle('text-slate-900', STATE.torchOn);
-    }
-    alert(STATE.torchOn ? "Flashlight Torch ON" : "Flashlight Torch OFF");
-}
+window.renderScanResult = renderScanResult;
 
 // PAID CONTACT UNLOCK MODAL (Phase 1 Sandbox)
 function openUnlockModal(listingId) {
@@ -1124,7 +1687,13 @@ function openUnlockModal(listingId) {
     document.getElementById('modal-fee-display').textContent = `Rs. ${STATE.platformFee.toFixed(0)}`;
 
     const errBanner = document.getElementById('unlock-error-banner');
-    if (errBanner) errBanner.classList.add('hidden');
+    if (errBanner) {
+        errBanner.classList.add('hidden');
+        errBanner.classList.remove('flex');
+        errBanner.style.setProperty('display', 'none', 'important');
+    }
+    const errMsg = document.getElementById('unlock-error-message');
+    if (errMsg) errMsg.textContent = '';
 
     document.getElementById('unlock-payment-section').classList.remove('hidden');
     document.getElementById('unlock-result-section').classList.add('hidden');
@@ -1136,6 +1705,14 @@ function openUnlockModal(listingId) {
 function closeUnlockModal() {
     const modal = document.getElementById('unlock-modal');
     if (modal) modal.classList.add('hidden');
+    const errBanner = document.getElementById('unlock-error-banner');
+    if (errBanner) {
+        errBanner.classList.add('hidden');
+        errBanner.classList.remove('flex');
+        errBanner.style.setProperty('display', 'none', 'important');
+    }
+    const errMsg = document.getElementById('unlock-error-message');
+    if (errMsg) errMsg.textContent = '';
 }
 
 function selectPaymentMethod(method) {
@@ -1213,7 +1790,12 @@ async function submitPaymentUnlock() {
 
     const errBanner = document.getElementById('unlock-error-banner');
     const errMsg = document.getElementById('unlock-error-message');
-    if (errBanner) errBanner.classList.add('hidden');
+    if (errBanner) {
+        errBanner.classList.add('hidden');
+        errBanner.classList.remove('flex');
+        errBanner.style.setProperty('display', 'none', 'important');
+    }
+    if (errMsg) errMsg.textContent = '';
 
     const btn = document.getElementById('pay-submit-btn');
     if (btn) {
@@ -1250,6 +1832,8 @@ async function submitPaymentUnlock() {
             if (errBanner && errMsg) {
                 errMsg.textContent = errText;
                 errBanner.classList.remove('hidden');
+                errBanner.classList.add('flex');
+                errBanner.style.setProperty('display', 'flex', 'important');
             } else {
                 alert(errText);
             }
@@ -1262,6 +1846,8 @@ async function submitPaymentUnlock() {
         if (errBanner && errMsg) {
             errMsg.textContent = "Payment network error. Please try again.";
             errBanner.classList.remove('hidden');
+            errBanner.classList.add('flex');
+            errBanner.style.setProperty('display', 'flex', 'important');
         } else {
             alert("Payment network error.");
         }
@@ -1977,6 +2563,38 @@ function setupEventListeners() {
             e.preventDefault();
             openBarcodeScanner();
         });
+    }
+
+    const navScanBtn = document.getElementById('nav-scan-btn');
+    if (navScanBtn) {
+        navScanBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            openBarcodeScanner();
+        });
+    }
+
+    const manualLookupBtn = document.getElementById('manual-lookup-btn');
+    if (manualLookupBtn) {
+        manualLookupBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            const input = document.getElementById('manual-isbn-input');
+            if (input) scanIsbnQuery(input.value);
+        });
+    }
+
+    const manualIsbnInput = document.getElementById('manual-isbn-input');
+    if (manualIsbnInput) {
+        manualIsbnInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                scanIsbnQuery(manualIsbnInput.value);
+            }
+        });
+    }
+
+    const scanFileInput = document.getElementById('scan-file-input');
+    if (scanFileInput) {
+        scanFileInput.addEventListener('change', handleScanImageUpload);
     }
 
     const heroSellBtn = document.getElementById('hero-sell-btn');

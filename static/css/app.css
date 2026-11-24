@@ -243,6 +243,14 @@ section.tab-page,
     display: none !important;
 }
 
+/* Strictly hide bottom mobile navigation bar on desktop screens (>= 768px) */
+@media (min-width: 768px) {
+    #mobile-bottom-nav,
+    .mobile-bottom-nav {
+        display: none !important;
+    }
+}
+
 /* ===================================================
    RESPONSIVE LAYOUT & MOBILE BEZEL REMOVAL
    Ensures native edge-to-edge full screen on real mobile
