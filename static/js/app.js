@@ -686,6 +686,28 @@ function renderShelves(listings) {
             if (historySection) historySection.classList.add('hidden');
         }
     }
+
+    // 6. Medical & MBBS Textbooks
+    const medicalContainer = document.getElementById('medical-books-container');
+    const medicalSection = document.getElementById('medical-books-section');
+    if (medicalContainer) {
+        const medItems = listings.filter(item => {
+            const cat = item.book?.category || '';
+            const title = (item.book?.title || '').toLowerCase();
+            const subj = (item.book?.subject || '').toLowerCase();
+            return cat === 'Medical & MBBS / BDS' || cat.includes('Medical') || cat.includes('MBBS') || cat.includes('BDS') ||
+                   title.includes('physiology') || title.includes('anatomy') || title.includes('pathology') || 
+                   title.includes('biochemistry') || title.includes('mdcat') || title.includes('mbbs') || 
+                   title.includes('guyton') || title.includes('snell') || title.includes('robbins') || 
+                   title.includes('chaurasia') || title.includes('harper') || subj.includes('medical');
+        });
+        if (medItems.length > 0) {
+            medicalContainer.innerHTML = medItems.slice(0, 8).map(item => createBookCardHtml(item)).join('');
+            if (medicalSection) medicalSection.classList.remove('hidden');
+        } else {
+            if (medicalSection) medicalSection.classList.add('hidden');
+        }
+    }
 }
 
 let CURRENT_PTB_FILTER = 'all';
@@ -711,7 +733,7 @@ function renderPtbShelf(listings, filterClass = 'all') {
     // Filter to PTB / Regional Board items
     const ptbItems = listings.filter(item => {
         const cat = item.book?.category || '';
-        if (cat === 'History' || cat === 'Story Books' || cat === 'Fiction' || cat === 'Novels' || cat === 'Urdu Literature & Novels') {
+        if (cat === 'History' || cat === 'Story Books' || cat === 'Fiction' || cat === 'Novels' || cat === 'Urdu Literature & Novels' || cat === 'Medical & MBBS / BDS') {
             return false;
         }
         const board = (item.book?.education_board || '').toLowerCase();
@@ -785,7 +807,8 @@ function filterShelfSection(shelfKey) {
         ptb: document.getElementById('ptb-textbooks-section'),
         kids: document.getElementById('kids-books-section'),
         novels: document.getElementById('fiction-novels-section'),
-        history: document.getElementById('history-literature-section')
+        history: document.getElementById('history-literature-section'),
+        medical: document.getElementById('medical-books-section')
     };
 
     if (shelfKey === 'all') {
@@ -2077,8 +2100,6 @@ function showUnlockedContactResult(data) {
         <button onclick="closeUnlockModal(); switchTab('deals');" class="w-full mt-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold">
             Done • View in My Unlocks
         </button>
-    `;
-}
     `;
 }
 

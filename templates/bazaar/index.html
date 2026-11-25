@@ -334,6 +334,10 @@
                                 class="shelf-pill-btn px-3 py-1.5 bg-white border border-slate-200 hover:border-blue-300 text-slate-700 font-bold rounded-xl shrink-0 flex items-center gap-1.5 transition-all">
                             <i class="fa-solid fa-landmark text-amber-700 text-xs"></i> <span>🏛️ History & Literature</span>
                         </button>
+                        <button type="button" onclick="filterShelfSection('medical')" id="shelf-pill-medical" 
+                                class="shelf-pill-btn px-3 py-1.5 bg-white border border-slate-200 hover:border-blue-300 text-slate-700 font-bold rounded-xl shrink-0 flex items-center gap-1.5 transition-all">
+                            <i class="fa-solid fa-stethoscope text-rose-600 text-xs"></i> <span>🩺 Medical & MBBS</span>
+                        </button>
                     </div>
                 </div>
 
@@ -490,6 +494,31 @@
                         </span>
                     </div>
                     <div id="history-literature-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                        <!-- Populated by JavaScript -->
+                    </div>
+                </div>
+
+                <!-- ============================================== -->
+                <!-- 7. 🩺 MEDICAL & MBBS TEXTBOOKS -->
+                <!-- ============================================== -->
+                <div id="medical-books-section" class="shelf-section mb-10 sm:mb-12">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="flex items-center gap-2.5">
+                            <div class="w-8 h-8 rounded-xl bg-rose-600 text-white flex items-center justify-center text-xs shadow-xs">
+                                <i class="fa-solid fa-stethoscope"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-xs sm:text-sm font-black uppercase tracking-wider text-slate-900 flex items-center gap-1.5">
+                                    🩺 Medical & MBBS Textbooks
+                                </h3>
+                                <p class="text-[11px] text-slate-500 font-medium">Expensive & hard-to-find MBBS, BDS, Nursing, and MDCAT books at student-friendly prices</p>
+                            </div>
+                        </div>
+                        <span class="text-[11px] font-bold text-rose-900 bg-rose-50 px-2.5 py-0.5 rounded-full border border-rose-200">
+                            MBBS & BDS
+                        </span>
+                    </div>
+                    <div id="medical-books-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                         <!-- Populated by JavaScript -->
                     </div>
                 </div>

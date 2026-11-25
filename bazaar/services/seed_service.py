@@ -1262,22 +1262,95 @@ DEMO_TEXTBOOKS = [
     },
 
     # ========================================================
-    # 🎓 UNIVERSITY / HIGHER ED (Medical, BBA, CSS)
+    # 🩺 MEDICAL & MBBS / BDS TEXTBOOKS
     # ========================================================
     {
         'isbn': '9780323597128',
-        'seller_username': 'usman_mul',
+        'seller_username': 'ali_seller',
         'condition': 'Like New',
         'price': Decimal('1450.00'),
         'is_free': False,
         'target_age_group': 'young_adult',
-        'city': 'Multan',
-        'pickup': 'Nishtar Medical University Gate / Multan',
-        'desc': 'Guyton and Hall Textbook of Medical Physiology (14th Edition). Standard medical textbook for 1st & 2nd year MBBS and BDS students.',
+        'city': 'Lahore',
+        'pickup': 'King Edward Medical University (KEMU) Gate / Neela Gumbad Anarkali',
+        'desc': 'Guyton and Hall Textbook of Medical Physiology (14th Ed.). Standard medical textbook for 1st & 2nd year MBBS and BDS students. Completely intact pages with clean high-yield diagrams.',
         'photo': 'https://images.unsplash.com/photo-1505751172876-fa1923c5c528?w=500&auto=format&fit=crop&q=80',
         'is_sponsored': True,
         'views': 280
     },
+    {
+        'isbn': '9781496345646',
+        'seller_username': 'zainab_rwp',
+        'condition': 'Good',
+        'price': Decimal('1200.00'),
+        'is_free': False,
+        'target_age_group': 'young_adult',
+        'city': 'Rawalpindi',
+        'pickup': 'Rawalpindi Medical University (RMU) / Holy Family Hospital Gate',
+        'desc': 'Snell\'s Clinical Anatomy by Regions (10th Ed.). Essential regional anatomy for 1st and 2nd year MBBS with clinical correlation cases and high-yield dissection notes.',
+        'photo': 'https://images.unsplash.com/photo-1532938911079-1b06ac7ceec7?w=500&auto=format&fit=crop&q=80',
+        'is_sponsored': False,
+        'views': 210
+    },
+    {
+        'isbn': '9780323353175',
+        'seller_username': 'ayesha_khi',
+        'condition': 'Like New',
+        'price': Decimal('1350.00'),
+        'is_free': False,
+        'target_age_group': 'young_adult',
+        'city': 'Karachi',
+        'pickup': 'Dow University of Health Sciences (DUHS) / Mission Road Karachi',
+        'desc': 'Robbins Basic Pathology (10th Ed.). Core pathology reference for 3rd year MBBS covering cell injury, inflammation, neoplasia, and organ-system clinical pathology.',
+        'photo': 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=500&auto=format&fit=crop&q=80',
+        'is_sponsored': True,
+        'views': 245
+    },
+    {
+        'isbn': '9781260464948',
+        'seller_username': 'usman_mul',
+        'condition': 'Good',
+        'price': Decimal('1100.00'),
+        'is_free': False,
+        'target_age_group': 'young_adult',
+        'city': 'Multan',
+        'pickup': 'Nishtar Medical University (NMU) / Jail Road Multan',
+        'desc': 'Harper\'s Illustrated Biochemistry (32nd Ed.). High-yield medical biochemistry for MBBS & BDS students covering metabolic pathways, bioenergetics, and genetic disease foundations.',
+        'photo': 'https://images.unsplash.com/photo-1530497610245-94d3c16cda28?w=500&auto=format&fit=crop&q=80',
+        'is_sponsored': False,
+        'views': 185
+    },
+    {
+        'isbn': '9789388902731',
+        'seller_username': 'bilal_bwp',
+        'condition': 'Good',
+        'price': Decimal('0.00'),
+        'is_free': True,
+        'target_age_group': 'young_adult',
+        'city': 'Bahawalpur',
+        'pickup': 'Quaid-e-Azam Medical College (QAMC) / Circular Road Bahawalpur',
+        'desc': 'BD Chaurasia\'s Human Anatomy (Vol 1–3 Set: Upper Limb, Lower Limb, Head & Neck). Donated 100% FREE for deserving 1st year MBBS medical students at QAMC Bahawalpur.',
+        'photo': 'https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?w=500&auto=format&fit=crop&q=80',
+        'is_sponsored': False,
+        'views': 310
+    },
+    {
+        'isbn': '9789697920111',
+        'seller_username': 'fatima_z',
+        'condition': 'Like New',
+        'price': Decimal('850.00'),
+        'is_free': False,
+        'target_age_group': 'teens',
+        'city': 'Islamabad',
+        'pickup': 'KIPS Academy F-8 Markaz / Islamabad',
+        'desc': 'KIPS MDCAT Complete Prep & Practice Set (Biology, Chemistry, Physics, English). Unit-wise practice questions, PMDC syllabus past papers, and full-length mock exams.',
+        'photo': 'https://images.unsplash.com/photo-1434030216411-0b793f4b4173?w=500&auto=format&fit=crop&q=80',
+        'is_sponsored': False,
+        'views': 295
+    },
+    # ========================================================
+    # 🎓 UNIVERSITY / HIGHER ED (BBA, CSS)
+    # ========================================================
     {
         'isbn': '9789332587700',
         'seller_username': 'ayesha_khi',
