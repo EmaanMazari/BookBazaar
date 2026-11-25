@@ -158,6 +158,7 @@ class Listing(models.Model):
     description = models.TextField(blank=True, default='')
     photo_url = models.TextField(blank=True, default='')
     image = models.ImageField(upload_to='listings/', blank=True, null=True, help_text="Actual uploaded book photo")
+    pdf_file = models.FileField(upload_to='book_pdfs/', blank=True, null=True, help_text="Optional soft copy PDF file")
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='active', db_index=True)
     is_sponsored = models.BooleanField(default=False, help_text="Promoted sponsored listing shown at top", db_index=True)
     is_free = models.BooleanField(default=False, db_index=True, help_text="Community free book donation (Rs. 0)")

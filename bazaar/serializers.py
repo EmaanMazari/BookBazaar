@@ -1,3 +1,4 @@
+from decimal import Decimal
 from rest_framework import serializers
 from bazaar.models import (
     UserProfile, Book, Listing, ContactUnlock, SellerReview,
@@ -98,6 +99,7 @@ class ListingSerializer(serializers.ModelSerializer):
     display_image = serializers.CharField(source='display_image_url', read_only=True)
     is_favorited = serializers.SerializerMethodField()
     is_contact_unlocked = serializers.SerializerMethodField()
+    pdf_url = serializers.SerializerMethodField()
     
     class Meta:
         model = Listing
@@ -107,7 +109,7 @@ class ListingSerializer(serializers.ModelSerializer):
             'city', 'pickup_location', 'description', 'photo_url', 'image',
             'display_image', 'status', 'is_sponsored', 'is_free', 'target_age_group',
             'views_count', 'savings_percentage', 
-            'is_favorited', 'is_contact_unlocked', 'created_at'
+            'is_favorited', 'is_contact_unlocked', 'pdf_url', 'created_at'
         ]
 
     def get_seller_phone(self, obj):
@@ -148,6 +150,11 @@ class ListingSerializer(serializers.ModelSerializer):
             if profile:
                 return Favorite.objects.filter(user=profile, listing=obj).exists()
         return False
+
+    def get_pdf_url(self, obj):
+        if obj.is_free or obj.price == Decimal('0.00') or obj.pdf_file:
+            return f"/api/listings/{obj.id}/download-pdf/"
+        return None
 
 
 class FavoriteSerializer(serializers.ModelSerializer):

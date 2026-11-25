@@ -544,7 +544,7 @@ function createBookCardHtml(item, options = {}) {
                 </div>
             </div>
 
-            <!-- Price & Single Clean Action Button -->
+            <!-- Price & Action Buttons -->
             <div class="p-4 pt-0 mt-auto flex items-center justify-between gap-2 border-t border-slate-100 pt-3">
                 <div>
                     ${isFree ? `
@@ -558,10 +558,26 @@ function createBookCardHtml(item, options = {}) {
                     `}
                 </div>
 
-                <button onclick="openUnlockModal(${item.id})" 
-                        class="px-3.5 py-1.5 ${isFree ? 'bg-emerald-600 hover:bg-emerald-700' : 'bg-blue-600 hover:bg-blue-700'} text-white font-bold rounded-xl text-xs transition-colors shadow-xs hover:shadow flex items-center gap-1.5 active:scale-95">
-                    <span>${isFree ? 'Claim' : 'View Details'}</span>
-                </button>
+                ${isFree ? `
+                    <div class="flex items-center gap-1.5 shrink-0">
+                        <a href="/api/listings/${item.id}/download-pdf/" download 
+                           onclick="event.stopPropagation()"
+                           title="Download Soft Copy (PDF)"
+                           class="px-2.5 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-700 hover:text-blue-900 border border-blue-200 hover:border-blue-300 font-extrabold rounded-xl text-xs transition-all shadow-xs flex items-center gap-1 active:scale-95">
+                            <i class="fa-solid fa-file-arrow-down text-blue-600 text-xs"></i>
+                            <span class="text-[11px]">Download PDF</span>
+                        </a>
+                        <button onclick="openUnlockModal(${item.id})" 
+                                class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs transition-colors shadow-xs hover:shadow flex items-center gap-1 active:scale-95">
+                            <span>Claim</span>
+                        </button>
+                    </div>
+                ` : `
+                    <button onclick="openUnlockModal(${item.id})" 
+                            class="px-3.5 py-1.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl text-xs transition-colors shadow-xs hover:shadow flex items-center gap-1.5 active:scale-95">
+                        <span>View Details</span>
+                    </button>
+                `}
             </div>
         </div>
     `;
@@ -1840,6 +1856,17 @@ function openUnlockModal(listingId) {
     document.getElementById('modal-seller-name').textContent = listing.seller_name;
     document.getElementById('modal-seller-city').textContent = `${listing.city} (${listing.pickup_location || 'Campus / Pickup'})`;
 
+    const pdfWrapper = document.getElementById('modal-pdf-download-wrapper');
+    const pdfBtn = document.getElementById('modal-pdf-download-btn');
+    if (pdfWrapper && pdfBtn) {
+        if (isFree) {
+            pdfBtn.href = `/api/listings/${listing.id}/download-pdf/`;
+            pdfWrapper.classList.remove('hidden');
+        } else {
+            pdfWrapper.classList.add('hidden');
+        }
+    }
+
     const errBanner = document.getElementById('unlock-error-banner');
     if (errBanner) {
         errBanner.classList.add('hidden');
@@ -2651,6 +2678,8 @@ function toggleSellFreeDonation(isFree) {
             advisorInsight.innerHTML = `AI Advisor: <span class="font-bold text-emerald-300">Free Community Giveaway (Rs. 0)</span> — Promoted with #1 priority on homepage!`;
         }
         if (applyBtn) applyBtn.classList.add('hidden');
+        const pdfBox = document.getElementById('sell-pdf-upload-box');
+        if (pdfBox) pdfBox.classList.remove('hidden');
     } else {
         if (priceInput) {
             priceInput.readOnly = false;
@@ -2669,6 +2698,12 @@ function toggleSellFreeDonation(isFree) {
             advisorInsight.innerHTML = `AI Suggested Price: <span class="font-bold text-amber-300" id="ai-price-num">Rs. ${CURRENT_AI_SUGGESTED_PRICE || 680}</span> (Optimal for fast sale in 'Good' condition)`;
         }
         if (applyBtn) applyBtn.classList.remove('hidden');
+        const pdfBox = document.getElementById('sell-pdf-upload-box');
+        if (pdfBox) {
+            pdfBox.classList.add('hidden');
+            const pdfInput = document.getElementById('sell-pdf-file-input');
+            if (pdfInput) pdfInput.value = '';
+        }
     }
 }
 
@@ -2967,6 +3002,11 @@ async function handleCreateListingSubmit(e) {
         formData.append('image', imageFile, imageFile.name || 'book_photo.jpg');
     }
 
+    const pdfFile = document.getElementById('sell-pdf-file-input')?.files[0];
+    if (pdfFile && isFree) {
+        formData.append('pdf_file', pdfFile, pdfFile.name);
+    }
+
     try {
         const res = await fetch('/api/listings/create/', {
             method: 'POST',
@@ -2985,8 +3025,12 @@ async function handleCreateListingSubmit(e) {
                 }
             } catch (err) {}
 
-            // Clean up photo preview and form
+            // Clean up photo preview, pdf input, and form
             removeBookPhoto();
+            const pdfBox = document.getElementById('sell-pdf-upload-box');
+            if (pdfBox) pdfBox.classList.add('hidden');
+            const pdfInput = document.getElementById('sell-pdf-file-input');
+            if (pdfInput) pdfInput.value = '';
             document.getElementById('sell-book-form')?.reset();
 
             if (data.interstitial_ad) {

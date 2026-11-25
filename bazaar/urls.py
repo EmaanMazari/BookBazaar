@@ -18,6 +18,7 @@ urlpatterns = [
 
     # Books & Barcode Scan APIs
     path('api/books/scan/', views.scan_isbn, name='api_scan_isbn'),
+    path('api/books/<int:book_id>/download-pdf/', views.download_book_pdf, name='api_download_book_pdf'),
 
     # AI Book Recommendations & Smart Price Advisor APIs
     path('api/recommendations/', views.get_recommendations, name='api_recommendations'),
@@ -27,6 +28,7 @@ urlpatterns = [
     # Listings APIs (Phase 1 Marketplace)
     path('api/listings/', views.get_listings, name='api_listings'),
     path('api/listings/<int:listing_id>/', views.get_listing_detail, name='api_listing_detail'),
+    path('api/listings/<int:listing_id>/download-pdf/', views.download_listing_pdf, name='api_download_listing_pdf'),
     path('api/listings/create/', views.create_listing, name='api_create_listing'),
     path('api/listings/seller/<int:seller_id>/', views.get_seller_listings, name='api_seller_listings'),
     path('api/listings/<int:listing_id>/edit/', views.edit_listing, name='api_edit_listing'),

@@ -7,7 +7,8 @@ import urllib.parse
 from decimal import Decimal
 
 from django.shortcuts import render, redirect, get_object_or_404
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse, FileResponse
+from django.utils.text import slugify
 from django.utils import timezone
 from django.db import transaction
 from django.db.models import Q, Avg, Sum, Count, F
@@ -35,6 +36,7 @@ from bazaar.serializers import (
     MarketplaceReportSerializer, AdminNotificationSerializer
 )
 from bazaar.services.book_service import lookup_book_by_isbn, normalize_isbn
+from bazaar.services.pdf_service import generate_book_pdf
 from bazaar.services.payment_service import (
     process_contact_unlock,
     initiate_contact_unlock_payment,
@@ -611,6 +613,7 @@ def create_listing(request):
     description = data.get('description', '')
     photo_url = data.get('photo_url', '')
     image_file = request.FILES.get('image')
+    pdf_file = request.FILES.get('pdf_file')
 
     # Image validation
     if image_file:
@@ -618,6 +621,13 @@ def create_listing(request):
             validate_image_file(image_file)
         except ValidationError as e:
             return Response({'error': str(e.message if hasattr(e, 'message') else e)}, status=status.HTTP_400_BAD_REQUEST)
+
+    # Soft Copy PDF validation (Optional)
+    if pdf_file:
+        if not pdf_file.name.lower().endswith('.pdf'):
+            return Response({'error': 'Uploaded soft copy must be a valid .pdf file.'}, status=status.HTTP_400_BAD_REQUEST)
+        if pdf_file.size > 15 * 1024 * 1024:
+            return Response({'error': 'PDF file size exceeds 15MB limit.'}, status=status.HTTP_400_BAD_REQUEST)
 
     board = data.get('education_board', 'Higher Education / University')
     grade_class = data.get('grade_class', 'Bachelor / BS / Undergrad')
@@ -664,6 +674,7 @@ def create_listing(request):
         description=description,
         photo_url=photo_url or book.cover_image,
         image=image_file,
+        pdf_file=pdf_file,
         status=listing_status
     )
 
@@ -2713,4 +2724,55 @@ def get_ai_price_advice(request):
         'discount_percentage': discount_pct,
         'insight': insight
     })
+
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def download_listing_pdf(request, listing_id):
+    """
+    Downloads soft copy PDF for a book listing:
+    - If donor attached a real .pdf file, serves that directly.
+    - Otherwise, dynamically generates a valid, clean digital soft-copy PDF.
+    Zero broken downloads guaranteed.
+    """
+    listing = get_object_or_404(Listing, id=listing_id)
+    safe_title = slugify(listing.book.title) or f"bookzy_book_{listing.id}"
+    safe_filename = f"{safe_title}_softcopy.pdf"
+
+    if listing.pdf_file and listing.pdf_file.name:
+        try:
+            return FileResponse(listing.pdf_file.open('rb'), content_type='application/pdf', as_attachment=True, filename=safe_filename)
+        except Exception as e:
+            logger.warning(f"Failed to open uploaded PDF for listing {listing_id}, falling back to dynamic generation: {e}")
+
+    pdf_bytes = generate_book_pdf(listing)
+    response = HttpResponse(pdf_bytes, content_type='application/pdf')
+    response['Content-Disposition'] = f'attachment; filename="{safe_filename}"'
+    response['Content-Length'] = len(pdf_bytes)
+    return response
+
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def download_book_pdf(request, book_id):
+    """
+    Downloads soft copy PDF for a book model by book_id.
+    """
+    book = get_object_or_404(Book, id=book_id)
+    listing = Listing.objects.filter(book=book, pdf_file__isnull=False).exclude(pdf_file='').first()
+    safe_title = slugify(book.title) or f"bookzy_book_{book.id}"
+    safe_filename = f"{safe_title}_softcopy.pdf"
+
+    if listing and listing.pdf_file and listing.pdf_file.name:
+        try:
+            return FileResponse(listing.pdf_file.open('rb'), content_type='application/pdf', as_attachment=True, filename=safe_filename)
+        except Exception:
+            pass
+
+    pdf_bytes = generate_book_pdf(listing or book)
+    response = HttpResponse(pdf_bytes, content_type='application/pdf')
+    response['Content-Disposition'] = f'attachment; filename="{safe_filename}"'
+    response['Content-Length'] = len(pdf_bytes)
+    return response
+
 
