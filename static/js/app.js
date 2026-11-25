@@ -654,8 +654,8 @@ function renderShelves(listings) {
     }
 
     // 5. History & Literature
-    const historyContainer = document.getElementById('history-literature-container');
-    const historySection = document.getElementById('history-literature-section');
+    const historyContainer = document.getElementById('history-literature-container') || document.getElementById('history-books-grid');
+    const historySection = document.getElementById('history-books-section') || document.getElementById('history-literature-section');
     if (historyContainer) {
         const histItems = listings.filter(item => {
             const cat = item.book?.category || '';
@@ -666,7 +666,7 @@ function renderShelves(listings) {
             if (title.includes('physics') || title.includes('chemistry') || title.includes('mathematics') || title.includes('biology') || title.includes('computer')) {
                 return false;
             }
-            if (cat === 'Story Books' || cat === 'Fiction' || cat === 'Novels') {
+            if (cat === 'Story Books' || cat === 'Fiction' || cat === 'Novels' || cat === 'Medical & MBBS / BDS') {
                 return false;
             }
 
@@ -688,24 +688,33 @@ function renderShelves(listings) {
     }
 
     // 6. Medical & MBBS Textbooks
-    const medicalContainer = document.getElementById('medical-books-container');
+    const medicalContainer = document.getElementById('medical-books-grid') || document.getElementById('medical-books-container');
     const medicalSection = document.getElementById('medical-books-section');
     if (medicalContainer) {
         const medItems = listings.filter(item => {
-            const cat = item.book?.category || '';
-            const title = (item.book?.title || '').toLowerCase();
-            const subj = (item.book?.subject || '').toLowerCase();
+            const cat = item.book?.category || item.category || '';
+            const title = (item.book?.title || item.title || '').toLowerCase();
+            const subj = (item.book?.subject || item.subject || '').toLowerCase();
+            const desc = (item.description || item.book?.description || '').toLowerCase();
             return cat === 'Medical & MBBS / BDS' || cat.includes('Medical') || cat.includes('MBBS') || cat.includes('BDS') ||
                    title.includes('physiology') || title.includes('anatomy') || title.includes('pathology') || 
                    title.includes('biochemistry') || title.includes('mdcat') || title.includes('mbbs') || 
                    title.includes('guyton') || title.includes('snell') || title.includes('robbins') || 
-                   title.includes('chaurasia') || title.includes('harper') || subj.includes('medical');
+                   title.includes('chaurasia') || title.includes('harper') || 
+                   subj.includes('medical') || subj.includes('physiology') || subj.includes('anatomy') ||
+                   desc.includes('mbbs') || desc.includes('medical college') || desc.includes('mdcat');
         });
         if (medItems.length > 0) {
             medicalContainer.innerHTML = medItems.slice(0, 8).map(item => createBookCardHtml(item)).join('');
-            if (medicalSection) medicalSection.classList.remove('hidden');
+            if (medicalSection) {
+                medicalSection.classList.remove('hidden');
+                medicalSection.style.removeProperty('display');
+            }
         } else {
-            if (medicalSection) medicalSection.classList.add('hidden');
+            if (medicalSection) {
+                medicalSection.classList.remove('hidden');
+                medicalSection.style.removeProperty('display');
+            }
         }
     }
 }
@@ -807,17 +816,21 @@ function filterShelfSection(shelfKey) {
         ptb: document.getElementById('ptb-textbooks-section'),
         kids: document.getElementById('kids-books-section'),
         novels: document.getElementById('fiction-novels-section'),
-        history: document.getElementById('history-literature-section'),
+        history: document.getElementById('history-books-section') || document.getElementById('history-literature-section'),
         medical: document.getElementById('medical-books-section')
     };
 
     if (shelfKey === 'all') {
-        sections.all.forEach(sec => sec.classList.remove('hidden'));
+        sections.all.forEach(sec => {
+            sec.classList.remove('hidden');
+            sec.style.removeProperty('display');
+        });
     } else {
         sections.all.forEach(sec => sec.classList.add('hidden'));
         const target = sections[shelfKey];
         if (target) {
             target.classList.remove('hidden');
+            target.style.removeProperty('display');
             target.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
     }
