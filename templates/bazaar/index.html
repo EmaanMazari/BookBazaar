@@ -304,39 +304,39 @@
                 <!-- 📚 QUICK SHELF & CATEGORY NAVIGATOR PILLS -->
                 <!-- ============================================== -->
                 <div class="mb-4">
-                    <div class="flex flex-wrap items-center gap-1.5 sm:gap-2 pb-2 text-xs" id="shelf-pills-bar">
+                    <div class="flex items-center gap-1.5 pb-2 text-xs overflow-x-auto lg:overflow-x-visible whitespace-nowrap scrollbar-none" id="shelf-pills-bar">
                         <button type="button" onclick="filterShelfSection('all')" id="shelf-pill-all" 
-                                class="shelf-pill-btn active px-3 py-1.5 bg-blue-600 text-white font-extrabold rounded-xl shadow-xs shrink-0 flex items-center gap-1.5 transition-all">
+                                class="shelf-pill-btn active px-2.5 py-1.5 bg-blue-600 text-white font-extrabold rounded-xl shadow-xs shrink-0 flex items-center gap-1.5 whitespace-nowrap transition-all">
                             <i class="fa-solid fa-layer-group text-xs"></i> <span>All Shelves</span>
                         </button>
                         <button type="button" onclick="filterShelfSection('ai')" id="shelf-pill-ai" 
-                                class="shelf-pill-btn px-3 py-1.5 bg-white border border-slate-200 hover:border-blue-300 text-slate-700 font-bold rounded-xl shrink-0 flex items-center gap-1.5 transition-all">
-                            <i class="fa-solid fa-wand-magic-sparkles text-amber-500 text-xs"></i> <span>✨ AI Recommended</span>
+                                class="shelf-pill-btn px-2.5 py-1.5 bg-white border border-slate-200 hover:border-blue-300 text-slate-700 font-bold rounded-xl shrink-0 flex items-center gap-1.5 whitespace-nowrap transition-all">
+                            <i class="fa-solid fa-wand-magic-sparkles text-amber-500 text-xs"></i> <span>AI Recommended</span>
                         </button>
                         <button type="button" onclick="filterShelfSection('free')" id="shelf-pill-free" 
-                                class="shelf-pill-btn px-3 py-1.5 bg-white border border-emerald-300 text-emerald-800 hover:bg-emerald-50 font-black rounded-xl shrink-0 flex items-center gap-1.5 transition-all">
-                            <i class="fa-solid fa-gift text-emerald-600 text-xs"></i> <span>🎁 Free Donated</span>
+                                class="shelf-pill-btn px-2.5 py-1.5 bg-white border border-emerald-300 text-emerald-800 hover:bg-emerald-50 font-black rounded-xl shrink-0 flex items-center gap-1.5 whitespace-nowrap transition-all">
+                            <i class="fa-solid fa-gift text-emerald-600 text-xs"></i> <span>Free Donated</span>
                             <span class="px-1.5 py-0.2 bg-emerald-100 text-emerald-700 rounded-full text-[9px] font-black">Rs. 0</span>
                         </button>
                         <button type="button" onclick="filterShelfSection('ptb')" id="shelf-pill-ptb" 
-                                class="shelf-pill-btn px-3 py-1.5 bg-white border border-slate-200 hover:border-blue-300 text-slate-700 font-bold rounded-xl shrink-0 flex items-center gap-1.5 transition-all">
-                            <i class="fa-solid fa-book-bookmark text-blue-600 text-xs"></i> <span>📚 Punjab Textbooks (1–FSc)</span>
+                                class="shelf-pill-btn px-2.5 py-1.5 bg-white border border-slate-200 hover:border-blue-300 text-slate-700 font-bold rounded-xl shrink-0 flex items-center gap-1.5 whitespace-nowrap transition-all">
+                            <i class="fa-solid fa-book-bookmark text-blue-600 text-xs"></i> <span>Punjab Textbooks (1–FSc)</span>
                         </button>
                         <button type="button" onclick="filterShelfSection('kids')" id="shelf-pill-kids" 
-                                class="shelf-pill-btn px-3 py-1.5 bg-white border border-slate-200 hover:border-blue-300 text-slate-700 font-bold rounded-xl shrink-0 flex items-center gap-1.5 transition-all">
-                            <i class="fa-solid fa-shapes text-amber-500 text-xs"></i> <span>🧸 Kids & Story Books</span>
+                                class="shelf-pill-btn px-2.5 py-1.5 bg-white border border-slate-200 hover:border-blue-300 text-slate-700 font-bold rounded-xl shrink-0 flex items-center gap-1.5 whitespace-nowrap transition-all">
+                            <i class="fa-solid fa-shapes text-amber-500 text-xs"></i> <span>Kids & Story Books</span>
                         </button>
                         <button type="button" onclick="filterShelfSection('novels')" id="shelf-pill-novels" 
-                                class="shelf-pill-btn px-3 py-1.5 bg-white border border-slate-200 hover:border-blue-300 text-slate-700 font-bold rounded-xl shrink-0 flex items-center gap-1.5 transition-all">
-                            <i class="fa-solid fa-feather text-purple-600 text-xs"></i> <span>📖 Fiction & Novels</span>
+                                class="shelf-pill-btn px-2.5 py-1.5 bg-white border border-slate-200 hover:border-blue-300 text-slate-700 font-bold rounded-xl shrink-0 flex items-center gap-1.5 whitespace-nowrap transition-all">
+                            <i class="fa-solid fa-feather text-purple-600 text-xs"></i> <span>Fiction & Novels</span>
                         </button>
                         <button type="button" onclick="filterShelfSection('history')" id="shelf-pill-history" 
-                                class="shelf-pill-btn px-3 py-1.5 bg-white border border-slate-200 hover:border-blue-300 text-slate-700 font-bold rounded-xl shrink-0 flex items-center gap-1.5 transition-all">
-                            <i class="fa-solid fa-landmark text-amber-700 text-xs"></i> <span>🏛️ History & Literature</span>
+                                class="shelf-pill-btn px-2.5 py-1.5 bg-white border border-slate-200 hover:border-blue-300 text-slate-700 font-bold rounded-xl shrink-0 flex items-center gap-1.5 whitespace-nowrap transition-all">
+                            <i class="fa-solid fa-landmark text-amber-700 text-xs"></i> <span>History & Literature</span>
                         </button>
                         <button type="button" onclick="filterShelfSection('medical')" id="shelf-pill-medical" 
-                                class="shelf-pill-btn px-3 py-1.5 bg-white border border-slate-200 hover:border-rose-300 text-slate-700 font-bold rounded-xl shrink-0 flex items-center gap-1.5 transition-all">
-                            <i class="fa-solid fa-stethoscope text-rose-600 text-xs"></i> <span>🩺 Medical & MBBS</span>
+                                class="shelf-pill-btn px-2.5 py-1.5 bg-white border border-slate-200 hover:border-rose-300 text-slate-700 font-bold rounded-xl shrink-0 flex items-center gap-1.5 whitespace-nowrap transition-all">
+                            <i class="fa-solid fa-stethoscope text-rose-600 text-xs"></i> <span>Medical & MBBS</span>
                         </button>
                     </div>
                 </div>

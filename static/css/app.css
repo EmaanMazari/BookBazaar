@@ -283,3 +283,13 @@ section.tab-page,
     }
 }
 
+/* Hide scrollbars for horizontal pill bars */
+.scrollbar-none::-webkit-scrollbar {
+    display: none;
+}
+.scrollbar-none {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+
