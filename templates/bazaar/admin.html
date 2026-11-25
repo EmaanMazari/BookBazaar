@@ -4,23 +4,29 @@
 
 {% block content %}
 {% if is_admin_authenticated %}
-<div class="min-h-screen bg-slate-100 flex flex-col font-sans pb-16">
+<div class="min-h-screen bg-slate-100 flex flex-col font-sans">
     <!-- Top Admin Header -->
     <header class="bg-gradient-to-r from-slate-900 via-blue-950 to-slate-900 text-white py-3.5 px-4 sm:px-6 border-b border-blue-900/40 sticky top-0 z-40 shadow-md">
-        <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-3">
+        <div class="w-full flex flex-wrap items-center justify-between gap-3">
             <div class="flex items-center gap-3">
-                <a href="/" class="w-9 h-9 rounded-xl bg-blue-600 flex items-center justify-center font-black text-white text-sm shadow-md ring-2 ring-blue-400/30">
+                <!-- Mobile Navigation Toggle Button -->
+                <button id="admin-mobile-menu-btn" onclick="toggleAdminMobileSidebar()" 
+                        class="lg:hidden p-2 text-slate-300 hover:text-white hover:bg-white/10 rounded-xl focus:outline-none transition-all mr-0.5" 
+                        aria-label="Toggle Navigation Menu">
+                    <i class="fa-solid fa-bars text-base"></i>
+                </button>
+                <a href="/" class="w-9 h-9 rounded-xl bg-blue-600 flex items-center justify-center font-black text-white text-sm shadow-md ring-2 ring-blue-400/30 shrink-0">
                     BZ
                 </a>
                 <div>
-                    <h1 class="text-base font-extrabold text-blue-400 flex items-center gap-2">
+                    <h1 class="text-sm sm:text-base font-extrabold text-blue-400 flex items-center gap-2">
                         <span>Bookzy AI Operations & Admin Dashboard</span>
-                        <span class="text-[10px] bg-emerald-950/80 text-emerald-300 font-bold px-2.5 py-0.5 rounded-full border border-emerald-600 flex items-center gap-1.5">
+                        <span class="text-[10px] bg-emerald-950/80 text-emerald-300 font-bold px-2.5 py-0.5 rounded-full border border-emerald-600 hidden sm:inline-flex items-center gap-1.5">
                             <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
                             System Online
                         </span>
                     </h1>
-                    <p class="text-xs text-slate-400">National Academic & Used Books Marketplace Administration</p>
+                    <p class="text-xs text-slate-400 hidden sm:block">National Academic & Used Books Marketplace Administration</p>
                 </div>
             </div>
 
@@ -77,189 +83,273 @@
         </div>
     </header>
 
-    <!-- Main Container -->
-    <div class="max-w-7xl mx-auto w-full p-4 sm:p-6 flex-1 space-y-6">
+    <!-- Main Dashboard Layout (Left Sidebar + Spacious Content Area) -->
+    <div class="flex flex-1 w-full relative">
+        <!-- Mobile Sidebar Backdrop Overlay -->
+        <div id="admin-sidebar-backdrop" onclick="toggleAdminMobileSidebar(false)" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 hidden lg:hidden transition-opacity"></div>
 
-        <!-- Top Metrics KPI Cards -->
-        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3.5">
-            <!-- Retained Platform Revenue -->
-            <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-xs">
-                <div class="flex items-center justify-between text-xs text-slate-500 mb-1">
-                    <span class="font-semibold">Retained Rev</span>
-                    <i class="fa-solid fa-coins text-blue-600"></i>
-                </div>
-                <div class="text-xl font-black text-blue-900" id="stat-retained-rev">Rs. 0</div>
-                <span class="text-[10px] text-blue-700 font-bold bg-blue-50 px-1.5 py-0.5 rounded mt-1 inline-block border border-blue-200">
-                    Fee on Confirmed Deals
-                </span>
-            </div>
-
-            <!-- Refunded Fees -->
-            <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-xs">
-                <div class="flex items-center justify-between text-xs text-slate-500 mb-1">
-                    <span class="font-semibold">Total Refunded</span>
-                    <i class="fa-solid fa-rotate-left text-blue-600"></i>
-                </div>
-                <div class="text-xl font-black text-blue-700" id="stat-refunded-rev">Rs. 0</div>
-                <span class="text-[10px] text-blue-700 font-bold bg-blue-50 px-1.5 py-0.5 rounded mt-1 inline-block">
-                    100% Wallet Refunds
-                </span>
-            </div>
-
-            <!-- Total Contact Unlocks -->
-            <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-xs">
-                <div class="flex items-center justify-between text-xs text-slate-500 mb-1">
-                    <span class="font-semibold">Total Unlocks</span>
-                    <i class="fa-solid fa-key text-amber-500"></i>
-                </div>
-                <div class="text-xl font-black text-slate-900" id="stat-total-unlocks">0</div>
-                <span class="text-[10px] text-slate-500 mt-1 block">Rs. 50 platform fee</span>
-            </div>
-
-            <!-- Active Listings -->
-            <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-xs">
-                <div class="flex items-center justify-between text-xs text-slate-500 mb-1">
-                    <span class="font-semibold">Active Listings</span>
-                    <i class="fa-solid fa-book text-blue-600"></i>
-                </div>
-                <div class="text-xl font-black text-slate-900" id="stat-active-listings">0</div>
-                <span class="text-[10px] text-slate-500 mt-1 block" id="stat-pending-listings-sub">0 pending approval</span>
-            </div>
-
-            <!-- Registered Users -->
-            <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-xs">
-                <div class="flex items-center justify-between text-xs text-slate-500 mb-1">
-                    <span class="font-semibold">Users & Sellers</span>
-                    <i class="fa-solid fa-users text-purple-600"></i>
-                </div>
-                <div class="text-xl font-black text-slate-900" id="stat-total-users">0</div>
-                <span class="text-[10px] text-red-600 font-semibold mt-1 block" id="stat-blocked-users-sub">0 blocked</span>
-            </div>
-
-            <!-- Complaints & Reports -->
-            <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-xs">
-                <div class="flex items-center justify-between text-xs text-slate-500 mb-1">
-                    <span class="font-semibold">Safety Reports</span>
-                    <i class="fa-solid fa-shield-halved text-rose-600"></i>
-                </div>
-                <div class="text-xl font-black text-rose-700" id="stat-pending-reports">0</div>
-                <span class="text-[10px] text-rose-700 font-bold bg-rose-50 px-1.5 py-0.5 rounded mt-1 inline-block">
-                    Pending Review
-                </span>
-            </div>
-        </div>
-
-        <!-- Navigation Tabs Bar -->
-        <div class="flex overflow-x-auto border-b border-slate-200 gap-1 text-xs font-bold bg-white px-2 py-1.5 rounded-2xl shadow-xs">
-            <button onclick="switchAdminTab('overview')" id="tabbtn-overview" class="admin-tab active py-2.5 px-4 text-blue-700 border-b-2 border-blue-700 rounded-lg flex items-center gap-1.5 whitespace-nowrap">
-                <i class="fa-solid fa-chart-pie"></i> Analytics & Overview
-            </button>
-            <button onclick="switchAdminTab('users')" id="tabbtn-users" class="admin-tab py-2.5 px-4 text-slate-600 hover:text-slate-900 rounded-lg flex items-center gap-1.5 whitespace-nowrap">
-                <i class="fa-solid fa-users-gear"></i> User Management
-            </button>
-            <button onclick="switchAdminTab('listings')" id="tabbtn-listings" class="admin-tab py-2.5 px-4 text-slate-600 hover:text-slate-900 rounded-lg flex items-center gap-1.5 whitespace-nowrap">
-                <i class="fa-solid fa-book-open-reader"></i> Listings Moderation
-            </button>
-            <button onclick="switchAdminTab('sellers')" id="tabbtn-sellers" class="admin-tab py-2.5 px-4 text-slate-600 hover:text-slate-900 rounded-lg flex items-center gap-1.5 whitespace-nowrap">
-                <i class="fa-solid fa-user-check"></i> Seller Activity
-            </button>
-            <button onclick="switchAdminTab('transactions')" id="tabbtn-transactions" class="admin-tab py-2.5 px-4 text-slate-600 hover:text-slate-900 rounded-lg flex items-center gap-1.5 whitespace-nowrap">
-                <i class="fa-solid fa-money-bill-transfer"></i> Payment & Unlocks Ledger
-            </button>
-            <button onclick="switchAdminTab('reports')" id="tabbtn-reports" class="admin-tab py-2.5 px-4 text-slate-600 hover:text-slate-900 rounded-lg flex items-center gap-1.5 whitespace-nowrap">
-                <i class="fa-solid fa-triangle-exclamation"></i> Reports & Disputes
-                <span id="tab-report-badge" class="ml-1 px-1.5 py-0.2 bg-rose-600 text-white rounded-full text-[10px] hidden">0</span>
-            </button>
-            <button onclick="switchAdminTab('ads')" id="tabbtn-ads" class="admin-tab py-2.5 px-4 text-slate-600 hover:text-slate-900 rounded-lg flex items-center gap-1.5 whitespace-nowrap">
-                <i class="fa-solid fa-rectangle-ad"></i> Advertisements
-            </button>
-            <button onclick="switchAdminTab('settings')" id="tabbtn-settings" class="admin-tab py-2.5 px-4 text-slate-600 hover:text-slate-900 rounded-lg flex items-center gap-1.5 whitespace-nowrap">
-                <i class="fa-solid fa-sliders"></i> Platform Settings
-            </button>
-        </div>
-
-        <!-- ============================================================== -->
-        <!-- TAB 1: OVERVIEW & ANALYTICS WIDGETS -->
-        <!-- ============================================================== -->
-        <div id="admin-sec-overview" class="admin-sec space-y-5">
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-                <!-- Payment Gateway Distribution Card -->
-                <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs space-y-3">
-                    <h3 class="text-xs font-extrabold uppercase tracking-wider text-slate-800 flex items-center justify-between">
-                        <span>Payment Gateway Share</span>
-                        <i class="fa-solid fa-chart-bar text-pakistan-600"></i>
-                    </h3>
-                    <p class="text-[11px] text-slate-500">Breakdown of Rs. 50 contact unlock fees collected per local gateway.</p>
-                    <div id="gateway-distribution-bars" class="space-y-2.5 pt-2">
-                        <!-- Rendered dynamically -->
+        <!-- Left Sidebar Navigation (240px Desktop, Collapsible Drawer on Mobile) -->
+        <aside id="admin-sidebar" class="fixed lg:sticky top-0 lg:top-[61px] left-0 h-full lg:h-[calc(100vh-61px)] w-[240px] shrink-0 bg-white border-r border-slate-200 z-50 lg:z-30 flex flex-col justify-between overflow-y-auto transform -translate-x-full lg:translate-x-0 transition-transform duration-200 ease-in-out shadow-2xl lg:shadow-none py-5 px-3">
+            <div class="space-y-4">
+                <!-- Mobile Drawer Header -->
+                <div class="flex items-center justify-between pb-3 mb-2 border-b border-slate-100 lg:hidden px-1">
+                    <div class="flex items-center gap-2">
+                        <div class="w-7 h-7 rounded-lg bg-blue-600 flex items-center justify-center font-black text-white text-xs">BZ</div>
+                        <span class="text-xs font-black text-slate-800">Admin Navigation</span>
                     </div>
+                    <button onclick="toggleAdminMobileSidebar(false)" class="p-1.5 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-lg" aria-label="Close Navigation Menu">
+                        <i class="fa-solid fa-xmark text-sm"></i>
+                    </button>
                 </div>
 
-                <!-- Marketplace Listing Status Breakdown -->
-                <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs space-y-3">
-                    <h3 class="text-xs font-extrabold uppercase tracking-wider text-slate-800 flex items-center justify-between">
-                        <span>Book Listing Statuses</span>
-                        <i class="fa-solid fa-layer-group text-blue-600"></i>
-                    </h3>
-                    <p class="text-[11px] text-slate-500">Real-time breakdown of all books uploaded across Pakistan.</p>
-                    <div id="listing-status-breakdown" class="space-y-2 pt-2">
-                        <!-- Rendered dynamically -->
+                <!-- Navigation Section Label -->
+                <div class="hidden lg:block px-3 text-[10px] font-extrabold uppercase tracking-wider text-slate-400">
+                    Operations Menu
+                </div>
+
+                <!-- Vertical Tabs Navigation -->
+                <nav class="space-y-1.5">
+                    <button onclick="switchAdminTab('overview')" id="tabbtn-overview" 
+                            class="admin-tab active w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-xs font-bold text-blue-700 bg-blue-50 border-l-4 border-blue-700 shadow-xs transition-all text-left">
+                        <i class="fa-solid fa-chart-pie w-5 text-center text-sm shrink-0"></i>
+                        <span class="truncate">Analytics & Overview</span>
+                    </button>
+                    <button onclick="switchAdminTab('users')" id="tabbtn-users" 
+                            class="admin-tab w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-xs font-bold text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-all text-left">
+                        <i class="fa-solid fa-users-gear w-5 text-center text-sm shrink-0"></i>
+                        <span class="truncate">User Management</span>
+                    </button>
+                    <button onclick="switchAdminTab('listings')" id="tabbtn-listings" 
+                            class="admin-tab w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-xs font-bold text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-all text-left">
+                        <i class="fa-solid fa-book-open-reader w-5 text-center text-sm shrink-0"></i>
+                        <span class="truncate">Listings Moderation</span>
+                    </button>
+                    <button onclick="switchAdminTab('sellers')" id="tabbtn-sellers" 
+                            class="admin-tab w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-xs font-bold text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-all text-left">
+                        <i class="fa-solid fa-user-check w-5 text-center text-sm shrink-0"></i>
+                        <span class="truncate">Seller Activity</span>
+                    </button>
+                    <button onclick="switchAdminTab('transactions')" id="tabbtn-transactions" 
+                            class="admin-tab w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-xs font-bold text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-all text-left">
+                        <i class="fa-solid fa-money-bill-transfer w-5 text-center text-sm shrink-0"></i>
+                        <span class="truncate">Payment & Unlocks Ledger</span>
+                    </button>
+                    <button onclick="switchAdminTab('reports')" id="tabbtn-reports" 
+                            class="admin-tab w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-xs font-bold text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-all text-left">
+                        <i class="fa-solid fa-triangle-exclamation w-5 text-center text-sm shrink-0"></i>
+                        <span class="truncate">Reports & Disputes</span>
+                        <span id="tab-report-badge" class="ml-auto px-1.5 py-0.2 bg-rose-600 text-white rounded-full text-[10px] hidden font-extrabold">0</span>
+                    </button>
+                    <button onclick="switchAdminTab('ads')" id="tabbtn-ads" 
+                            class="admin-tab w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-xs font-bold text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-all text-left">
+                        <i class="fa-solid fa-rectangle-ad w-5 text-center text-sm shrink-0"></i>
+                        <span class="truncate">Advertisements</span>
+                    </button>
+                    <button onclick="switchAdminTab('settings')" id="tabbtn-settings" 
+                            class="admin-tab w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-xs font-bold text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-all text-left">
+                        <i class="fa-solid fa-sliders w-5 text-center text-sm shrink-0"></i>
+                        <span class="truncate">Platform Settings</span>
+                    </button>
+                </nav>
+            </div>
+
+            <!-- Sidebar Bottom Status Widget -->
+            <div class="mt-auto pt-4 border-t border-slate-100 px-1 space-y-2">
+                <div class="p-3 bg-slate-50 rounded-xl border border-slate-200/80 text-[11px] text-slate-500">
+                    <div class="flex items-center gap-2 mb-1">
+                        <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                        <span class="font-extrabold text-slate-800">Admin Control</span>
                     </div>
+                    <div class="text-[10px] text-slate-400">Bookzy AI Operational Hub</div>
                 </div>
+            </div>
+        </aside>
 
-                <!-- Platform Monetization Quick Controls -->
-                <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs space-y-3">
-                    <h3 class="text-xs font-extrabold uppercase tracking-wider text-slate-800 flex items-center justify-between">
-                        <span>Quick Policy Controls</span>
-                        <i class="fa-solid fa-gear text-purple-600"></i>
-                    </h3>
-                    <div class="space-y-3 pt-1">
+        <!-- Main Content Area (Spacious 24px-32px padding: p-6 lg:p-8) -->
+        <div id="admin-main-content" class="flex-1 min-w-0 p-6 lg:p-8 space-y-8 bg-slate-100 overflow-x-hidden">
+
+            <!-- Top Metrics KPI Cards (Balanced 3 Columns x 2 Rows Layout on Desktop, 2 on Tablet, 1 on Mobile, gap-5) -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+                <!-- Retained Platform Revenue -->
+                <div class="bg-white p-5 sm:p-6 rounded-2xl border border-slate-200/90 shadow-xs hover:shadow-sm transition-all flex flex-col justify-between">
+                    <div class="flex items-start justify-between gap-3">
                         <div>
-                            <label class="block text-xs font-bold text-slate-700 mb-1">Contact Unlock Fee (PKR)</label>
-                            <div class="flex items-center gap-2">
-                                <span class="text-xs font-bold text-slate-400">Rs.</span>
-                                <input type="number" id="quick-fee-input" min="10" max="200" step="5" class="w-full text-xs font-black p-2 border border-slate-300 rounded-lg">
+                            <span class="text-xs font-bold text-slate-500 uppercase tracking-wider block">Retained Rev</span>
+                            <div class="text-2xl sm:text-3xl font-black text-blue-900 mt-2 tracking-tight" id="stat-retained-rev">Rs. 0</div>
+                        </div>
+                        <div class="w-12 h-12 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center text-lg border border-blue-100/80 shrink-0">
+                            <i class="fa-solid fa-coins"></i>
+                        </div>
+                    </div>
+                    <div class="mt-3 pt-3 border-t border-slate-100 flex items-center justify-between">
+                        <span class="text-[10px] text-blue-700 font-bold bg-blue-50 px-2 py-0.5 rounded-md border border-blue-200">
+                            Fee on Confirmed Deals
+                        </span>
+                        <span class="text-[10px] text-slate-400 font-medium">Platform net</span>
+                    </div>
+                </div>
+
+                <!-- Refunded Fees -->
+                <div class="bg-white p-5 sm:p-6 rounded-2xl border border-slate-200/90 shadow-xs hover:shadow-sm transition-all flex flex-col justify-between">
+                    <div class="flex items-start justify-between gap-3">
+                        <div>
+                            <span class="text-xs font-bold text-slate-500 uppercase tracking-wider block">Total Refunded</span>
+                            <div class="text-2xl sm:text-3xl font-black text-blue-700 mt-2 tracking-tight" id="stat-refunded-rev">Rs. 0</div>
+                        </div>
+                        <div class="w-12 h-12 rounded-2xl bg-sky-50 text-sky-600 flex items-center justify-center text-lg border border-sky-100/80 shrink-0">
+                            <i class="fa-solid fa-rotate-left"></i>
+                        </div>
+                    </div>
+                    <div class="mt-3 pt-3 border-t border-slate-100 flex items-center justify-between">
+                        <span class="text-[10px] text-blue-700 font-bold bg-blue-50 px-2 py-0.5 rounded-md border border-blue-100">
+                            100% Wallet Refunds
+                        </span>
+                        <span class="text-[10px] text-slate-400 font-medium">Buyer protected</span>
+                    </div>
+                </div>
+
+                <!-- Total Contact Unlocks -->
+                <div class="bg-white p-5 sm:p-6 rounded-2xl border border-slate-200/90 shadow-xs hover:shadow-sm transition-all flex flex-col justify-between">
+                    <div class="flex items-start justify-between gap-3">
+                        <div>
+                            <span class="text-xs font-bold text-slate-500 uppercase tracking-wider block">Total Unlocks</span>
+                            <div class="text-2xl sm:text-3xl font-black text-slate-900 mt-2 tracking-tight" id="stat-total-unlocks">0</div>
+                        </div>
+                        <div class="w-12 h-12 rounded-2xl bg-amber-50 text-amber-500 flex items-center justify-center text-lg border border-amber-100/80 shrink-0">
+                            <i class="fa-solid fa-key"></i>
+                        </div>
+                    </div>
+                    <div class="mt-3 pt-3 border-t border-slate-100 flex items-center justify-between">
+                        <span class="text-[10px] text-slate-500 font-medium">Rs. 50 platform fee</span>
+                        <span class="text-[10px] text-amber-600 font-bold bg-amber-50 px-2 py-0.5 rounded-md">Transactions</span>
+                    </div>
+                </div>
+
+                <!-- Active Listings -->
+                <div class="bg-white p-5 sm:p-6 rounded-2xl border border-slate-200/90 shadow-xs hover:shadow-sm transition-all flex flex-col justify-between">
+                    <div class="flex items-start justify-between gap-3">
+                        <div>
+                            <span class="text-xs font-bold text-slate-500 uppercase tracking-wider block">Active Listings</span>
+                            <div class="text-2xl sm:text-3xl font-black text-slate-900 mt-2 tracking-tight" id="stat-active-listings">0</div>
+                        </div>
+                        <div class="w-12 h-12 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center text-lg border border-blue-100/80 shrink-0">
+                            <i class="fa-solid fa-book"></i>
+                        </div>
+                    </div>
+                    <div class="mt-3 pt-3 border-t border-slate-100 flex items-center justify-between">
+                        <span class="text-[10px] text-slate-500 font-medium" id="stat-pending-listings-sub">0 pending approval</span>
+                        <span class="text-[10px] text-blue-700 font-bold bg-blue-50 px-2 py-0.5 rounded-md">Nationwide</span>
+                    </div>
+                </div>
+
+                <!-- Registered Users -->
+                <div class="bg-white p-5 sm:p-6 rounded-2xl border border-slate-200/90 shadow-xs hover:shadow-sm transition-all flex flex-col justify-between">
+                    <div class="flex items-start justify-between gap-3">
+                        <div>
+                            <span class="text-xs font-bold text-slate-500 uppercase tracking-wider block">Users & Sellers</span>
+                            <div class="text-2xl sm:text-3xl font-black text-slate-900 mt-2 tracking-tight" id="stat-total-users">0</div>
+                        </div>
+                        <div class="w-12 h-12 rounded-2xl bg-purple-50 text-purple-600 flex items-center justify-center text-lg border border-purple-100/80 shrink-0">
+                            <i class="fa-solid fa-users"></i>
+                        </div>
+                    </div>
+                    <div class="mt-3 pt-3 border-t border-slate-100 flex items-center justify-between">
+                        <span class="text-[10px] text-red-600 font-semibold" id="stat-blocked-users-sub">0 blocked</span>
+                        <span class="text-[10px] text-purple-700 font-bold bg-purple-50 px-2 py-0.5 rounded-md">Verified community</span>
+                    </div>
+                </div>
+
+                <!-- Complaints & Reports -->
+                <div class="bg-white p-5 sm:p-6 rounded-2xl border border-slate-200/90 shadow-xs hover:shadow-sm transition-all flex flex-col justify-between">
+                    <div class="flex items-start justify-between gap-3">
+                        <div>
+                            <span class="text-xs font-bold text-slate-500 uppercase tracking-wider block">Safety Reports</span>
+                            <div class="text-2xl sm:text-3xl font-black text-rose-700 mt-2 tracking-tight" id="stat-pending-reports">0</div>
+                        </div>
+                        <div class="w-12 h-12 rounded-2xl bg-rose-50 text-rose-600 flex items-center justify-center text-lg border border-rose-100/80 shrink-0">
+                            <i class="fa-solid fa-shield-halved"></i>
+                        </div>
+                    </div>
+                    <div class="mt-3 pt-3 border-t border-slate-100 flex items-center justify-between">
+                        <span class="text-[10px] text-rose-700 font-bold bg-rose-50 px-2 py-0.5 rounded-md border border-rose-200">
+                            Pending Review
+                        </span>
+                        <span class="text-[10px] text-slate-400 font-medium">Disputes</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ============================================================== -->
+            <!-- TAB 1: OVERVIEW & ANALYTICS WIDGETS -->
+            <!-- ============================================================== -->
+            <div id="admin-sec-overview" class="admin-sec space-y-6">
+                <!-- 2-Column Grid: Payment Gateway Share & Book Listing Statuses side-by-side -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <!-- Payment Gateway Distribution Card -->
+                    <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-xs space-y-4">
+                        <div class="flex items-center justify-between pb-2 border-b border-slate-100">
+                            <div>
+                                <h3 class="text-xs font-extrabold uppercase tracking-wider text-slate-800">
+                                    Payment Gateway Share
+                                </h3>
+                                <p class="text-[11px] text-slate-500 mt-0.5">Breakdown of Rs. 50 contact unlock fees collected per local gateway.</p>
+                            </div>
+                            <div class="w-9 h-9 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center text-sm border border-blue-100 shrink-0">
+                                <i class="fa-solid fa-chart-bar"></i>
                             </div>
                         </div>
-                        <div class="flex items-center justify-between pt-1">
-                            <span class="text-xs font-semibold text-slate-700">Moderate New Listings:</span>
-                            <input type="checkbox" id="quick-approval-input" class="w-4 h-4 text-blue-700 rounded">
+                        <div id="gateway-distribution-bars" class="space-y-3 pt-1">
+                            <!-- Rendered dynamically -->
                         </div>
-                        <button onclick="saveQuickSettings()" class="w-full py-2 bg-blue-700 hover:bg-blue-800 text-white rounded-xl text-xs font-bold transition-all shadow-xs">
-                            Apply Platform Rules
-                        </button>
+                    </div>
+
+                    <!-- Marketplace Listing Status Breakdown -->
+                    <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-xs space-y-4">
+                        <div class="flex items-center justify-between pb-2 border-b border-slate-100">
+                            <div>
+                                <h3 class="text-xs font-extrabold uppercase tracking-wider text-slate-800">
+                                    Book Listing Statuses
+                                </h3>
+                                <p class="text-[11px] text-slate-500 mt-0.5">Real-time breakdown of all books uploaded across Pakistan.</p>
+                            </div>
+                            <div class="w-9 h-9 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center text-sm border border-blue-100 shrink-0">
+                                <i class="fa-solid fa-layer-group"></i>
+                            </div>
+                        </div>
+                        <div id="listing-status-breakdown" class="space-y-2.5 pt-1">
+                            <!-- Rendered dynamically -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Activity Ticker Table -->
+                <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs space-y-4">
+                    <div class="flex items-center justify-between pb-2 border-b border-slate-100">
+                        <h3 class="text-xs font-extrabold uppercase tracking-wider text-slate-800 flex items-center gap-2">
+                            <i class="fa-solid fa-clock-rotate-left text-blue-600"></i> Real-Time Unlock & Transaction Feed
+                        </h3>
+                        <span class="text-xs text-slate-500 font-medium">Shows latest 10 transactions</span>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-xs">
+                            <thead>
+                                <tr class="bg-slate-50 text-slate-600 border-b border-slate-200">
+                                    <th class="py-2.5 px-3">Reference</th>
+                                    <th class="py-2.5 px-3">Book Title</th>
+                                    <th class="py-2.5 px-3">Buyer</th>
+                                    <th class="py-2.5 px-3">Seller</th>
+                                    <th class="py-2.5 px-3">Gateway</th>
+                                    <th class="py-2.5 px-3">Fee</th>
+                                    <th class="py-2.5 px-3">Deal Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="overview-recent-txns-body" class="divide-y divide-slate-100">
+                                <!-- Populated dynamically -->
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </div>
-
-            <!-- Recent Activity Ticker Table -->
-            <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-xs space-y-3">
-                <div class="flex items-center justify-between">
-                    <h3 class="text-xs font-extrabold uppercase tracking-wider text-slate-800 flex items-center gap-2">
-                        <i class="fa-solid fa-clock-rotate-left text-slate-400"></i> Real-Time Unlock & Transaction Feed
-                    </h3>
-                    <span class="text-xs text-slate-500 font-medium">Shows latest 10 transactions</span>
-                </div>
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left text-xs">
-                        <thead>
-                            <tr class="bg-slate-50 text-slate-600 border-b border-slate-200">
-                                <th class="py-2 px-3">Reference</th>
-                                <th class="py-2 px-3">Book Title</th>
-                                <th class="py-2 px-3">Buyer</th>
-                                <th class="py-2 px-3">Seller</th>
-                                <th class="py-2 px-3">Gateway</th>
-                                <th class="py-2 px-3">Fee</th>
-                                <th class="py-2 px-3">Deal Status</th>
-                            </tr>
-                        </thead>
-                        <tbody id="overview-recent-txns-body" class="divide-y divide-slate-100">
-                            <!-- Populated dynamically -->
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
 
         <!-- ============================================================== -->
         <!-- TAB 2: USER MANAGEMENT & ANTI-FRAUD -->
@@ -564,61 +654,110 @@
         <!-- ============================================================== -->
         <!-- TAB 8: PLATFORM MONETIZATION & POLICIES SETTINGS -->
         <!-- ============================================================== -->
-        <div id="admin-sec-settings" class="admin-sec hidden space-y-4">
-            <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs max-w-3xl space-y-5">
-                <h3 class="text-sm font-extrabold text-slate-900 border-b border-slate-100 pb-3 flex items-center gap-2">
-                    <i class="fa-solid fa-shield-halved text-blue-700"></i> Platform Economics & Safety Policies
-                </h3>
-
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-                    <div>
-                        <label class="block text-xs font-bold text-slate-700 mb-1.5">
-                            Seller Contact Unlock Fee (PKR)
-                        </label>
-                        <div class="flex items-center gap-2">
-                            <span class="text-sm font-bold text-slate-500">Rs.</span>
-                            <input type="number" id="setting-full-fee" min="10" max="250" step="5" class="w-full text-sm font-black p-2.5 border border-slate-300 rounded-xl">
+        <div id="admin-sec-settings" class="admin-sec hidden space-y-6">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Column 1: Quick Policy Controls (Moved from Overview) -->
+                <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-xs space-y-4 lg:col-span-1">
+                    <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+                        <div>
+                            <h3 class="text-xs font-extrabold uppercase tracking-wider text-slate-800">
+                                Quick Policy Controls
+                            </h3>
+                            <p class="text-[11px] text-slate-500 mt-0.5">Instant operational overrides for fees & moderation.</p>
                         </div>
-                        <p class="text-[11px] text-slate-500 mt-1">Platform fee paid by buyer to reveal phone & WhatsApp.</p>
+                        <div class="w-9 h-9 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center text-sm border border-purple-100 shrink-0">
+                            <i class="fa-solid fa-bolt"></i>
+                        </div>
                     </div>
-
-                    <div>
-                        <label class="block text-xs font-bold text-slate-700 mb-1.5">
-                            Auto-Refund Timeout (Days)
-                        </label>
-                        <input type="number" id="setting-refund-days" min="1" max="30" class="w-full text-sm font-black p-2.5 border border-slate-300 rounded-xl">
-                        <p class="text-[11px] text-slate-500 mt-1">Number of days before unconfirmed deal auto-refunds to buyer wallet.</p>
+                    <div class="space-y-4 pt-1">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 mb-1.5">Contact Unlock Fee (PKR)</label>
+                            <div class="flex items-center gap-2">
+                                <span class="text-xs font-bold text-slate-400">Rs.</span>
+                                <input type="number" id="quick-fee-input" min="10" max="200" step="5" class="w-full text-xs font-black p-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                            </div>
+                            <p class="text-[10px] text-slate-400 mt-1">Applies immediately to buyer contact unlocks.</p>
+                        </div>
+                        <div class="p-3 bg-slate-50 rounded-xl border border-slate-200/80">
+                            <label class="flex items-center justify-between cursor-pointer">
+                                <div>
+                                    <span class="text-xs font-bold text-slate-800 block">Moderate New Listings</span>
+                                    <span class="text-[10px] text-slate-500">Require manual approval</span>
+                                </div>
+                                <input type="checkbox" id="quick-approval-input" class="w-4 h-4 text-blue-700 rounded">
+                            </label>
+                        </div>
+                        <button onclick="saveQuickSettings()" class="w-full py-2.5 bg-blue-700 hover:bg-blue-800 text-white rounded-xl text-xs font-bold transition-all shadow-xs flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-check"></i>
+                            <span>Apply Quick Platform Rules</span>
+                        </button>
                     </div>
                 </div>
 
-                <div class="space-y-3 pt-3 border-t border-slate-100">
-                    <label class="flex items-center gap-3 cursor-pointer">
-                        <input type="checkbox" id="setting-full-approval" class="w-4 h-4 text-blue-700 rounded">
+                <!-- Column 2: Platform Economics & Safety Policies -->
+                <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs space-y-5 lg:col-span-2">
+                    <div class="flex items-center justify-between pb-3 border-b border-slate-100">
                         <div>
-                            <span class="block text-xs font-bold text-slate-800">Require Admin Approval For New Book Listings</span>
-                            <span class="block text-[11px] text-slate-500">When enabled, newly uploaded listings remain pending until approved by a moderator.</span>
+                            <h3 class="text-xs font-extrabold uppercase tracking-wider text-slate-800 flex items-center gap-2">
+                                <i class="fa-solid fa-shield-halved text-blue-700"></i> Platform Economics & Safety Policies
+                            </h3>
+                            <p class="text-[11px] text-slate-500 mt-0.5">Comprehensive marketplace parameters, timeout windows, and promotion controls.</p>
                         </div>
-                    </label>
+                        <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200">System Config</span>
+                    </div>
 
-                    <label class="flex items-center gap-3 cursor-pointer">
-                        <input type="checkbox" id="setting-full-sponsored" class="w-4 h-4 text-blue-700 rounded">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
                         <div>
-                            <span class="block text-xs font-bold text-slate-800">Enable Sponsored Listings Promotion</span>
-                            <span class="block text-[11px] text-slate-500">Allows promoted books to appear highlighted at the top of category feeds.</span>
+                            <label class="block text-xs font-bold text-slate-700 mb-1.5">
+                                Seller Contact Unlock Fee (PKR)
+                            </label>
+                            <div class="flex items-center gap-2">
+                                <span class="text-sm font-bold text-slate-500">Rs.</span>
+                                <input type="number" id="setting-full-fee" min="10" max="250" step="5" class="w-full text-sm font-black p-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                            </div>
+                            <p class="text-[11px] text-slate-500 mt-1">Platform fee paid by buyer to reveal phone & WhatsApp.</p>
                         </div>
-                    </label>
-                </div>
 
-                <div class="pt-4 border-t border-slate-100 flex justify-end">
-                    <button onclick="saveFullPlatformSettings()" class="px-6 py-2.5 bg-blue-700 hover:bg-blue-800 text-white rounded-xl text-xs font-bold shadow-md transition-all">
-                        Save Platform Configuration
-                    </button>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 mb-1.5">
+                                Auto-Refund Timeout (Days)
+                            </label>
+                            <input type="number" id="setting-refund-days" min="1" max="30" class="w-full text-sm font-black p-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                            <p class="text-[11px] text-slate-500 mt-1">Number of days before unconfirmed deal auto-refunds to buyer wallet.</p>
+                        </div>
+                    </div>
+
+                    <div class="space-y-3 pt-3 border-t border-slate-100">
+                        <label class="flex items-start gap-3 cursor-pointer p-3 rounded-xl hover:bg-slate-50 transition-colors">
+                            <input type="checkbox" id="setting-full-approval" class="w-4 h-4 text-blue-700 rounded mt-0.5">
+                            <div>
+                                <span class="block text-xs font-bold text-slate-800">Require Admin Approval For New Book Listings</span>
+                                <span class="block text-[11px] text-slate-500">When enabled, newly uploaded listings remain pending until approved by a moderator.</span>
+                            </div>
+                        </label>
+
+                        <label class="flex items-start gap-3 cursor-pointer p-3 rounded-xl hover:bg-slate-50 transition-colors">
+                            <input type="checkbox" id="setting-full-sponsored" class="w-4 h-4 text-blue-700 rounded mt-0.5">
+                            <div>
+                                <span class="block text-xs font-bold text-slate-800">Enable Sponsored Listings Promotion</span>
+                                <span class="block text-[11px] text-slate-500">Allows promoted books to appear highlighted at the top of category feeds.</span>
+                            </div>
+                        </label>
+                    </div>
+
+                    <div class="pt-4 border-t border-slate-100 flex justify-end">
+                        <button onclick="saveFullPlatformSettings()" class="px-6 py-2.5 bg-blue-700 hover:bg-blue-800 text-white rounded-xl text-xs font-bold shadow-md transition-all flex items-center gap-2">
+                            <i class="fa-solid fa-floppy-disk"></i>
+                            <span>Save Platform Configuration</span>
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
 
-    </div>
-</div>
+        </div> <!-- close admin-main-content -->
+    </div> <!-- close flex container with sidebar -->
+</div> <!-- close min-h-screen -->
 
 <!-- ============================================================== -->
 <!-- MODAL: VIEW USER ACTIVITY & SELLER DETAILS -->
@@ -1924,21 +2063,46 @@
     }
 
     // -------------------------------------------------------------
-    // TAB SWITCHING
+    // TAB SWITCHING & SIDEBAR DRAWER NAVIGATION
     // -------------------------------------------------------------
     function switchAdminTab(tabName) {
         document.querySelectorAll('.admin-sec').forEach(s => s.classList.add('hidden'));
         document.querySelectorAll('.admin-tab').forEach(b => {
-            b.classList.remove('active', 'text-blue-700', 'border-b-2', 'border-blue-700');
-            b.classList.add('text-slate-600');
+            b.classList.remove('active', 'text-blue-700', 'bg-blue-50', 'border-l-4', 'border-blue-700', 'shadow-xs');
+            b.classList.add('text-slate-600', 'hover:bg-slate-50', 'hover:text-slate-900');
         });
 
         const targetSec = document.getElementById(`admin-sec-${tabName}`);
         const targetBtn = document.getElementById(`tabbtn-${tabName}`);
         if (targetSec) targetSec.classList.remove('hidden');
         if (targetBtn) {
-            targetBtn.classList.add('active', 'text-blue-700', 'border-b-2', 'border-blue-700');
-            targetBtn.classList.remove('text-slate-600');
+            targetBtn.classList.add('active', 'text-blue-700', 'bg-blue-50', 'border-l-4', 'border-blue-700', 'shadow-xs');
+            targetBtn.classList.remove('text-slate-600', 'hover:bg-slate-50', 'hover:text-slate-900');
+        }
+
+        // Close mobile drawer if open
+        toggleAdminMobileSidebar(false);
+
+        // Scroll to top on mobile tab switches
+        if (window.innerWidth < 1024) {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    }
+
+    function toggleAdminMobileSidebar(forceState) {
+        const sidebar = document.getElementById('admin-sidebar');
+        const backdrop = document.getElementById('admin-sidebar-backdrop');
+        if (!sidebar) return;
+
+        const isCurrentlyOpen = !sidebar.classList.contains('-translate-x-full');
+        const shouldOpen = forceState !== undefined ? forceState : !isCurrentlyOpen;
+
+        if (shouldOpen) {
+            sidebar.classList.remove('-translate-x-full');
+            if (backdrop) backdrop.classList.remove('hidden');
+        } else {
+            sidebar.classList.add('-translate-x-full');
+            if (backdrop) backdrop.classList.add('hidden');
         }
     }
 </script>
