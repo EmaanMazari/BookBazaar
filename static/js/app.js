@@ -185,8 +185,11 @@ async function loadInitialData() {
         STATE.ads = await adsRes.json();
 
         // Default active user is Demo Buyer or first available user
+        const isExplicitlyLoggedOut = localStorage.getItem('bookzy_logged_out') === 'true';
         const savedUserId = localStorage.getItem('bb_user_id');
-        if (savedUserId) {
+        if (isExplicitlyLoggedOut) {
+            STATE.currentUser = null;
+        } else if (savedUserId) {
             STATE.currentUser = STATE.allUsers.find(u => u.id == savedUserId) || STATE.allUsers[0];
         } else {
             STATE.currentUser = STATE.allUsers.find(u => u.username === 'buyer_test') || STATE.allUsers[0];
@@ -253,23 +256,30 @@ function renderUserSwitcher() {
 }
 
 function updateUserUI() {
-    if (!STATE.currentUser) return;
+    const authBtnLabel = document.getElementById('auth-btn-label');
+    const topWallet = document.getElementById('top-user-wallet-display');
+    const topBal = document.getElementById('top-user-balance');
+
+    if (!STATE.currentUser) {
+        if (authBtnLabel) authBtnLabel.textContent = 'Sign In';
+        if (topWallet) topWallet.textContent = 'Rs. 0';
+        if (topBal) topBal.textContent = 'Rs. 0';
+        return;
+    }
+
     const nameEl = document.getElementById('current-user-name');
     const balEl = document.getElementById('current-user-balance');
-    const topBal = document.getElementById('top-user-balance');
 
     if (nameEl) nameEl.textContent = STATE.currentUser.full_name;
     if (balEl) balEl.textContent = `Rs. ${parseFloat(STATE.currentUser.wallet_balance).toFixed(0)}`;
     if (topBal) topBal.textContent = `Rs. ${parseFloat(STATE.currentUser.wallet_balance).toFixed(0)}`;
-    const topWallet = document.getElementById('top-user-wallet-display');
-    if (topWallet) topWallet.textContent = `Rs. ${parseFloat(STATE.currentUser.wallet_balance || 0).toFixed(0)}`;
+    if (topWallet) topWallet.textContent = `Rs. ${parseFloat(STATE.currentUser.wallet_balance || 150).toFixed(0)}`;
 
     const profileName = document.getElementById('profile-tab-name');
     const profilePhone = document.getElementById('profile-tab-phone');
     const profileCity = document.getElementById('profile-tab-city');
     const profileRating = document.getElementById('profile-tab-rating');
     const profileWallet = document.getElementById('profile-tab-wallet');
-    const authBtnLabel = document.getElementById('auth-btn-label');
     const dropName = document.getElementById('dropdown-user-name');
     const dropPhone = document.getElementById('dropdown-user-phone');
     const dropBal = document.getElementById('dropdown-user-balance');
@@ -279,16 +289,18 @@ function updateUserUI() {
     if (profileCity) profileCity.textContent = `${STATE.currentUser.city} (${STATE.currentUser.campus_or_area})`;
     if (profileRating) profileRating.textContent = `★ ${STATE.currentUser.rating} (${STATE.currentUser.total_reviews} reviews)`;
     if (profileWallet) profileWallet.textContent = `Rs. ${parseFloat(STATE.currentUser.wallet_balance).toFixed(2)}`;
+    
+    // Always display "My Account" when logged in
     if (authBtnLabel) {
-        if (!STATE.currentUser || !STATE.currentUser.full_name || STATE.currentUser.full_name.toLowerCase().includes('demo')) {
-            authBtnLabel.textContent = 'My Account';
-        } else {
-            authBtnLabel.textContent = STATE.currentUser.full_name.split(' ')[0] || 'My Account';
-        }
+        authBtnLabel.textContent = 'My Account';
     }
+
     if (dropName) dropName.textContent = STATE.currentUser.full_name;
-    if (dropPhone) dropPhone.textContent = STATE.currentUser.phone_number;
-    if (dropBal) dropBal.textContent = `Rs. ${parseFloat(STATE.currentUser.wallet_balance).toFixed(2)}`;
+    if (dropPhone) {
+        const subTitle = STATE.currentUser.role ? (STATE.currentUser.role.charAt(0).toUpperCase() + STATE.currentUser.role.slice(1) + ' • Verified') : 'Verified Account';
+        dropPhone.innerHTML = `<i class="fa-solid fa-circle-check text-emerald-400 text-[9px] mr-1"></i><span>${subTitle}</span>`;
+    }
+    if (dropBal) dropBal.textContent = `Rs. ${parseFloat(STATE.currentUser.wallet_balance || 150).toFixed(0)}`;
 
     updateReaderHeaderUI();
     loadMySellerListings();
@@ -296,6 +308,10 @@ function updateUserUI() {
 
 // User Profile & Navigation Dropdown Controls (Fixes Top-Right Menu Visibility & Interaction)
 function toggleUserDropdown() {
+    if (!STATE.currentUser) {
+        openAuthModal('login');
+        return;
+    }
     const dropdown = document.getElementById('user-profile-dropdown');
     if (dropdown) dropdown.classList.toggle('hidden');
 }
@@ -303,6 +319,23 @@ function toggleUserDropdown() {
 function closeUserDropdown() {
     const dropdown = document.getElementById('user-profile-dropdown');
     if (dropdown) dropdown.classList.add('hidden');
+}
+
+// Single Clean Sign Out Handler
+function handleUserLogout() {
+    STATE.currentUser = null;
+    localStorage.removeItem('bookloop_token');
+    localStorage.removeItem('bb_user_id');
+    localStorage.setItem('bookzy_logged_out', 'true');
+    sessionStorage.removeItem('bookzy_session_active');
+
+    closeUserDropdown();
+    updateUserUI();
+
+    const activeTab = document.querySelector('.tab-page:not(.hidden)')?.id;
+    if (activeTab === 'tab-profile' || activeTab === 'tab-deals') {
+        switchTab('home');
+    }
 }
 
 // Close User Dropdown on Click Outside
@@ -2469,6 +2502,7 @@ async function handleAuthLogin(e) {
         });
         const data = await res.json();
         if (res.ok) {
+            localStorage.removeItem('bookzy_logged_out');
             sessionStorage.setItem('bookzy_session_active', 'true');
             localStorage.setItem('bookloop_token', data.token);
             localStorage.setItem('bb_user_id', data.profile.id);
@@ -2498,6 +2532,7 @@ async function handleAuthRegister(e) {
         });
         const data = await res.json();
         if (res.ok) {
+            localStorage.removeItem('bookzy_logged_out');
             sessionStorage.setItem('bookzy_session_active', 'true');
             localStorage.setItem('bookloop_token', data.token);
             localStorage.setItem('bb_user_id', data.profile.id);
