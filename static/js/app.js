@@ -292,9 +292,6 @@ function updateUserUI() {
 
     updateReaderHeaderUI();
     loadMySellerListings();
-    if (STATE.listings && STATE.listings.length > 0) {
-        renderListings(STATE.listings);
-    }
 }
 
 // User Profile & Navigation Dropdown Controls (Fixes Top-Right Menu Visibility & Interaction)
@@ -471,16 +468,12 @@ window.switchTab = switchTab;
 // Dedicated Reusable Minimalist Book Card Component (Requirement 5)
 function createBookCardHtml(item, options = {}) {
     const isFree = Boolean(item.is_free || parseFloat(item.price) === 0);
-    const unlocksUsed = parseInt(STATE.currentUser?.unlocks_bought_count || STATE.currentUser?.trial_unlocks_used || 0, 10);
-    const hasTrial = unlocksUsed < 2;
     const displayImg = item.display_image || item.photo_url || (item.book && item.book.cover_image) || 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=400';
     const title = item.book ? item.book.title : (item.title || 'Untitled Book');
     const isbn = item.book ? item.book.isbn : (item.isbn || '');
     const city = item.city || 'Pakistan';
     const condition = item.condition || 'Good';
     const priceNum = parseFloat(item.price || 0);
-
-    const buttonLabel = isFree ? 'Claim' : (hasTrial ? 'Unlock Contact (Free Trial)' : 'Unlock Contact');
 
     return `
         <div class="bg-white rounded-2xl border border-slate-200 hover:border-blue-300 shadow-xs hover:shadow-lg transition-all duration-200 overflow-hidden flex flex-col justify-between group h-full">
@@ -533,10 +526,8 @@ function createBookCardHtml(item, options = {}) {
                 </div>
 
                 <button onclick="openUnlockModal(${item.id})" 
-                        class="px-3 py-1.5 ${isFree ? 'bg-emerald-600 hover:bg-emerald-700' : 'bg-blue-600 hover:bg-blue-700'} text-white font-bold rounded-xl text-xs transition-colors shadow-xs hover:shadow flex items-center gap-1.5 active:scale-95"
-                        title="${isFree ? 'Claim this free book' : (hasTrial ? 'Free trial contact unlock (Rs. 0)' : 'Unlock contact info')}">
-                    <i class="fa-solid ${isFree ? 'fa-gift' : (hasTrial ? 'fa-gift' : 'fa-lock-open')} text-[10px]"></i>
-                    <span>${buttonLabel}</span>
+                        class="px-3.5 py-1.5 ${isFree ? 'bg-emerald-600 hover:bg-emerald-700' : 'bg-blue-600 hover:bg-blue-700'} text-white font-bold rounded-xl text-xs transition-colors shadow-xs hover:shadow flex items-center gap-1.5 active:scale-95">
+                    <span>${isFree ? 'Claim' : 'View Details'}</span>
                 </button>
             </div>
         </div>
@@ -1712,9 +1703,6 @@ function renderScanResult(data) {
                     <div class="space-y-2.5">
                         ${listings.map(l => {
                             const isFree = Boolean(l.is_free || parseFloat(l.price) === 0);
-                            const unlocksUsed = parseInt(STATE.currentUser?.unlocks_bought_count || STATE.currentUser?.trial_unlocks_used || 0, 10);
-                            const hasTrial = unlocksUsed < 2;
-                            const scanButtonLabel = isFree ? 'Claim Free' : (hasTrial ? 'Unlock Contact (Free Trial)' : 'Unlock Contact');
                             return `
                                 <div class="p-3.5 bg-slate-50 hover:bg-blue-50/50 rounded-xl border border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3 transition-colors">
                                     <div>
@@ -1734,8 +1722,8 @@ function renderScanResult(data) {
                                             <span class="text-[10px] text-slate-400">${l.seller_reviews_count || 0} reviews</span>
                                         </div>
                                         <button onclick="openUnlockModal(${l.id})" class="px-4 py-2 ${isFree ? 'bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700' : 'bg-gradient-to-r from-blue-700 to-blue-600 hover:from-blue-800'} text-white rounded-xl text-xs font-extrabold shadow-sm transition-all flex items-center gap-1.5 active:scale-95">
-                                            <i class="fa-solid ${isFree ? 'fa-gift' : (hasTrial ? 'fa-gift' : 'fa-lock-open')} text-xs"></i>
-                                            <span>${scanButtonLabel}</span>
+                                            <i class="fa-solid fa-lock-open text-xs"></i>
+                                            <span>${isFree ? 'Claim Free' : 'Unlock Contact'}</span>
                                         </button>
                                     </div>
                                 </div>
@@ -1806,7 +1794,6 @@ function openUnlockModal(listingId) {
     const trialBadge = document.getElementById('unlock-trial-badge');
     const trialText = document.getElementById('unlock-trial-text');
     const guaranteeBanner = document.getElementById('unlock-guarantee-banner');
-    const gatewayModeIndicator = document.getElementById('gateway-mode-indicator');
     const paymentMethodsWrapper = document.getElementById('unlock-payment-methods-wrapper');
     const payBtn = document.getElementById('pay-submit-btn');
     const payIcon = document.getElementById('pay-submit-icon');
@@ -1816,81 +1803,61 @@ function openUnlockModal(listingId) {
     if (isFreeTrial) {
         // Unlock #1 and #2: Free Trial Promotion
         if (trialBanner) {
-            trialBanner.className = "bg-emerald-50 border border-emerald-300 rounded-xl p-3.5 mb-4 flex items-start gap-2.5 transition-all shadow-xs";
-            trialBanner.style.removeProperty('display');
-            trialBanner.classList.remove('hidden');
+            trialBanner.className = "bg-emerald-50 border border-emerald-300 rounded-xl p-3 mb-3 flex items-start gap-2.5 transition-all";
         }
         if (trialIcon) {
-            trialIcon.className = "fa-solid fa-gift text-emerald-600 text-base mt-0.5 shrink-0";
+            trialIcon.className = "fa-solid fa-gift text-emerald-600 text-sm mt-0.5 shrink-0";
         }
         if (trialBadge) {
-            trialBadge.className = "block text-emerald-950 font-bold text-xs";
-            trialBadge.textContent = `🎁 Free Trial Unlock (${freeRemaining} of 2 remaining)`;
+            trialBadge.className = "block text-emerald-950 font-bold";
+            trialBadge.textContent = `Free Trial Unlock (${freeRemaining} of 2 remaining)`;
         }
         if (trialText) {
-            trialText.className = "text-[11px] text-emerald-800 mt-1 block leading-relaxed";
-            trialText.textContent = "Enjoy your first 2 seller contact unlocks 100% FREE (Rs. 0)! No payment method or gateway deduction needed.";
+            trialText.className = "text-[10px] text-emerald-800 mt-0.5 block";
+            trialText.textContent = "Enjoy your first 2 contact unlocks 100% FREE! Instant one-click reveal with zero payment gateway deduction needed.";
         }
-        
-        // STRICTLY HIDE Payment Gateway Box, Guarantee Banner, and Mode Indicator
         if (guaranteeBanner) {
-            guaranteeBanner.style.setProperty('display', 'none', 'important');
             guaranteeBanner.classList.add('hidden');
         }
         if (paymentMethodsWrapper) {
-            paymentMethodsWrapper.style.setProperty('display', 'none', 'important');
             paymentMethodsWrapper.classList.add('hidden');
-        }
-        if (gatewayModeIndicator) {
-            gatewayModeIndicator.style.setProperty('display', 'none', 'important');
-            gatewayModeIndicator.classList.add('hidden');
         }
         if (feeDisplay) {
             feeDisplay.textContent = "Rs. 0 (Free)";
         }
         if (payBtn) {
-            payBtn.className = "w-full py-3 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white rounded-xl text-xs font-extrabold shadow-md flex items-center justify-center gap-2 transition-all active:scale-95";
-            if (payIcon) payIcon.className = "fa-solid fa-gift mr-1.5";
+            payBtn.className = "w-full py-3 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white rounded-xl text-xs font-extrabold shadow-md flex items-center justify-center gap-2 transition-all";
+            if (payIcon) payIcon.className = "fa-solid fa-gift";
             if (payText) payText.textContent = "Unlock Contact Free (Rs. 0)";
         }
     } else {
         // Unlock #3 onward: Rs. 50 Refundable Security Fee
         if (trialBanner) {
             trialBanner.className = "bg-blue-50 border border-blue-200 rounded-xl p-3 mb-3 flex items-start gap-2.5 transition-all text-blue-900";
-            trialBanner.style.removeProperty('display');
-            trialBanner.classList.remove('hidden');
         }
         if (trialIcon) {
             trialIcon.className = "fa-solid fa-circle-info text-blue-600 text-sm mt-0.5 shrink-0";
         }
         if (trialBadge) {
-            trialBadge.className = "block text-blue-950 font-bold text-xs";
+            trialBadge.className = "block text-blue-950 font-bold";
             trialBadge.textContent = "Refundable Security Fee (Rs. 50)";
         }
         if (trialText) {
-            trialText.className = "text-[10px] text-blue-800 mt-0.5 block leading-relaxed";
+            trialText.className = "text-[10px] text-blue-800 mt-0.5 block";
             trialText.textContent = "You have used your 2 free contact unlocks. A Rs. 50 refundable security fee applies from the 3rd unlock onward.";
         }
-        
-        // RESTORE DISPLAY of Payment Gateway Box, Guarantee Banner, and Mode Indicator
         if (guaranteeBanner) {
-            guaranteeBanner.style.removeProperty('display');
             guaranteeBanner.classList.remove('hidden');
         }
         if (paymentMethodsWrapper) {
-            paymentMethodsWrapper.style.removeProperty('display');
             paymentMethodsWrapper.classList.remove('hidden');
-        }
-        if (gatewayModeIndicator) {
-            gatewayModeIndicator.style.removeProperty('display');
-            gatewayModeIndicator.classList.remove('hidden');
         }
         if (feeDisplay) {
             feeDisplay.textContent = `Rs. ${(STATE.platformFee || 50).toFixed(0)}`;
         }
         if (payBtn) {
-            payBtn.className = "w-full py-3 bg-gradient-to-r from-blue-700 to-blue-600 hover:from-blue-800 hover:to-blue-700 text-white rounded-xl text-xs font-extrabold shadow-md flex items-center justify-center gap-2 transition-all active:scale-95";
-            if (payIcon) payIcon.className = "fa-solid fa-lock-open mr-1.5";
+            payBtn.className = "w-full py-3 bg-gradient-to-r from-blue-700 to-blue-600 hover:from-blue-800 hover:to-blue-700 text-white rounded-xl text-xs font-extrabold shadow-md flex items-center justify-center gap-2 transition-all";
+            if (payIcon) payIcon.className = "fa-solid fa-lock-open";
             if (payText) payText.textContent = `Pay Rs. ${(STATE.platformFee || 50).toFixed(0)} & Unlock Contact`;
         }
         selectPaymentMethod(STATE.selectedPaymentMethod || 'jazzcash');
@@ -2110,6 +2077,8 @@ function showUnlockedContactResult(data) {
         <button onclick="closeUnlockModal(); switchTab('deals');" class="w-full mt-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold">
             Done • View in My Unlocks
         </button>
+    `;
+}
     `;
 }
 
