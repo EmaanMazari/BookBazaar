@@ -136,22 +136,23 @@ def run_phase1_tests():
     assert fav_list[0]['listing']['id'] == new_listing_id
     print("PASS [Buyer]: User favourites list retrieved correctly.")
 
-    # 8. Test Paid Contact Unlock System (Rs. 50 Fee)
+    # 8. Test Contact Unlock #1 (Free Trial Unlock - Rs. 0 Fee)
     unlock_payload = {
         'listing_id': new_listing_id,
         'buyer_id': buyer_id,
-        'payment_method': 'jazzcash',
+        'payment_method': 'free_trial',
         'account_number': reg_phone
     }
     resp = client.post('/api/unlocks/request/', data=json.dumps(unlock_payload), content_type='application/json', **buyer_auth)
     assert resp.status_code == 201, f"Unlock failed: {resp.content}"
     unlock_data = resp.json()
     assert unlock_data['is_new_charge'] is True
-    assert Decimal(str(unlock_data['unlock']['fee_amount'])) == Decimal('50.00'), "Platform contact fee must be Rs. 50"
+    assert Decimal(str(unlock_data['unlock']['fee_amount'])) == Decimal('0.00'), "First contact unlock must be Rs. 0 Free Trial"
+    assert unlock_data['unlock']['payment_method'] == 'free_trial'
     assert unlock_data['seller_contact']['phone_number'] == seller.phone_number
     assert 'whatsapp_link' in unlock_data['seller_contact']
     unlock_uuid = unlock_data['unlock']['unlock_id']
-    print(f"PASS [Unlock]: Paid Contact Unlock authorized. Fee: Rs. {unlock_data['unlock']['fee_amount']} (JazzCash Sandbox).")
+    print(f"PASS [Unlock #1]: Free Trial Contact Unlock (1 of 2 remaining). Fee: Rs. {unlock_data['unlock']['fee_amount']}.")
     print(f"PASS [Unlock]: Seller Phone revealed: {unlock_data['seller_contact']['phone_number']}")
 
     # 9. Test Duplicate Charge Prevention
@@ -184,19 +185,35 @@ def run_phase1_tests():
     assert resp.status_code == 200
     print("PASS [Review]: 5-star seller rating submitted and seller rating updated.")
 
-    # 12. Test Cancellation & Instant 100% Refund
-    listing_for_refund = Listing.objects.filter(status='active').exclude(id=new_listing_id).first()
+    # 12. Test Contact Unlock #2 (Free Trial Unlock - 2 of 2 used)
+    listing_2 = Listing.objects.filter(status='active').exclude(id=new_listing_id).first()
     resp_u2 = client.post('/api/unlocks/request/', data=json.dumps({
+        'listing_id': listing_2.id,
+        'buyer_id': buyer_id,
+        'payment_method': 'free_trial'
+    }), content_type='application/json', **buyer_auth)
+    assert resp_u2.status_code == 201
+    assert Decimal(str(resp_u2.json()['unlock']['fee_amount'])) == Decimal('0.00'), "Second unlock must also be Rs. 0 Free Trial"
+    print("PASS [Unlock #2]: Free Trial Contact Unlock (2 of 2 used). Fee: Rs. 0.00.")
+
+    # 13. Test Contact Unlock #3 (Paid Tier - Rs. 50 Fee applies from 3rd unlock onward)
+    listing_for_refund = Listing.objects.filter(status='active').exclude(id__in=[new_listing_id, listing_2.id]).first()
+    resp_u3 = client.post('/api/unlocks/request/', data=json.dumps({
         'listing_id': listing_for_refund.id,
         'buyer_id': buyer_id,
-        'payment_method': 'easypaisa'
+        'payment_method': 'easypaisa',
+        'account_number': reg_phone
     }), content_type='application/json', **buyer_auth)
-    u2_uuid = resp_u2.json()['unlock']['unlock_id']
+    assert resp_u3.status_code == 201
+    assert Decimal(str(resp_u3.json()['unlock']['fee_amount'])) == Decimal('50.00'), "3rd unlock onward must charge Rs. 50"
+    u3_uuid = resp_u3.json()['unlock']['unlock_id']
+    print(f"PASS [Unlock #3]: Paid Tier Contact Unlock (3rd unlock onward). Fee: Rs. {resp_u3.json()['unlock']['fee_amount']} (Easypaisa).")
 
+    # 14. Test Cancellation & Instant 100% Refund on Paid Unlock
     buyer_prof_before = UserProfile.objects.get(id=buyer_id)
     bal_before = buyer_prof_before.wallet_balance
 
-    resp_cancel = client.post(f'/api/unlocks/{u2_uuid}/cancel_deal/', data=json.dumps({
+    resp_cancel = client.post(f'/api/unlocks/{u3_uuid}/cancel_deal/', data=json.dumps({
         'reason': 'Seller unreachable after calling.'
     }), content_type='application/json', **buyer_auth)
     assert resp_cancel.status_code == 200

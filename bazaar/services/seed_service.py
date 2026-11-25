@@ -1395,7 +1395,7 @@ DEMO_USERS = [
         'type': 'student',
         'rating': Decimal('5.0'),
         'reviews': 2,
-        'wallet': Decimal('300.00')
+        'wallet': Decimal('150.00')
     },
     {
         'username': 'kpk_seller',
@@ -1473,7 +1473,7 @@ def ensure_demo_listings(force=False):
             admin_user.email = 'admin@bookbazaar.pk'
             admin_user.save()
 
-        UserProfile.objects.get_or_create(
+        admin_prof, _ = UserProfile.objects.get_or_create(
             user=admin_user,
             defaults={
                 'full_name': 'System Administrator',
@@ -1481,9 +1481,12 @@ def ensure_demo_listings(force=False):
                 'city': 'Islamabad',
                 'campus_or_area': 'National Operations Center',
                 'user_type': 'admin',
-                'wallet_balance': Decimal('1500.00')
+                'wallet_balance': Decimal('150.00')
             }
         )
+        if admin_prof.wallet_balance == Decimal('1500.00'):
+            admin_prof.wallet_balance = Decimal('150.00')
+            admin_prof.save(update_fields=['wallet_balance'])
 
         # 3. Ensure Demo Users
         profiles = {}
@@ -1509,6 +1512,9 @@ def ensure_demo_listings(force=False):
             if prof.city != udata['city']:
                 prof.city = udata['city']
                 prof.save(update_fields=['city'])
+            if udata['username'] == 'buyer_test' and prof.wallet_balance in [Decimal('300.00'), Decimal('1500.00')]:
+                prof.wallet_balance = Decimal('150.00')
+                prof.save(update_fields=['wallet_balance'])
             profiles[udata['username']] = prof
 
         # 4. Ensure Books from KNOWN_CATALOG

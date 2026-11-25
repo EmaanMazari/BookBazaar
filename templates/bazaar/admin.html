@@ -519,6 +519,7 @@
                     </div>
                     <select id="txn-gateway-filter" onchange="filterAdminTransactions()" class="text-xs p-2 border border-slate-300 rounded-xl bg-white">
                         <option value="all">All Gateways</option>
+                        <option value="free_trial">Free Trial (Rs. 0)</option>
                         <option value="jazzcash">JazzCash</option>
                         <option value="easypaisa">Easypaisa</option>
                         <option value="card_safepay">Debit / Card</option>
@@ -1321,8 +1322,20 @@
         // Gateway breakdown bars
         const gwContainer = document.getElementById('gateway-distribution-bars');
         if (gwContainer && m.gateway_stats) {
-            const names = { jazzcash: 'JazzCash Mobile', easypaisa: 'Easypaisa Wallet', card_safepay: 'Debit / Card', wallet: 'In-App Wallet' };
-            const colors = { jazzcash: 'bg-red-600', easypaisa: 'bg-emerald-600', card_safepay: 'bg-blue-600', wallet: 'bg-amber-500' };
+            const names = { 
+                free_trial: 'Free Trial Promotion (Rs. 0)',
+                jazzcash: 'JazzCash Mobile', 
+                easypaisa: 'Easypaisa Wallet', 
+                card_safepay: 'Debit / Card', 
+                wallet: 'In-App Wallet' 
+            };
+            const colors = { 
+                free_trial: 'bg-emerald-500',
+                jazzcash: 'bg-red-600', 
+                easypaisa: 'bg-emerald-600', 
+                card_safepay: 'bg-blue-600', 
+                wallet: 'bg-amber-500' 
+            };
             const total = m.total_unlocks || 1;
             gwContainer.innerHTML = Object.entries(m.gateway_stats).map(([k, v]) => {
                 const pct = Math.round((v.count / total) * 100);
@@ -1366,17 +1379,27 @@
         // Recent unlocks feed
         const recBody = document.getElementById('overview-recent-txns-body');
         if (recBody && data.recent_unlocks) {
-            recBody.innerHTML = data.recent_unlocks.slice(0, 10).map(u => `
-                <tr class="hover:bg-slate-50">
-                    <td class="py-2 px-3 font-mono font-bold text-slate-800">${u.transaction_id.slice(0, 15)}...</td>
-                    <td class="py-2 px-3 font-semibold text-slate-900 truncate max-w-xs">${u.listing_title}</td>
-                    <td class="py-2 px-3">${u.buyer_name}</td>
-                    <td class="py-2 px-3">${u.seller_name}</td>
-                    <td class="py-2 px-3 uppercase text-[10px] font-bold text-slate-600">${u.payment_method}</td>
-                    <td class="py-2 px-3 font-extrabold text-blue-700">Rs. ${u.fee_amount}</td>
-                    <td class="py-2 px-3">${getDealBadge(u.deal_status)}</td>
-                </tr>
-            `).join('');
+            recBody.innerHTML = data.recent_unlocks.slice(0, 10).map(u => {
+                const isFree = parseFloat(u.fee_amount) === 0 || u.payment_method === 'free_trial';
+                const gwCell = isFree 
+                    ? '<span class="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-extrabold uppercase"><i class="fa-solid fa-gift mr-1 text-[9px]"></i>Free Trial</span>'
+                    : `<span class="uppercase font-bold text-[10px] text-slate-600">${u.payment_method}</span>`;
+                const feeCell = isFree
+                    ? '<span class="font-extrabold text-emerald-700">Rs. 0.00</span>'
+                    : `<span class="font-extrabold text-blue-700">Rs. ${parseFloat(u.fee_amount).toFixed(2)}</span>`;
+
+                return `
+                    <tr class="hover:bg-slate-50">
+                        <td class="py-2 px-3 font-mono font-bold text-slate-800">${u.transaction_id.slice(0, 15)}...</td>
+                        <td class="py-2 px-3 font-semibold text-slate-900 truncate max-w-xs">${u.listing_title}</td>
+                        <td class="py-2 px-3">${u.buyer_name}</td>
+                        <td class="py-2 px-3">${u.seller_name}</td>
+                        <td class="py-2 px-3">${gwCell}</td>
+                        <td class="py-2 px-3">${feeCell}</td>
+                        <td class="py-2 px-3">${getDealBadge(u.deal_status)}</td>
+                    </tr>
+                `;
+            }).join('');
         }
     }
 
@@ -1745,25 +1768,35 @@
         if (count) count.textContent = unlocks.length;
         if (!tbody) return;
 
-        tbody.innerHTML = unlocks.map(u => `
-            <tr class="hover:bg-slate-50">
-                <td class="py-2.5 px-3 font-mono font-bold text-slate-800">${u.transaction_id.slice(0, 16)}...</td>
-                <td class="py-2.5 px-3 font-semibold text-slate-900 max-w-xs truncate">${u.listing_title}</td>
-                <td class="py-2.5 px-3">${u.buyer_name} <span class="text-[10px] text-slate-400 block">${u.buyer_phone}</span></td>
-                <td class="py-2.5 px-3">${u.seller_name} <span class="text-[10px] text-slate-400 block">${u.seller_phone}</span></td>
-                <td class="py-2.5 px-3 uppercase font-bold text-[10px] text-slate-600">${u.payment_method}</td>
-                <td class="py-2.5 px-3 font-black text-blue-700">Rs. ${u.fee_amount}</td>
-                <td class="py-2.5 px-3">${getDealBadge(u.deal_status)}</td>
-                <td class="py-2.5 px-3 font-mono text-slate-500">${u.refund_transaction_id || '-'}</td>
-                <td class="py-2.5 px-3 text-right">
-                    ${u.deal_status !== 'no_deal_refunded' ? `
-                        <button onclick="adminForceRefund('${u.unlock_id}')" class="px-2 py-1 bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200 rounded text-[10px] font-bold">
-                            Force Refund
-                        </button>
-                    ` : '<span class="text-[10px] text-slate-400 font-bold">Refunded</span>'}
-                </td>
-            </tr>
-        `).join('');
+        tbody.innerHTML = unlocks.map(u => {
+            const isFree = parseFloat(u.fee_amount) === 0 || u.payment_method === 'free_trial';
+            const gwCell = isFree 
+                ? '<span class="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-extrabold uppercase"><i class="fa-solid fa-gift mr-1 text-[9px]"></i>Free Trial</span>'
+                : `<span class="uppercase font-bold text-[10px] text-slate-700">${u.payment_method}</span>`;
+            const feeCell = isFree
+                ? '<span class="font-black text-emerald-700">Rs. 0.00</span> <span class="text-[9px] text-emerald-600 font-bold block">(Trial)</span>'
+                : `<span class="font-black text-blue-700">Rs. ${parseFloat(u.fee_amount).toFixed(2)}</span>`;
+
+            return `
+                <tr class="hover:bg-slate-50">
+                    <td class="py-2.5 px-3 font-mono font-bold text-slate-800">${u.transaction_id.slice(0, 16)}...</td>
+                    <td class="py-2.5 px-3 font-semibold text-slate-900 max-w-xs truncate">${u.listing_title}</td>
+                    <td class="py-2.5 px-3">${u.buyer_name} <span class="text-[10px] text-slate-400 block">${u.buyer_phone}</span></td>
+                    <td class="py-2.5 px-3">${u.seller_name} <span class="text-[10px] text-slate-400 block">${u.seller_phone}</span></td>
+                    <td class="py-2.5 px-3">${gwCell}</td>
+                    <td class="py-2.5 px-3">${feeCell}</td>
+                    <td class="py-2.5 px-3">${getDealBadge(u.deal_status)}</td>
+                    <td class="py-2.5 px-3 font-mono text-slate-500">${u.refund_transaction_id || '-'}</td>
+                    <td class="py-2.5 px-3 text-right">
+                        ${u.deal_status !== 'no_deal_refunded' ? `
+                            <button onclick="adminForceRefund('${u.unlock_id}')" class="px-2 py-1 bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200 rounded text-[10px] font-bold">
+                                Force Refund
+                            </button>
+                        ` : '<span class="text-[10px] text-slate-400 font-bold">Refunded</span>'}
+                    </td>
+                </tr>
+            `;
+        }).join('');
     }
 
     async function adminForceRefund(unlockId) {

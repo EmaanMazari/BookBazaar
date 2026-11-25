@@ -490,10 +490,40 @@ class WalletPaymentAdapter(BaseGatewayAdapter):
         return True
 
 
+class FreeTrialPaymentAdapter(BaseGatewayAdapter):
+    """Free Trial Contact Unlock Adapter (Rs. 0 Fee)."""
+    gateway_name = "free_trial"
+
+    def initiate_payment(self, payment_txn: PaymentTransaction, buyer_phone: str, return_url: str = None) -> dict:
+        return {
+            'gateway': 'free_trial',
+            'mode': 'free_trial',
+            'transaction_id': str(payment_txn.transaction_id),
+            'gateway_txn_ref': f"FREE-{payment_txn.buyer.id}-{int(time.time())}",
+            'is_sandbox': False,
+        }
+
+    def verify_payment(self, payment_txn: PaymentTransaction, payload: dict, simulate_outcome: str = 'success') -> dict:
+        return {
+            'success': True,
+            'response_code': 'FREE_TRIAL_SUCCESS',
+            'response_message': "Contact unlocked under free trial promotion (Rs. 0).",
+            'gateway_ref': f"TXN-FREE-{random.randint(100000, 999999)}",
+            'raw_payload': {'free_trial': True, 'amount': '0.00'},
+        }
+
+    def generate_signature(self, params: dict) -> str:
+        return "free_trial_internal"
+
+    def validate_signature(self, params: dict, received_signature: str) -> bool:
+        return True
+
+
 # ==========================================
 # GATEWAY FACTORY / REGISTRY
 # ==========================================
 ADAPTERS = {
+    'free_trial': FreeTrialPaymentAdapter,
     'jazzcash': JazzCashGatewayAdapter,
     'easypaisa': EasypaisaGatewayAdapter,
     'card_safepay': SafepayGatewayAdapter,
@@ -506,6 +536,37 @@ def get_gateway_adapter(gateway_name: str) -> BaseGatewayAdapter:
     if not adapter_cls:
         raise PaymentGatewayError(f"Unsupported payment gateway: '{gateway_name}'. Supported gateways: {', '.join(ADAPTERS.keys())}.")
     return adapter_cls()
+
+
+def get_buyer_trial_status(buyer: UserProfile) -> dict:
+    """
+    Computes buyer's free contact unlock trial status:
+    - First 2 contact unlocks are 100% FREE (Rs. 0.00).
+    - From 3rd unlock onward, standard refundable security fee (Rs. 50.00) applies.
+    """
+    unlocks_used = ContactUnlock.objects.filter(buyer=buyer).count()
+    free_remaining = max(0, 2 - unlocks_used)
+    is_free_trial = free_remaining > 0
+    setting = PlatformSetting.get_settings()
+    standard_fee = setting.contact_unlock_fee
+    current_fee = Decimal('0.00') if is_free_trial else standard_fee
+
+    if is_free_trial:
+        banner_title = f"Free Trial Unlock ({free_remaining} of 2 remaining)"
+        banner_message = f"As a welcome gift, your first 2 seller contact unlocks are 100% FREE (Rs. 0)!"
+    else:
+        banner_title = "Standard Refundable Security Unlock"
+        banner_message = "You have used your 2 free contact unlocks. A Rs. 50 refundable security fee applies from the 3rd unlock onward."
+
+    return {
+        'unlocks_used': unlocks_used,
+        'free_remaining': free_remaining,
+        'is_free_trial': is_free_trial,
+        'fee': current_fee,
+        'standard_fee': standard_fee,
+        'banner_title': banner_title,
+        'banner_message': banner_message
+    }
 
 
 # ==========================================
@@ -547,11 +608,23 @@ def initiate_contact_unlock_payment(
             'unlock': existing_unlock
         }
 
-    # 4. Determine platform unlock fee (PKR 50.00 default from PlatformSetting)
-    setting = PlatformSetting.get_settings()
-    fee = custom_amount if custom_amount is not None else setting.contact_unlock_fee
+    # 4. Determine platform unlock fee
+    trial_info = get_buyer_trial_status(buyer)
+    is_free_trial = trial_info['is_free_trial']
 
-    if fee <= Decimal('0.00'):
+    if gateway_name == 'free_trial':
+        if not is_free_trial:
+            raise PaymentGatewayError("You have used your 2 free contact unlocks. A Rs. 50 refundable security fee applies from the 3rd unlock onward.")
+        fee = Decimal('0.00')
+    elif custom_amount is not None:
+        fee = custom_amount
+    else:
+        setting = PlatformSetting.get_settings()
+        fee = setting.contact_unlock_fee
+
+    if fee < Decimal('0.00'):
+        raise InvalidAmountError("Unlock fee cannot be negative.")
+    if fee == Decimal('0.00') and gateway_name != 'free_trial' and custom_amount is None:
         raise InvalidAmountError("Unlock fee must be greater than zero.")
 
     # 5. Create PaymentTransaction with status='pending'
@@ -670,10 +743,17 @@ def verify_and_complete_contact_unlock(
             buyer_label = locked_txn.buyer.full_name or (locked_txn.buyer.user.username if locked_txn.buyer.user else "Buyer")
             seller_label = locked_txn.listing.seller.full_name or (locked_txn.listing.seller.user.username if locked_txn.listing.seller.user else "Seller")
             book_title = locked_txn.listing.book.title
+            if locked_txn.gateway == 'free_trial' or locked_txn.amount == Decimal('0.00'):
+                notif_title = "Free Trial Contact Unlock"
+                notif_msg = f"Free Trial Unlock: Contact unlocked for '{book_title}' (Buyer: {buyer_label}, Seller: {seller_label}, Rs. 0 Free Trial)."
+            else:
+                notif_title = "Payment Received"
+                notif_msg = f"Payment Received: Rs. {locked_txn.amount} received from {buyer_label} to unlock '{book_title}' (Seller: {seller_label})."
+
             AdminNotification.objects.create(
                 notification_type='PAYMENT_RECEIVED',
-                title="Payment Received",
-                message=f"Payment Received: Rs. {locked_txn.amount} received from {buyer_label} to unlock '{book_title}' (Seller: {seller_label}).",
+                title=notif_title,
+                message=notif_msg,
                 user=locked_txn.buyer,
                 buyer=locked_txn.buyer,
                 seller=locked_txn.listing.seller,
@@ -685,7 +765,10 @@ def verify_and_complete_contact_unlock(
         except Exception as notif_err:
             logger.warning(f"Failed to create AdminNotification for payment: {notif_err}")
 
-        msg = f"Contact successfully unlocked. Fee Rs. {locked_txn.amount} paid via {locked_txn.gateway.upper()}."
+        if locked_txn.gateway == 'free_trial' or locked_txn.amount == Decimal('0.00'):
+            msg = "Contact successfully unlocked under Free Trial Promotion (Rs. 0)."
+        else:
+            msg = f"Contact successfully unlocked. Fee Rs. {locked_txn.amount} paid via {locked_txn.gateway.upper()}."
         return unlock, created, msg
 
 
@@ -725,14 +808,19 @@ def cancel_payment_transaction(transaction_id: str | uuid.UUID, reason: str = "U
         return payment_txn
 
 
-def process_contact_unlock(listing: Listing, buyer: UserProfile, payment_method: str, account_number: str):
+def process_contact_unlock(listing: Listing, buyer: UserProfile, payment_method: str = 'jazzcash', account_number: str = ''):
     """
     Convenience orchestrator preserving backward compatibility with Phase 1 & 2 callers:
-    1. Initiates transaction.
-    2. If already unlocked, returns existing unlock.
-    3. In sandbox/wallet mode, executes immediate verification.
-    4. Returns (unlock, is_new_charge, message).
+    1. Automatically applies 2 Free Trial Unlocks rule for buyer (Rs. 0 fee for first 2 unlocks).
+    2. Initiates transaction.
+    3. If already unlocked, returns existing unlock.
+    4. In sandbox, wallet, or free trial mode, executes immediate verification.
+    5. Returns (unlock, is_new_charge, message).
     """
+    trial_info = get_buyer_trial_status(buyer)
+    if trial_info['is_free_trial']:
+        payment_method = 'free_trial'
+
     payment_txn, init_data = initiate_contact_unlock_payment(
         listing=listing,
         buyer=buyer,
@@ -743,9 +831,9 @@ def process_contact_unlock(listing: Listing, buyer: UserProfile, payment_method:
     if init_data.get('already_unlocked'):
         return init_data['unlock'], False, init_data['message']
 
-    # For Sandbox or Wallet: execute server-side verification and unlock
+    # For Sandbox, Wallet, or Free Trial: execute server-side verification and unlock
     mode = getattr(settings, 'PAYMENT_GATEWAY_MODE', 'sandbox').lower()
-    if mode == 'sandbox' or payment_method == 'wallet':
+    if mode == 'sandbox' or payment_method in ['wallet', 'free_trial']:
         unlock, is_new, msg = verify_and_complete_contact_unlock(
             transaction_id=payment_txn.transaction_id,
             simulate_outcome='success'

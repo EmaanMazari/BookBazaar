@@ -41,6 +41,7 @@ from bazaar.services.payment_service import (
     verify_and_complete_contact_unlock,
     cancel_payment_transaction,
     get_gateway_adapter,
+    get_buyer_trial_status,
     PaymentGatewayError,
     LiveCredentialsRequiredError,
     InvalidSignatureError,
@@ -915,10 +916,18 @@ def request_contact_unlock(request):
     clean_phone = seller.phone_number.lstrip('0') if seller.phone_number else ''
     wa_url = f"https://wa.me/92{clean_phone}?text=Assalam-o-Alaikum%20{urllib.parse.quote(seller.full_name)},%20I%20am%20interested%20in%20your%20book%20'{urllib.parse.quote(listing.book.title)}'%20on%20Bookzy%20AI%20for%20Rs.%20{listing.price}."
 
+    trial_status = get_buyer_trial_status(buyer)
+
     return Response({
         'message': message,
         'is_new_charge': is_new_charge,
         'unlock': ContactUnlockSerializer(unlock).data,
+        'trial_info': {
+            'unlocks_used': trial_status['unlocks_used'],
+            'free_remaining': trial_status['free_remaining'],
+            'is_free_trial': trial_status['is_free_trial'],
+            'banner_message': trial_status['banner_message']
+        },
         'seller_contact': {
             'full_name': seller.full_name,
             'phone_number': seller.phone_number,
@@ -927,6 +936,45 @@ def request_contact_unlock(request):
             'whatsapp_link': wa_url
         }
     }, status=status.HTTP_201_CREATED if is_new_charge else status.HTTP_200_OK)
+
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def get_contact_unlock_trial_status(request):
+    """
+    Returns user's trial unlocks status:
+    - 2 free trial unlocks (Rs. 0)
+    - Rs. 50 from 3rd unlock onward
+    """
+    user_id = request.GET.get('user_id')
+    buyer = None
+    if user_id:
+        buyer = UserProfile.objects.filter(id=user_id).first()
+    elif request.user.is_authenticated:
+        buyer = getattr(request.user, 'profile', None)
+
+    if not buyer:
+        setting = PlatformSetting.get_settings()
+        return Response({
+            'unlocks_used': 0,
+            'free_remaining': 2,
+            'is_free_trial': True,
+            'fee': 0.0,
+            'standard_fee': float(setting.contact_unlock_fee),
+            'banner_title': 'Free Trial Unlock (2 of 2 remaining)',
+            'banner_message': 'As a welcome gift, your first 2 seller contact unlocks are 100% FREE (Rs. 0)!'
+        })
+
+    status_data = get_buyer_trial_status(buyer)
+    return Response({
+        'unlocks_used': status_data['unlocks_used'],
+        'free_remaining': status_data['free_remaining'],
+        'is_free_trial': status_data['is_free_trial'],
+        'fee': float(status_data['fee']),
+        'standard_fee': float(status_data['standard_fee']),
+        'banner_title': status_data['banner_title'],
+        'banner_message': status_data['banner_message']
+    })
 
 
 # ==========================================
@@ -1473,7 +1521,7 @@ def get_admin_stats(request):
     refunded_amount = ContactUnlock.objects.filter(deal_status='no_deal_refunded').aggregate(Sum('fee_amount'))['fee_amount__sum'] or Decimal('0.00')
 
     # Gateway Breakdown
-    gateways = ['jazzcash', 'easypaisa', 'card_safepay', 'wallet']
+    gateways = ['free_trial', 'jazzcash', 'easypaisa', 'card_safepay', 'wallet']
     gateway_stats = {}
     for gw in gateways:
         gw_count = ContactUnlock.objects.filter(payment_method=gw).count()

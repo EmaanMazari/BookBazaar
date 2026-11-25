@@ -13,6 +13,9 @@ class UserProfileSerializer(serializers.ModelSerializer):
     sold_listings_count = serializers.SerializerMethodField()
     unlocks_bought_count = serializers.SerializerMethodField()
     unlocks_received_count = serializers.SerializerMethodField()
+    free_trial_remaining = serializers.SerializerMethodField()
+    is_free_trial_eligible = serializers.SerializerMethodField()
+    trial_unlocks_used = serializers.SerializerMethodField()
 
     class Meta:
         model = UserProfile
@@ -21,8 +24,19 @@ class UserProfileSerializer(serializers.ModelSerializer):
             'campus_or_area', 'profile_picture_url', 'user_type', 'age_group', 'reading_interests', 'rating', 'total_reviews', 
             'wallet_balance', 'is_blocked', 'created_at',
             'active_listings_count', 'sold_listings_count',
-            'unlocks_bought_count', 'unlocks_received_count'
+            'unlocks_bought_count', 'unlocks_received_count',
+            'free_trial_remaining', 'is_free_trial_eligible', 'trial_unlocks_used'
         ]
+
+    def get_free_trial_remaining(self, obj):
+        used = obj.unlocked_contacts_bought.count()
+        return max(0, 2 - used)
+
+    def get_is_free_trial_eligible(self, obj):
+        return obj.unlocked_contacts_bought.count() < 2
+
+    def get_trial_unlocks_used(self, obj):
+        return obj.unlocked_contacts_bought.count()
 
     def get_profile_picture_url(self, obj):
         if obj.profile_picture:

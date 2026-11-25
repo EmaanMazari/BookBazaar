@@ -38,6 +38,7 @@ urlpatterns = [
     path('api/favorites/user/<int:user_id>/', views.get_user_favorites, name='api_user_favorites'),
 
     # Contact Unlock & Refund APIs (Phase 1 & Phase 3)
+    path('api/unlocks/trial-status/', views.get_contact_unlock_trial_status, name='api_unlock_trial_status'),
     path('api/unlocks/request/', views.request_contact_unlock, name='api_request_unlock'),
     path('api/unlocks/user/<int:user_id>/', views.get_user_unlocks, name='api_user_unlocks'),
     path('api/unlocks/<uuid:unlock_id>/confirm_deal/', views.confirm_deal_made, name='api_confirm_deal'),

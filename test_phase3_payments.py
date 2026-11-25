@@ -508,6 +508,103 @@ class Phase3PaymentGatewayTests(TestCase):
 
         print("[PASS] 15. Separate JazzCash and Easypaisa adapter architectures verified.")
 
+    # -------------------------------------------------------------
+    # 16. Two Free Contact Unlocks Trial Rule & Trial Status API
+    # -------------------------------------------------------------
+    def test_16_two_free_trial_unlocks_rule_and_trial_status_api(self):
+        # Create fresh buyer
+        trial_user = User.objects.create_user(username='trial_buyer', password='TrialPassword123!')
+        trial_buyer = UserProfile.objects.create(
+            user=trial_user,
+            full_name='Trial Buyer User',
+            phone_number='03051234567',
+            city='Islamabad',
+            wallet_balance=Decimal('150.00')
+        )
+        trial_token = Token.objects.create(user=trial_user).key
+
+        # Check trial status before any unlock
+        res_status = self.client.get(
+            f'/api/unlocks/trial-status/?user_id={trial_buyer.id}',
+            HTTP_AUTHORIZATION=f'Token {trial_token}'
+        )
+        self.assertEqual(res_status.status_code, status.HTTP_200_OK)
+        status_data = res_status.json()
+        self.assertEqual(status_data['free_remaining'], 2)
+        self.assertEqual(status_data['unlocks_used'], 0)
+        self.assertTrue(status_data['is_free_trial'])
+        self.assertEqual(status_data['fee'], 0.0)
+
+        # Unlock #1: Free Trial Unlock (1 of 2 used)
+        book1 = Book.objects.create(title='Trial Book 1', author='Author 1', isbn='9789999000001')
+        listing1 = Listing.objects.create(book=book1, seller=self.seller_profile, condition='Good', price=Decimal('400.00'), status='active')
+
+        res_u1 = self.client.post(
+            '/api/unlocks/request/',
+            {'listing_id': listing1.id, 'buyer_id': trial_buyer.id, 'payment_method': 'free_trial'},
+            content_type='application/json',
+            HTTP_AUTHORIZATION=f'Token {trial_token}'
+        )
+        self.assertEqual(res_u1.status_code, status.HTTP_201_CREATED)
+        u1_data = res_u1.json()
+        self.assertEqual(Decimal(str(u1_data['unlock']['fee_amount'])), Decimal('0.00'))
+        self.assertEqual(u1_data['unlock']['payment_method'], 'free_trial')
+        self.assertEqual(u1_data['trial_info']['free_remaining'], 1)
+
+        # Unlock #2: Free Trial Unlock (2 of 2 used)
+        book2 = Book.objects.create(title='Trial Book 2', author='Author 2', isbn='9789999000002')
+        listing2 = Listing.objects.create(book=book2, seller=self.seller_profile, condition='Good', price=Decimal('450.00'), status='active')
+
+        res_u2 = self.client.post(
+            '/api/unlocks/request/',
+            {'listing_id': listing2.id, 'buyer_id': trial_buyer.id, 'payment_method': 'free_trial'},
+            content_type='application/json',
+            HTTP_AUTHORIZATION=f'Token {trial_token}'
+        )
+        self.assertEqual(res_u2.status_code, status.HTTP_201_CREATED)
+        u2_data = res_u2.json()
+        self.assertEqual(Decimal(str(u2_data['unlock']['fee_amount'])), Decimal('0.00'))
+        self.assertEqual(u2_data['trial_info']['free_remaining'], 0)
+        self.assertFalse(u2_data['trial_info']['is_free_trial'])
+
+        # Check trial status after 2 unlocks
+        res_status2 = self.client.get(
+            f'/api/unlocks/trial-status/?user_id={trial_buyer.id}',
+            HTTP_AUTHORIZATION=f'Token {trial_token}'
+        )
+        s2 = res_status2.json()
+        self.assertEqual(s2['free_remaining'], 0)
+        self.assertEqual(s2['unlocks_used'], 2)
+        self.assertFalse(s2['is_free_trial'])
+        self.assertEqual(s2['fee'], 50.0)
+
+        # Unlock #3: 3rd unlock onward requires standard fee (Rs. 50)
+        book3 = Book.objects.create(title='Trial Book 3', author='Author 3', isbn='9789999000003')
+        listing3 = Listing.objects.create(book=book3, seller=self.seller_profile, condition='Good', price=Decimal('500.00'), status='active')
+
+        # Trying free_trial when 2 unlocks already used must be rejected
+        res_u3_fail = self.client.post(
+            '/api/unlocks/request/',
+            {'listing_id': listing3.id, 'buyer_id': trial_buyer.id, 'payment_method': 'free_trial'},
+            content_type='application/json',
+            HTTP_AUTHORIZATION=f'Token {trial_token}'
+        )
+        self.assertEqual(res_u3_fail.status_code, status.HTTP_400_BAD_REQUEST)
+
+        # Standard unlock via wallet or jazzcash charges Rs. 50
+        res_u3 = self.client.post(
+            '/api/unlocks/request/',
+            {'listing_id': listing3.id, 'buyer_id': trial_buyer.id, 'payment_method': 'wallet'},
+            content_type='application/json',
+            HTTP_AUTHORIZATION=f'Token {trial_token}'
+        )
+        self.assertEqual(res_u3.status_code, status.HTTP_201_CREATED)
+        u3_data = res_u3.json()
+        self.assertEqual(Decimal(str(u3_data['unlock']['fee_amount'])), Decimal('50.00'))
+        self.assertEqual(u3_data['unlock']['payment_method'], 'wallet')
+
+        print("[PASS] 16. Two Free Contact Unlocks trial rule & transition to paid tier verified.")
+
 
 def run_tests():
     print("\n=======================================================")

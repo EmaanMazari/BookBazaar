@@ -210,6 +210,7 @@ class Favorite(models.Model):
 
 class ContactUnlock(models.Model):
     PAYMENT_METHODS = [
+        ('free_trial', 'Free Trial Unlock (Rs. 0)'),
         ('jazzcash', 'JazzCash Mobile Account'),
         ('easypaisa', 'Easypaisa Mobile Wallet'),
         ('card_safepay', 'Debit/Credit Card (Safepay / PayFast)'),
@@ -263,6 +264,7 @@ class ContactUnlock(models.Model):
 
 class PaymentTransaction(models.Model):
     GATEWAY_CHOICES = [
+        ('free_trial', 'Free Trial Unlock (Rs. 0)'),
         ('jazzcash', 'JazzCash'),
         ('easypaisa', 'Easypaisa'),
         ('card_safepay', 'Debit/Credit Card (Safepay / PayFast)'),
