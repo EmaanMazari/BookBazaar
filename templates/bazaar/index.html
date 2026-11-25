@@ -1566,37 +1566,16 @@
                     class="flex-1 py-1.5 px-2 rounded-lg text-slate-600 hover:text-slate-900 text-center transition-all">
                 <i class="fa-solid fa-user mr-1"></i> Existing User
             </button>
-            <button type="button" id="onboard-tab-admin" onclick="switchOnboardTab('admin')" 
-                    class="flex-1 py-1.5 px-2 rounded-lg text-slate-600 hover:text-slate-900 text-center transition-all">
-                <i class="fa-solid fa-shield-halved text-blue-600 mr-1"></i> Admin Staff
-            </button>
         </div>
 
         <!-- PANEL 1: Quick Login / Continue as Reader -->
         <div id="onboard-view-reader">
             <form id="reader-onboarding-form" onsubmit="handleReaderOnboardingSubmit(event)" class="space-y-3.5 pt-2 text-xs">
-                <!-- 1. Full Name -->
-                <div>
-                    <label class="block font-bold text-slate-800 mb-1 flex items-center gap-1.5">
-                        <i class="fa-solid fa-user text-blue-600"></i> Your Name *
-                    </label>
-                    <input type="text" id="onboard-name-input" required placeholder="e.g. Ayesha, Ali, Hamza..." 
-                           class="w-full px-3 py-2.5 bg-slate-50 border border-slate-300 rounded-xl font-bold text-slate-900 focus:bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none transition-all">
-                </div>
+                <!-- Hidden Name & Phone values for AI Profile -->
+                <input type="hidden" id="onboard-name-input" value="Reader">
+                <input type="hidden" id="onboard-phone-input" value="">
 
-                <!-- 2. Phone or Email (Optional / Quick Login) -->
-                <div>
-                    <label class="block font-bold text-slate-800 mb-1 flex items-center justify-between">
-                        <span class="flex items-center gap-1.5">
-                            <i class="fa-solid fa-phone text-blue-600"></i> Phone or Email
-                        </span>
-                        <span class="text-[10px] text-slate-400 font-normal">Optional / Quick Login</span>
-                    </label>
-                    <input type="text" id="onboard-phone-input" placeholder="e.g. 0300-1234567 or email@domain.com" 
-                           class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl font-medium text-slate-900 focus:bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none transition-all">
-                </div>
-
-                <!-- 3. Age Group Selector (Interactive Cards) -->
+                <!-- 1. Age Group Selector (Interactive Cards) -->
                 <div>
                     <label class="block font-bold text-slate-800 mb-1.5 flex items-center justify-between">
                         <span class="flex items-center gap-1.5">
@@ -1724,12 +1703,9 @@
                         <span>✨ Start Reading & Enter Bookzy AI</span>
                     </button>
 
-                    <div class="flex items-center justify-between text-[11px] text-slate-500 px-1 pt-1">
-                        <button type="button" onclick="switchOnboardTab('existing')" class="text-blue-700 hover:text-blue-900 font-bold hover:underline flex items-center gap-1">
+                    <div class="text-center text-[11px] text-slate-500 px-1 pt-1">
+                        <button type="button" onclick="switchOnboardTab('existing')" class="text-blue-700 hover:text-blue-900 font-bold hover:underline inline-flex items-center gap-1">
                             <i class="fa-solid fa-right-to-bracket text-[10px]"></i> Existing User Login
-                        </button>
-                        <button type="button" onclick="switchOnboardTab('admin')" class="text-slate-500 hover:text-slate-800 font-semibold hover:underline flex items-center gap-1">
-                            <i class="fa-solid fa-shield-halved text-[10px] text-blue-600"></i> Admin Staff Login
                         </button>
                     </div>
                 </div>

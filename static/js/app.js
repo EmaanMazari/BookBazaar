@@ -3571,8 +3571,8 @@ function openReaderOnboardingModal(options = {}) {
     const citySelect = document.getElementById('onboard-city-select');
     const ageHidden = document.getElementById('onboard-age-group-value');
 
-    if (nameInput) nameInput.value = profile.name || '';
-    if (phoneInput && profile.phone_or_email) phoneInput.value = profile.phone_or_email;
+    if (nameInput) nameInput.value = (STATE.currentUser ? STATE.currentUser.full_name : profile.name) || 'Reader';
+    if (phoneInput) phoneInput.value = (STATE.currentUser ? STATE.currentUser.phone_number : profile.phone_or_email) || '';
     if (citySelect && profile.city) citySelect.value = profile.city;
     if (ageHidden) ageHidden.value = profile.age_group || 'teens';
 
@@ -3641,8 +3641,9 @@ function toggleOnboardInterest(interestKey, chipEl) {
 
 async function handleReaderOnboardingSubmit(e) {
     e.preventDefault();
-    const name = document.getElementById('onboard-name-input')?.value.trim() || 'Reader';
-    const phoneOrEmail = document.getElementById('onboard-phone-input')?.value.trim() || '';
+    const nameVal = document.getElementById('onboard-name-input')?.value.trim();
+    const name = (nameVal && nameVal !== 'Reader') ? nameVal : (STATE.currentUser ? STATE.currentUser.full_name : 'Reader');
+    const phoneOrEmail = document.getElementById('onboard-phone-input')?.value.trim() || (STATE.currentUser ? STATE.currentUser.phone_number : '');
     const ageGroup = document.getElementById('onboard-age-group-value')?.value || 'teens';
     const city = document.getElementById('onboard-city-select')?.value || 'Lahore';
 
