@@ -33,6 +33,7 @@ urlpatterns = [
     path('api/listings/seller/<int:seller_id>/', views.get_seller_listings, name='api_seller_listings'),
     path('api/listings/<int:listing_id>/edit/', views.edit_listing, name='api_edit_listing'),
     path('api/listings/<int:listing_id>/delete/', views.delete_listing, name='api_delete_listing'),
+    path('api/listings/<int:listing_id>/mark-sold/', views.mark_listing_sold, name='api_mark_listing_sold'),
     path('api/listings/<int:listing_id>/toggle_status/', views.toggle_listing_status, name='api_toggle_listing_status'),
 
     # Favorites / Wishlist APIs

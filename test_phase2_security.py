@@ -307,6 +307,9 @@ class Phase2SecurityAndMarketplaceTests(TestCase):
             'payment_method': 'jazzcash'
         }, content_type='application/json', **buyer_headers)
         unlock_id2 = res_unlock2.json()['unlock']['unlock_id']
+        unlock2_obj = ContactUnlock.objects.get(unlock_id=unlock_id2)
+        unlock2_obj.fee_amount = Decimal('50.00')
+        unlock2_obj.save()
 
         initial_balance = self.buyer_profile.wallet_balance
 

@@ -560,18 +560,27 @@ function createBookCardHtml(item, options = {}) {
     const city = item.city || 'Pakistan';
     const condition = item.condition || 'Good';
     const priceNum = parseFloat(item.price || 0);
+    const isSold = item.status === 'sold';
+    const isOwner = Boolean(STATE.currentUser && (item.seller_id === STATE.currentUser.id || (item.seller && item.seller.id === STATE.currentUser.id)));
 
     return `
-        <div class="bg-white rounded-2xl border border-slate-200 hover:border-blue-300 shadow-xs hover:shadow-lg transition-all duration-200 overflow-hidden flex flex-col justify-between group h-full">
+        <div class="bg-white rounded-2xl border ${isSold ? 'border-slate-200 opacity-95' : 'border-slate-200 hover:border-blue-300'} shadow-xs hover:shadow-lg transition-all duration-200 overflow-hidden flex flex-col justify-between group h-full relative">
             <div>
                 <!-- Book Cover Image -->
                 <div class="relative w-full aspect-[3/4] bg-slate-100 overflow-hidden cursor-pointer" onclick="openUnlockModal(${item.id})">
                     <img src="${displayImg}" 
                          alt="${title}" 
-                         class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                         class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300 ${isSold ? 'grayscale-25' : ''}"
                          loading="lazy"
                          onerror="this.src='https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=400'">
-                    ${isFree ? `
+                    ${isSold ? `
+                        <div class="absolute top-2.5 left-2.5 z-10">
+                            <span class="bg-slate-950/85 text-white font-black text-[10px] uppercase tracking-wider px-2.5 py-0.5 rounded-full shadow-md border border-white/20 flex items-center gap-1">
+                                <i class="fa-solid fa-tag text-[9px]"></i> SOLD
+                            </span>
+                        </div>
+                    ` : ''}
+                    ${isFree && !isSold ? `
                         <div class="absolute top-2.5 right-2.5">
                             <span class="bg-emerald-600 text-white font-extrabold text-[11px] px-2.5 py-0.5 rounded-full shadow-sm">
                                 Free
@@ -583,9 +592,16 @@ function createBookCardHtml(item, options = {}) {
                 <!-- Book Details -->
                 <div class="p-4 flex flex-col gap-1.5">
                     <!-- City & Condition Tag (e.g., "Lahore • Good") -->
-                    <div class="text-xs font-semibold text-slate-500 flex items-center gap-1.5">
-                        <i class="fa-solid fa-location-dot text-blue-600 text-[10px]"></i>
-                        <span>${city} • ${condition}</span>
+                    <div class="text-xs font-semibold text-slate-500 flex items-center justify-between">
+                        <div class="flex items-center gap-1.5 truncate">
+                            <i class="fa-solid fa-location-dot text-blue-600 text-[10px]"></i>
+                            <span>${city} • ${condition}</span>
+                        </div>
+                        ${isSold ? `
+                            <span class="text-[9px] font-black uppercase tracking-wider px-1.5 py-0.2 rounded bg-slate-200 text-slate-700 shrink-0">
+                                SOLD
+                            </span>
+                        ` : ''}
                     </div>
 
                     <!-- Book Title -->
@@ -611,8 +627,21 @@ function createBookCardHtml(item, options = {}) {
                     `}
                 </div>
 
-                ${isFree ? `
-                    <div class="flex items-center gap-1.5 shrink-0">
+                <div class="flex items-center gap-1.5 shrink-0">
+                    ${isOwner && !isSold ? `
+                        <button onclick="event.stopPropagation(); markListingAsSoldAction(${item.id})" 
+                                class="px-2.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs transition-all shadow-xs hover:shadow flex items-center gap-1 active:scale-95 cursor-pointer" 
+                                title="Mark this book as Sold">
+                            <i class="fa-solid fa-check text-[10px]"></i>
+                            <span>✓ Mark as Sold</span>
+                        </button>
+                    ` : ''}
+
+                    ${isSold ? `
+                        <span class="px-3 py-1 bg-slate-100 text-slate-600 font-bold rounded-xl text-xs border border-slate-200">
+                            SOLD
+                        </span>
+                    ` : (isFree ? `
                         <a href="/api/listings/${item.id}/download-pdf/" download 
                            onclick="event.stopPropagation()"
                            title="Download Soft Copy (PDF)"
@@ -621,16 +650,16 @@ function createBookCardHtml(item, options = {}) {
                             <span class="text-[11px]">Download PDF</span>
                         </a>
                         <button onclick="openUnlockModal(${item.id})" 
-                                class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs transition-colors shadow-xs hover:shadow flex items-center gap-1 active:scale-95">
+                                class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs transition-colors shadow-xs hover:shadow flex items-center gap-1 active:scale-95 cursor-pointer">
                             <span>Claim</span>
                         </button>
-                    </div>
-                ` : `
-                    <button onclick="openUnlockModal(${item.id})" 
-                            class="px-3.5 py-1.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl text-xs transition-colors shadow-xs hover:shadow flex items-center gap-1.5 active:scale-95">
-                        <span>View Details</span>
-                    </button>
-                `}
+                    ` : `
+                        <button onclick="openUnlockModal(${item.id})" 
+                                class="px-3.5 py-1.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl text-xs transition-colors shadow-xs hover:shadow flex items-center gap-1.5 active:scale-95 cursor-pointer">
+                            <span>View Details</span>
+                        </button>
+                    `)}
+                </div>
             </div>
         </div>
     `;
@@ -1897,6 +1926,11 @@ function openUnlockModal(listingId) {
         return;
     }
 
+    if (listing.status === 'sold') {
+        alert("This book listing has already been marked as SOLD by the seller.");
+        return;
+    }
+
     STATE.activeListingForUnlock = listing;
 
     const modal = document.getElementById('unlock-modal');
@@ -2336,28 +2370,70 @@ function generateDealCard(u, role) {
                 </div>
             ` : ''}
 
-            <!-- Action buttons for pending deal -->
+            <!-- Action buttons for deal -->
             ${isPending ? `
                 <div class="pt-2 border-t border-slate-100 flex gap-2">
-                    <button onclick="confirmDeal('${u.unlock_id}')" class="flex-1 py-2 bg-blue-700 hover:bg-blue-800 text-white rounded-xl text-xs font-bold shadow-sm">
-                        <i class="fa-solid fa-check mr-1"></i> Deal Completed
+                    <button onclick="openReviewModal('${u.unlock_id}', '${u.seller_name}')" class="flex-1 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow-sm flex items-center justify-center gap-1.5 transition-all active:scale-95 cursor-pointer" title="Deal Done & Rate Seller">
+                        <i class="fa-solid fa-circle-check"></i>
+                        <span>✅ Deal Done (Rate Seller)</span>
                     </button>
-                    <button onclick="cancelDealRefundPrompt('${u.unlock_id}')" class="flex-1 py-2 bg-slate-100 hover:bg-rose-50 hover:text-rose-700 text-slate-700 rounded-lg text-xs font-bold border border-slate-300">
-                        <i class="fa-solid fa-xmark mr-1"></i> No Deal (Refund Fee)
+                    <button onclick="cancelDealRefundPrompt('${u.unlock_id}')" class="flex-1 py-2 bg-white hover:bg-rose-50 text-slate-700 hover:text-rose-700 rounded-xl text-xs font-bold border border-slate-300 hover:border-rose-300 flex items-center justify-center gap-1.5 transition-all active:scale-95 cursor-pointer" title="No Deal (Claim Refund)">
+                        <i class="fa-solid fa-circle-xmark"></i>
+                        <span>❌ No Deal (Claim Refund)</span>
                     </button>
                 </div>
             ` : ''}
 
             ${u.deal_status === 'deal_made' && role === 'buyer' && !u.has_review ? `
-                <div class="pt-2 border-t border-slate-100">
-                    <button onclick="openReviewModal('${u.unlock_id}', '${u.seller_name}')" class="w-full py-1.5 bg-amber-500 hover:bg-amber-600 text-white rounded-lg text-xs font-bold">
-                        ★ Rate & Review Seller
+                <div class="pt-2 border-t border-slate-100 flex items-center justify-between gap-2">
+                    <span class="text-xs font-bold text-emerald-700 flex items-center gap-1">
+                        <i class="fa-solid fa-check-double"></i> Deal Completed
+                    </span>
+                    <button onclick="openReviewModal('${u.unlock_id}', '${u.seller_name}')" class="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow-xs flex items-center gap-1.5 transition-all active:scale-95 cursor-pointer">
+                        <i class="fa-solid fa-star text-amber-300"></i>
+                        <span>Rate Seller</span>
                     </button>
+                </div>
+            ` : ''}
+
+            ${u.deal_status === 'deal_made' && u.has_review ? `
+                <div class="pt-2 border-t border-slate-100 text-[11px] font-bold text-amber-600 flex items-center gap-1">
+                    <i class="fa-solid fa-star"></i> Deal Closed & Rated
                 </div>
             ` : ''}
         </div>
     `;
 }
+
+// Global Lightweight Toast Notification
+function showToast(message, type = 'success') {
+    let container = document.getElementById('bookzy-toast-container');
+    if (!container) {
+        container = document.createElement('div');
+        container.id = 'bookzy-toast-container';
+        container.className = 'fixed bottom-5 right-5 z-[200] flex flex-col gap-2 max-w-sm pointer-events-none';
+        document.body.appendChild(container);
+    }
+    const toast = document.createElement('div');
+    const isSuccess = type === 'success';
+    const bgClass = isSuccess ? 'bg-emerald-600 text-white' : (type === 'error' ? 'bg-red-600 text-white' : 'bg-slate-900 text-white');
+    const iconClass = isSuccess ? 'fa-solid fa-circle-check' : (type === 'error' ? 'fa-solid fa-circle-exclamation' : 'fa-solid fa-bell');
+    toast.className = `${bgClass} px-4 py-3 rounded-2xl shadow-xl flex items-center gap-3 text-xs font-bold pointer-events-auto transition-all duration-300 transform translate-y-4 opacity-0`;
+    toast.innerHTML = `
+        <i class="${iconClass} text-base shrink-0"></i>
+        <span class="flex-1 leading-snug">${message}</span>
+        <button onclick="this.parentElement.remove()" class="text-white/80 hover:text-white ml-2 text-sm leading-none cursor-pointer">×</button>
+    `;
+    container.appendChild(toast);
+    requestAnimationFrame(() => {
+        toast.classList.remove('translate-y-4', 'opacity-0');
+    });
+    setTimeout(() => {
+        toast.classList.add('opacity-0', 'translate-y-2');
+        setTimeout(() => toast.remove(), 350);
+    }, 4500);
+}
+window.showToast = showToast;
 
 // Confirm Deal Made
 async function confirmDeal(unlockId) {
@@ -2372,8 +2448,9 @@ async function confirmDeal(unlockId) {
             body: JSON.stringify({ user_id: STATE.currentUser.id })
         });
         const data = await res.json();
-        alert(data.message);
+        showToast(data.message || "Deal completed successfully!");
         loadUserDeals();
+        loadInitialData();
     } catch (err) {
         alert("Error confirming deal.");
     }
@@ -2391,7 +2468,7 @@ async function cancelDealRefundPrompt(unlockId) {
             body: JSON.stringify({ reason: reason })
         });
         const data = await res.json();
-        alert(data.message);
+        showToast(data.message || "Deal cancelled. Refund processed to your wallet.");
         loadUserDeals();
         const usersRes = await fetch('/api/auth/profiles/');
         STATE.allUsers = await usersRes.json();
@@ -2423,23 +2500,35 @@ async function loadMySellerListings() {
             return;
         }
 
-        container.innerHTML = listings.map(l => `
+        container.innerHTML = listings.map(l => {
+            const isSold = l.status === 'sold';
+            return `
             <div class="p-3 bg-slate-50 border border-slate-200 rounded-xl flex items-center justify-between text-xs">
                 <div class="flex items-center gap-2.5">
-                    <img src="${l.display_image || l.photo_url || l.book.cover_image || 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=100'}" class="w-10 h-14 object-cover rounded-md shadow-xs">
+                    <div class="relative">
+                        <img src="${l.display_image || l.photo_url || l.book.cover_image || 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=100'}" class="w-10 h-14 object-cover rounded-md shadow-xs">
+                        ${isSold ? `<span class="absolute inset-0 bg-slate-900/60 rounded-md flex items-center justify-center text-[9px] font-black text-amber-400 tracking-wider">SOLD</span>` : ''}
+                    </div>
                     <div>
                         <h5 class="font-bold text-slate-900 line-clamp-1">${l.book.title}</h5>
                         <p class="text-[11px] text-slate-500">Rs. ${l.price} • ${l.condition}</p>
-                        <span class="inline-block mt-0.5 px-1.5 py-0.2 rounded text-[10px] font-bold ${l.status === 'active' ? 'bg-blue-100 text-blue-800' : 'bg-slate-200 text-slate-700'}">
-                            ${l.status === 'active' ? 'Available' : 'Sold'}
+                        <span class="inline-block mt-0.5 px-1.5 py-0.2 rounded text-[10px] font-bold ${!isSold ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-200 text-slate-700'}">
+                            ${!isSold ? 'Active' : 'SOLD'}
                         </span>
                     </div>
                 </div>
 
                 <div class="flex items-center gap-1.5">
-                    <button onclick="toggleListingStatusAction(${l.id})" class="px-2 py-1 bg-white border border-slate-300 hover:bg-slate-100 rounded text-[11px] font-semibold text-slate-700" title="Toggle Available / Sold">
-                        ${l.status === 'active' ? 'Mark Sold' : 'Reactivate'}
-                    </button>
+                    ${!isSold ? `
+                        <button onclick="markListingAsSoldAction(${l.id})" class="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-[11px] font-bold shadow-xs flex items-center gap-1 transition-all active:scale-95 cursor-pointer" title="Mark as Sold">
+                            <i class="fa-solid fa-check"></i>
+                            <span>✓ Mark as Sold</span>
+                        </button>
+                    ` : `
+                        <button onclick="toggleListingStatusAction(${l.id})" class="px-2 py-1 bg-white border border-slate-300 hover:bg-slate-100 rounded text-[11px] font-semibold text-slate-700" title="Reactivate listing">
+                            Reactivate
+                        </button>
+                    `}
                     <button onclick="openEditListingModal(${l.id})" class="px-2.5 py-1 bg-blue-700 hover:bg-blue-800 text-white rounded-lg text-[11px] font-bold" title="Edit Price/Condition">
                         Edit
                     </button>
@@ -2448,11 +2537,40 @@ async function loadMySellerListings() {
                     </button>
                 </div>
             </div>
-        `).join('');
+            `;
+        }).join('');
     } catch (e) {
         console.error(e);
     }
 }
+
+// Mark Listing as Sold (Seller Side Instant Closure)
+async function markListingAsSoldAction(listingId) {
+    if (!confirm("Are you sure you want to mark this book as SOLD? This will close active deals and display a SOLD badge.")) {
+        return;
+    }
+
+    try {
+        const res = await fetch(`/api/listings/${listingId}/mark-sold/`, {
+            method: 'POST',
+            headers: getAuthHeaders({ 'Content-Type': 'application/json' })
+        });
+        const data = await res.json();
+        if (res.ok) {
+            showToast(data.message || "Book marked as SOLD! Deal marked as completed.");
+            if (typeof loadMySellerListings === 'function') loadMySellerListings();
+            if (typeof loadUserDeals === 'function') loadUserDeals();
+            if (typeof loadInitialData === 'function') loadInitialData();
+            if (typeof applyFilters === 'function') applyFilters();
+        } else {
+            alert(data.error || "Failed to mark listing as sold.");
+        }
+    } catch (err) {
+        console.error(err);
+        alert("An error occurred while marking the listing as sold.");
+    }
+}
+window.markListingAsSoldAction = markListingAsSoldAction;
 
 async function toggleListingStatusAction(listingId) {
     try {
@@ -2630,14 +2748,50 @@ async function handleAuthRegister(e) {
     }
 }
 
-// Seller Review Modal
+// Seller Review Modal & 5-Star Rating System
+function setRatingValue(val) {
+    const input = document.getElementById('review-rating-select');
+    if (input) input.value = val;
+
+    const labels = {
+        1: "★☆☆☆☆ (1.0 - Poor)",
+        2: "★★☆☆☆ (2.0 - Below Average)",
+        3: "★★★☆☆ (3.0 - Average)",
+        4: "★★★★☆ (4.0 - Good)",
+        5: "★★★★★ (5.0 - Excellent)"
+    };
+    const labelEl = document.getElementById('star-rating-label');
+    if (labelEl) {
+        labelEl.textContent = labels[val] || `${val}.0 Stars`;
+    }
+
+    const starBtns = document.querySelectorAll('#clickable-stars-container .star-btn');
+    starBtns.forEach(btn => {
+        const rating = parseInt(btn.getAttribute('data-rating') || '0', 10);
+        if (rating <= val) {
+            btn.classList.remove('text-slate-300');
+            btn.classList.add('text-amber-400');
+        } else {
+            btn.classList.remove('text-amber-400');
+            btn.classList.add('text-slate-300');
+        }
+    });
+}
+window.setRatingValue = setRatingValue;
+
 function openReviewModal(unlockId, sellerName) {
     const modal = document.getElementById('review-modal');
     if (!modal) return;
-    document.getElementById('review-unlock-id').value = unlockId;
-    document.getElementById('review-seller-name').textContent = sellerName;
+    const unlockInput = document.getElementById('review-unlock-id');
+    if (unlockInput) unlockInput.value = unlockId;
+    const sellerEl = document.getElementById('review-seller-name');
+    if (sellerEl) sellerEl.textContent = sellerName || 'Seller';
+    const commentEl = document.getElementById('review-comment-input');
+    if (commentEl) commentEl.value = '';
+    setRatingValue(5);
     modal.classList.remove('hidden');
 }
+window.openReviewModal = openReviewModal;
 
 function closeReviewModal() {
     const modal = document.getElementById('review-modal');
@@ -2646,9 +2800,20 @@ function closeReviewModal() {
 window.closeReviewModal = closeReviewModal;
 
 async function submitReview() {
-    const unlockId = document.getElementById('review-unlock-id').value;
-    const rating = document.getElementById('review-rating-select').value;
-    const comment = document.getElementById('review-comment-input').value;
+    const unlockId = document.getElementById('review-unlock-id')?.value;
+    const rating = document.getElementById('review-rating-select')?.value || 5;
+    const comment = document.getElementById('review-comment-input')?.value || '';
+
+    if (!unlockId) {
+        alert("Unlock reference is missing.");
+        return;
+    }
+
+    const submitBtn = document.getElementById('review-submit-btn');
+    if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Submitting...`;
+    }
 
     try {
         const res = await fetch('/api/reviews/create/', {
@@ -2657,13 +2822,26 @@ async function submitReview() {
             body: JSON.stringify({ unlock_id: unlockId, rating: rating, comment: comment })
         });
         const data = await res.json();
-        alert(data.message);
-        closeReviewModal();
-        loadUserDeals();
+        if (res.ok) {
+            closeReviewModal();
+            showToast("Deal closed! Thank you for rating the seller.");
+            if (typeof loadUserDeals === 'function') loadUserDeals();
+            if (typeof loadInitialData === 'function') loadInitialData();
+            if (typeof loadMySellerListings === 'function') loadMySellerListings();
+        } else {
+            alert(data.error || "Error submitting review.");
+        }
     } catch (err) {
+        console.error(err);
         alert("Error submitting review.");
+    } finally {
+        if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = `<i class="fa-solid fa-check"></i> <span>Submit Rating & Close Deal</span>`;
+        }
     }
 }
+window.submitReview = submitReview;
 
 // Selling Flow with Multipart Image Upload & Interstitial Ad
 function prefillSellForm(isbn) {

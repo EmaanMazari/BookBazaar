@@ -809,6 +809,57 @@ def delete_listing(request, listing_id):
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
+def mark_listing_sold(request, listing_id):
+    """
+    SELLER ACTION — MARK LISTING AS SOLD:
+    - Protected: Owner or Staff only
+    - Updates listing status to 'sold'
+    - Automatically marks any pending unlocked deal for this listing as completed ('deal_made')
+    """
+    listing = get_object_or_404(Listing, id=listing_id)
+
+    if not (request.user.is_staff or (listing.seller.user and listing.seller.user == request.user)):
+        return Response({'error': 'Permission denied: You can only modify your own listings.'}, status=status.HTTP_403_FORBIDDEN)
+
+    listing.status = 'sold'
+    listing.save()
+
+    # Automatically mark any pending unlocked deal for that book as completed
+    pending_unlocks = ContactUnlock.objects.filter(listing=listing, deal_status='unlocked_pending')
+    for unlock in pending_unlocks:
+        unlock.deal_status = 'deal_made'
+        unlock.buyer_confirmation = 'confirmed'
+        unlock.seller_confirmation = 'confirmed'
+        unlock.resolved_at = timezone.now()
+        unlock.save()
+
+        # Trigger Admin Notification for successful deal
+        try:
+            AdminNotification.objects.create(
+                notification_type='DEAL_SUCCESSFUL',
+                title="Deal Finalized (Marked Sold by Seller)",
+                message=f"Deal Successful: '{listing.book.title}' marked sold by seller {listing.seller.full_name}. Rs. {unlock.fee_amount} fee retained.",
+                user=unlock.seller,
+                buyer=unlock.buyer,
+                seller=unlock.seller,
+                listing=listing,
+                unlock=unlock,
+                is_resolved=True
+            )
+        except Exception as e:
+            logger.warning(f"Could not create notification for mark_listing_sold: {e}")
+
+    logger.info(f"Listing #{listing.id} marked as SOLD by {request.user.username}.")
+    return Response({
+        'success': True,
+        'message': 'Listing marked as sold successfully.',
+        'status': 'sold',
+        'listing': ListingSerializer(listing, context={'request': request}).data
+    })
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
 def toggle_listing_status(request, listing_id):
     """
     Toggle listing status between active and sold:
@@ -821,6 +872,16 @@ def toggle_listing_status(request, listing_id):
 
     listing.status = 'sold' if listing.status == 'active' else 'active'
     listing.save()
+
+    if listing.status == 'sold':
+        pending_unlocks = ContactUnlock.objects.filter(listing=listing, deal_status='unlocked_pending')
+        for unlock in pending_unlocks:
+            unlock.deal_status = 'deal_made'
+            unlock.buyer_confirmation = 'confirmed'
+            unlock.seller_confirmation = 'confirmed'
+            unlock.resolved_at = timezone.now()
+            unlock.save()
+
     return Response({
         'message': f"Listing status changed to {listing.status}",
         'status': listing.status
@@ -1455,8 +1516,39 @@ def submit_seller_review(request):
     if not (request.user.is_staff or is_buyer):
         return Response({'error': 'Permission denied: Only the buyer who unlocked this book can leave a review.'}, status=status.HTTP_403_FORBIDDEN)
 
+    if unlock.deal_status == 'no_deal_refunded':
+        return Response({'error': 'Cannot review a seller for a deal that has been refunded.'}, status=status.HTTP_400_BAD_REQUEST)
+
+    # Submitting the rating completes the deal if it was still pending
     if unlock.deal_status != 'deal_made':
-        return Response({'error': 'Can only review seller after a deal is confirmed.'}, status=status.HTTP_400_BAD_REQUEST)
+        unlock.deal_status = 'deal_made'
+        unlock.buyer_confirmation = 'confirmed'
+        unlock.seller_confirmation = 'confirmed'
+        unlock.resolved_at = timezone.now()
+        unlock.save()
+
+        listing = unlock.listing
+        if listing and listing.status != 'sold':
+            listing.status = 'sold'
+            listing.save()
+
+        # Trigger Admin Notification: DEAL_SUCCESSFUL
+        try:
+            buyer_name = unlock.buyer.full_name or (unlock.buyer.user.username if unlock.buyer.user else "Buyer")
+            book_title = unlock.listing.book.title
+            AdminNotification.objects.create(
+                notification_type='DEAL_SUCCESSFUL',
+                title="Deal Completed & Seller Rated",
+                message=f"Deal Successful: '{book_title}' deal finalized. Fee of Rs. {unlock.fee_amount} retained by platform.",
+                user=unlock.buyer,
+                buyer=unlock.buyer,
+                seller=unlock.seller,
+                listing=unlock.listing,
+                unlock=unlock,
+                is_resolved=True
+            )
+        except Exception as notif_err:
+            logger.warning(f"Failed to create AdminNotification for deal confirmation: {notif_err}")
 
     review, created = SellerReview.objects.get_or_create(
         unlock=unlock,
@@ -1472,10 +1564,16 @@ def submit_seller_review(request):
         review.comment = comment
         review.save()
 
+    unlock.seller.update_rating()
+    unlock.seller.refresh_from_db()
+
     return Response({
-        'message': 'Review submitted successfully!',
+        'success': True,
+        'message': 'Deal closed! Thank you for rating the seller.',
         'review': SellerReviewSerializer(review).data,
-        'new_seller_rating': float(unlock.seller.rating)
+        'new_seller_rating': float(unlock.seller.rating),
+        'seller_rating': float(unlock.seller.rating),
+        'total_reviews': unlock.seller.total_reviews
     })
 
 

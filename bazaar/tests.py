@@ -8,31 +8,47 @@ class BookBazaarAiTests(TestCase):
         self.client = Client()
 
         # Create demo users
-        self.user1 = User.objects.create_user(username='student_bwp', password='password123')
-        self.profile1 = UserProfile.objects.create(
-            user=self.user1, full_name='Bilal Ahmed', phone_number='03001111111',
-            city='Bahawalpur', user_type='student', rating=Decimal('5.00'), total_reviews=3
+        self.user1 = User.objects.filter(username='student_bwp').first()
+        if not self.user1:
+            self.user1 = User.objects.create_user(username='student_bwp', password='password123')
+        self.profile1, _ = UserProfile.objects.get_or_create(
+            user=self.user1,
+            defaults={
+                'full_name': 'Bilal Ahmed', 'phone_number': '03001111111',
+                'city': 'Bahawalpur', 'user_type': 'student', 'rating': Decimal('5.00'), 'total_reviews': 3
+            }
         )
 
-        self.user2 = User.objects.create_user(username='student_lhr', password='password123')
-        self.profile2 = UserProfile.objects.create(
-            user=self.user2, full_name='Ali Khan', phone_number='03002222222',
-            city='Lahore', user_type='student', rating=Decimal('4.90'), total_reviews=5
+        self.user2 = User.objects.filter(username='student_lhr').first()
+        if not self.user2:
+            self.user2 = User.objects.create_user(username='student_lhr', password='password123')
+        self.profile2, _ = UserProfile.objects.get_or_create(
+            user=self.user2,
+            defaults={
+                'full_name': 'Ali Khan', 'phone_number': '03002222222',
+                'city': 'Lahore', 'user_type': 'student', 'rating': Decimal('4.90'), 'total_reviews': 5
+            }
         )
 
         # Create sample books
-        self.book1 = Book.objects.create(
-            isbn='9780133943030', title='Software Engineering 10th Edition', author='Ian Sommerville',
-            category='Software Engineering', education_board='Higher Education / University',
-            grade_class='Bachelor / BS / Undergrad', subject='Software Engineering',
-            original_retail_price=Decimal('2400.00')
+        self.book1, _ = Book.objects.get_or_create(
+            isbn='9780133943030',
+            defaults={
+                'title': 'Software Engineering 10th Edition', 'author': 'Ian Sommerville',
+                'category': 'Software Engineering', 'education_board': 'Higher Education / University',
+                'grade_class': 'Bachelor / BS / Undergrad', 'subject': 'Software Engineering',
+                'original_retail_price': Decimal('2400.00')
+            }
         )
 
-        self.book2 = Book.objects.create(
-            isbn='9789695840130', title='Physics for Class 12', author='Punjab Textbook Board',
-            category='FSc / Matric / O & A Level', education_board='Punjab Board',
-            grade_class='Intermediate / FSc / ICS (11th - 12th)', subject='Physics',
-            original_retail_price=Decimal('420.00')
+        self.book2, _ = Book.objects.get_or_create(
+            isbn='9789695840130',
+            defaults={
+                'title': 'Physics for Class 12', 'author': 'Punjab Textbook Board',
+                'category': 'FSc / Matric / O & A Level', 'education_board': 'Punjab Board',
+                'grade_class': 'Intermediate / FSc / ICS (11th - 12th)', 'subject': 'Physics',
+                'original_retail_price': Decimal('420.00')
+            }
         )
 
         # Create listings
@@ -108,8 +124,8 @@ class BookBazaarAiTests(TestCase):
         # Verify developer labels removed and admin completely hidden from homepage
         self.assertNotIn('Live Beta', content)
         self.assertNotIn('href="/admin-panel/"', content)
-        self.assertIn('id="quick-free-books-card"', content)
-        self.assertIn('🎁 Free Books', content)
+        self.assertIn('id="free-books-section"', content)
+        self.assertIn('🎁 Free Donated Books', content)
 
     def test_admin_panel_restricted_access_and_authentication(self):
         """Test /admin-panel/ security lock, unauthorized restriction, and staff login"""
@@ -156,11 +172,14 @@ class BookBazaarAiTests(TestCase):
     def test_age_and_free_book_ai_recommendations(self):
         """Test multi-factor AI recommender prioritizes free books and matches age groups"""
         # Create a free book
-        free_book = Book.objects.create(
-            isbn='9789690099881', title='Primary Math Class 3 (Free Donation)', author='PTB',
-            category='Punjab Textbooks (Primary to FSc)', education_board='Punjab Board',
-            grade_class='Class 3 (Primary)', target_age_group='kids',
-            original_retail_price=Decimal('250.00')
+        free_book, _ = Book.objects.get_or_create(
+            isbn='9789690099881',
+            defaults={
+                'title': 'Primary Math Class 3 (Free Donation)', 'author': 'PTB',
+                'category': 'Punjab Textbooks (Primary to FSc)', 'education_board': 'Punjab Board',
+                'grade_class': 'Class 3 (Primary)', 'target_age_group': 'kids',
+                'original_retail_price': Decimal('250.00')
+            }
         )
         Listing.objects.create(
             book=free_book, seller=self.profile2, condition='Good',
