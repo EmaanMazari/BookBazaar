@@ -188,8 +188,39 @@ def run_tests():
     assert init_data['seller_contact']['phone_number'] == seller_phone
     print("[PASS] 10. /api/unlocks/initiate/ returned 201 with contact details immediately for free trial.")
 
+    # 12. Test Stale / Invalid Token Header Resilience (Prevents "Invalid token." from blocking unlock)
+    stale_client = Client()
+    b5 = Book.objects.create(isbn=f"978{random.randint(1000000000, 9999999999)}", title="Test Book 5", author="Author 5")
+    l5 = Listing.objects.create(book=b5, seller=seller, price=Decimal('150.00'), condition='Good', status='active')
+    stale_res = stale_client.post(
+        '/api/unlocks/request/',
+        data=json.dumps({
+            'listing_id': l5.id,
+            'buyer_id': fresh_buyer.id,
+            'payment_method': 'free_trial'
+        }),
+        content_type='application/json',
+        HTTP_AUTHORIZATION='Token completely_stale_or_invalid_key_999999'
+    )
+    assert stale_res.status_code in [200, 201], f"Stale token test failed with {stale_res.status_code}: {stale_res.content}"
+    stale_data = stale_res.json()
+    assert stale_data['seller_contact']['phone_number'] == seller_phone
+    assert "https://wa.me/" in stale_data['seller_contact']['whatsapp_link']
+    print("[PASS] 11. Stale / invalid token header gracefully handled (SafeTokenAuthentication + payload fallback). WhatsApp & contact revealed.")
+
+    # 13. Test demo_login with stale token header
+    demo_stale_res = stale_client.post(
+        '/api/auth/demo_login/',
+        data=json.dumps({'user_id': fresh_buyer.id}),
+        content_type='application/json',
+        HTTP_AUTHORIZATION='Token completely_stale_or_invalid_key_999999'
+    )
+    assert demo_stale_res.status_code == 200, f"demo_login failed with stale token: {demo_stale_res.content}"
+    assert demo_stale_res.json()['token'], "Must return new valid token"
+    print("[PASS] 12. demo_login succeeded even when browser sent stale token header.")
+
     print("\n==========================================================")
-    print("   ALL 10 FREE TRIAL & UNLOCK VERIFICATION TESTS PASSED!   ")
+    print("   ALL 12 FREE TRIAL & UNLOCK VERIFICATION TESTS PASSED!   ")
     print("==========================================================")
 
 if __name__ == '__main__':

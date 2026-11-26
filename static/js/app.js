@@ -44,8 +44,8 @@ function getCookie(name) {
 function getAuthHeaders(extra = {}) {
     const headers = { ...extra };
     const token = STATE.authToken || localStorage.getItem('bookloop_token');
-    if (token) {
-        headers['Authorization'] = `Token ${token}`;
+    if (token && token !== 'null' && token !== 'undefined' && token.trim() !== '') {
+        headers['Authorization'] = `Token ${token.trim()}`;
     }
     const csrfToken = getCookie('csrftoken');
     if (csrfToken) {
@@ -55,11 +55,15 @@ function getAuthHeaders(extra = {}) {
 }
 
 async function syncUserAuthToken(userId) {
-    if (!userId) return;
+    if (!userId) return null;
     try {
+        const csrfToken = getCookie('csrftoken');
+        const headers = { 'Content-Type': 'application/json' };
+        if (csrfToken) headers['X-CSRFToken'] = csrfToken;
+
         const res = await fetch('/api/auth/demo_login/', {
             method: 'POST',
-            headers: getAuthHeaders({ 'Content-Type': 'application/json' }),
+            headers: headers,
             body: JSON.stringify({ user_id: userId })
         });
         if (res.ok) {
@@ -67,11 +71,17 @@ async function syncUserAuthToken(userId) {
             if (data.token) {
                 STATE.authToken = data.token;
                 localStorage.setItem('bookloop_token', data.token);
+                return data.token;
             }
+        } else {
+            console.warn("Auth token sync response:", res.status);
+            localStorage.removeItem('bookloop_token');
+            STATE.authToken = null;
         }
     } catch (e) {
-        console.warn("Auth token sync:", e);
+        console.warn("Auth token sync error:", e);
     }
+    return null;
 }
 
 // Bilingual Translations (English & Urdu)
@@ -2189,13 +2199,28 @@ async function submitPaymentUnlock() {
             account_number: isFree ? '' : (document.getElementById('pay-account-input')?.value || STATE.currentUser.phone_number)
         };
 
-        const res = await fetch('/api/unlocks/request/', {
+        let res = await fetch('/api/unlocks/request/', {
             method: 'POST',
             headers: getAuthHeaders({ 'Content-Type': 'application/json' }),
             body: JSON.stringify(payload)
         });
 
-        const data = await res.json();
+        let data = await res.json();
+
+        // Self-Healing: If server rejected with "Invalid token.", clear token, resync fresh token, and retry immediately
+        if (!res.ok && (res.status === 401 || res.status === 403) && (data?.detail === "Invalid token." || data?.error === "Invalid token.")) {
+            console.warn("Invalid token detected. Purging stale token and re-syncing fresh auth token...");
+            localStorage.removeItem('bookloop_token');
+            STATE.authToken = null;
+            await syncUserAuthToken(STATE.currentUser.id);
+            res = await fetch('/api/unlocks/request/', {
+                method: 'POST',
+                headers: getAuthHeaders({ 'Content-Type': 'application/json' }),
+                body: JSON.stringify(payload)
+            });
+            data = await res.json();
+        }
+
         if (btn) {
             btn.disabled = false;
             if (isFree) {
@@ -2278,9 +2303,12 @@ function showUnlockedContactResult(data) {
     const resultSec = document.getElementById('unlock-result-section');
     resultSec.classList.remove('hidden');
 
-    const sc = data.seller_contact;
-    const unlock = data.unlock;
-    const isFreeUnlock = parseFloat(unlock.fee_amount) === 0 || unlock.payment_method === 'free_trial';
+    const sc = data.seller_contact || {};
+    const unlock = data.unlock || {};
+    const isFreeUnlock = parseFloat(unlock.fee_amount || 0) === 0 || unlock.payment_method === 'free_trial';
+
+    const cleanPhone = (sc.phone_number || '').replace(/\D/g, '').replace(/^0+/, '');
+    const waLink = sc.whatsapp_link || (cleanPhone ? `https://wa.me/92${cleanPhone}?text=Assalam-o-Alaikum%20${encodeURIComponent(sc.full_name || 'Seller')},%20I%20am%20interested%20in%20your%20book%20on%20Bookzy%20AI.` : '#');
 
     resultSec.innerHTML = `
         <div class="text-center py-2">
@@ -2296,24 +2324,24 @@ function showUnlockedContactResult(data) {
         <div class="bg-blue-50 border border-blue-200 rounded-2xl p-4 my-3 text-left">
             <div class="flex items-center justify-between pb-2 border-b border-blue-100">
                 <span class="text-xs text-blue-900 font-bold">Seller Name</span>
-                <span class="text-sm font-extrabold text-slate-900">${sc.full_name}</span>
+                <span class="text-sm font-extrabold text-slate-900">${sc.full_name || 'Seller'}</span>
             </div>
             <div class="flex items-center justify-between py-2 border-b border-blue-100">
                 <span class="text-xs text-blue-900 font-bold">Direct Phone</span>
-                <span class="text-base font-black text-blue-900 tracking-wider">${sc.phone_number}</span>
+                <span class="text-base font-black text-blue-900 tracking-wider">${sc.phone_number || 'N/A'}</span>
             </div>
             <div class="flex items-center justify-between pt-2">
                 <span class="text-xs text-blue-900 font-bold">Location</span>
-                <span class="text-xs font-semibold text-slate-700">${sc.city} - ${sc.campus_or_area}</span>
+                <span class="text-xs font-semibold text-slate-700">${sc.city || ''} - ${sc.campus_or_area || ''}</span>
             </div>
         </div>
 
         <!-- Direct Contact Action Buttons -->
         <div class="grid grid-cols-2 gap-2.5 my-3">
-            <a href="tel:${sc.phone_number}" class="py-2.5 bg-blue-700 hover:bg-blue-800 text-white rounded-xl text-xs font-bold text-center flex items-center justify-center gap-1.5 shadow-sm">
+            <a href="tel:${sc.phone_number || ''}" class="py-2.5 bg-blue-700 hover:bg-blue-800 text-white rounded-xl text-xs font-bold text-center flex items-center justify-center gap-1.5 shadow-sm">
                 <i class="fa-solid fa-phone"></i> Call Seller
             </a>
-            <a href="${sc.whatsapp_link}" target="_blank" class="py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold text-center flex items-center justify-center gap-1.5 shadow-sm">
+            <a href="${waLink}" target="_blank" rel="noopener noreferrer" class="py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold text-center flex items-center justify-center gap-1.5 shadow-sm">
                 <i class="fa-brands fa-whatsapp text-sm"></i> WhatsApp
             </a>
         </div>
@@ -2412,7 +2440,14 @@ function generateDealCard(u, role) {
                 </div>
                 <div>
                     <span class="text-[10px] text-slate-400 block">Phone / WhatsApp</span>
-                    <span class="font-mono font-bold text-blue-700">${otherPhone}</span>
+                    <div class="flex items-center gap-1.5 flex-wrap">
+                        <span class="font-mono font-bold text-blue-700">${otherPhone || 'N/A'}</span>
+                        ${otherPhone ? `
+                            <a href="https://wa.me/92${(otherPhone || '').replace(/\D/g, '').replace(/^0+/, '')}?text=Assalam-o-Alaikum%20${encodeURIComponent(otherPerson || '')},%20I%20am%20contacting%20you%20regarding%20'${encodeURIComponent(u.listing_title || 'Book')}'%20on%20Bookzy%20AI." target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-600 hover:text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-md transition-colors" title="Chat on WhatsApp">
+                                <i class="fa-brands fa-whatsapp text-sm text-emerald-600"></i> WhatsApp
+                            </a>
+                        ` : ''}
+                    </div>
                 </div>
                 <div>
                     <span class="text-[10px] text-slate-400 block">Book Listed Price</span>

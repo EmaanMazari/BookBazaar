@@ -21,9 +21,24 @@ from rest_framework.decorators import api_view, permission_classes, parser_class
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 from rest_framework.authentication import SessionAuthentication, TokenAuthentication
+from rest_framework.exceptions import AuthenticationFailed
 from rest_framework.authtoken.models import Token
 from rest_framework.response import Response
 from rest_framework import status
+
+
+class SafeTokenAuthentication(TokenAuthentication):
+    """
+    TokenAuthentication that gracefully handles invalid/stale/purged tokens
+    by treating the request as unauthenticated rather than halting execution
+    with 401 AuthenticationFailed. This prevents stale client tokens from
+    breaking endpoints with fallback resolution or AllowAny access.
+    """
+    def authenticate(self, request):
+        try:
+            return super().authenticate(request)
+        except AuthenticationFailed:
+            return None
 
 
 class CsrfExemptSessionAuthentication(SessionAuthentication):
@@ -297,6 +312,7 @@ def logout_user(request):
 
 
 @api_view(['POST'])
+@authentication_classes([])
 @permission_classes([AllowAny])
 def demo_login(request):
     """
@@ -960,7 +976,7 @@ def get_user_favorites(request, user_id):
 # ==========================================
 
 @api_view(['POST'])
-@authentication_classes([TokenAuthentication, CsrfExemptSessionAuthentication])
+@authentication_classes([SafeTokenAuthentication, CsrfExemptSessionAuthentication])
 @permission_classes([AllowAny])
 def request_contact_unlock(request):
     """
@@ -1092,7 +1108,7 @@ def get_contact_unlock_trial_status(request):
 # ==========================================
 
 @api_view(['POST'])
-@authentication_classes([TokenAuthentication, CsrfExemptSessionAuthentication])
+@authentication_classes([SafeTokenAuthentication, CsrfExemptSessionAuthentication])
 @permission_classes([AllowAny])
 def initiate_payment_api(request):
     """
@@ -1391,15 +1407,25 @@ def get_payment_transaction_api(request, transaction_id):
 
 
 @api_view(['GET'])
-@permission_classes([IsAuthenticated])
+@authentication_classes([SafeTokenAuthentication, CsrfExemptSessionAuthentication])
+@permission_classes([AllowAny])
 def get_user_unlocks(request, user_id):
     """
     Fetch all contact unlocks for a user:
     - Protected: User can only view their own unlocks (as buyer or seller), or staff
     """
-    user_profile = get_object_or_404(UserProfile, id=user_id)
+    if not (request.user and request.user.is_authenticated):
+        session_user_id = request.session.get('_auth_user_id')
+        if not session_user_id:
+            return Response({'detail': 'Authentication credentials were not provided.'}, status=status.HTTP_401_UNAUTHORIZED)
 
-    if not (request.user.is_staff or (user_profile.user and user_profile.user == request.user)):
+    user_profile = get_object_or_404(UserProfile, id=user_id)
+    session_user_id = request.session.get('_auth_user_id')
+    is_owner = (
+        (request.user and request.user.is_authenticated and (request.user.is_staff or (user_profile.user and user_profile.user == request.user)))
+        or (session_user_id and user_profile.user and str(user_profile.user.id) == str(session_user_id))
+    )
+    if not is_owner:
         return Response({'error': 'Permission denied: Cannot view another user’s unlocks.'}, status=status.HTTP_403_FORBIDDEN)
 
     buyer_unlocks = ContactUnlock.objects.filter(buyer=user_profile).order_by('-payment_timestamp')
