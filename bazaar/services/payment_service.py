@@ -524,6 +524,8 @@ class FreeTrialPaymentAdapter(BaseGatewayAdapter):
 # ==========================================
 ADAPTERS = {
     'free_trial': FreeTrialPaymentAdapter,
+    'free': FreeTrialPaymentAdapter,
+    'trial': FreeTrialPaymentAdapter,
     'jazzcash': JazzCashGatewayAdapter,
     'easypaisa': EasypaisaGatewayAdapter,
     'card_safepay': SafepayGatewayAdapter,
@@ -612,12 +614,15 @@ def initiate_contact_unlock_payment(
     trial_info = get_buyer_trial_status(buyer)
     is_free_trial = trial_info['is_free_trial']
 
-    if gateway_name == 'free_trial':
+    if gateway_name in ['free_trial', 'free', 'trial']:
         if not is_free_trial:
             raise PaymentGatewayError("You have used your 2 free contact unlocks. A Rs. 50 refundable security fee applies from the 3rd unlock onward.")
         fee = Decimal('0.00')
+        gateway_name = 'free_trial'
     elif custom_amount is not None:
         fee = custom_amount
+        if fee == Decimal('0.00') and is_free_trial:
+            gateway_name = 'free_trial'
     else:
         setting = PlatformSetting.get_settings()
         fee = setting.contact_unlock_fee
@@ -818,7 +823,7 @@ def process_contact_unlock(listing: Listing, buyer: UserProfile, payment_method:
     5. Returns (unlock, is_new_charge, message).
     """
     trial_info = get_buyer_trial_status(buyer)
-    if trial_info['is_free_trial']:
+    if trial_info['is_free_trial'] or (payment_method or '').lower() in ['free_trial', 'free', 'trial']:
         payment_method = 'free_trial'
 
     payment_txn, init_data = initiate_contact_unlock_payment(
@@ -833,7 +838,7 @@ def process_contact_unlock(listing: Listing, buyer: UserProfile, payment_method:
 
     # For Sandbox, Wallet, or Free Trial: execute server-side verification and unlock
     mode = getattr(settings, 'PAYMENT_GATEWAY_MODE', 'sandbox').lower()
-    if mode == 'sandbox' or payment_method in ['wallet', 'free_trial']:
+    if mode == 'sandbox' or payment_method in ['wallet', 'free_trial', 'free', 'trial']:
         unlock, is_new, msg = verify_and_complete_contact_unlock(
             transaction_id=payment_txn.transaction_id,
             simulate_outcome='success'

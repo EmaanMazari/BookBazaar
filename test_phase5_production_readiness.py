@@ -125,7 +125,7 @@ class Phase5ProductionReadinessTests(TestCase):
 
         # 6. Sample Book
         self.book, _ = Book.objects.get_or_create(
-            isbn='9780132350884',
+            isbn='9780132350899',
             defaults={
                 'title': 'Clean Code: A Handbook of Agile Software Craftsmanship',
                 'author': 'Robert C. Martin',

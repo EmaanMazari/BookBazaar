@@ -26,11 +26,30 @@ const STATE = {
     torchOn: false
 };
 
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
 function getAuthHeaders(extra = {}) {
     const headers = { ...extra };
     const token = STATE.authToken || localStorage.getItem('bookloop_token');
     if (token) {
         headers['Authorization'] = `Token ${token}`;
+    }
+    const csrfToken = getCookie('csrftoken');
+    if (csrfToken) {
+        headers['X-CSRFToken'] = csrfToken;
     }
     return headers;
 }
@@ -40,13 +59,15 @@ async function syncUserAuthToken(userId) {
     try {
         const res = await fetch('/api/auth/demo_login/', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: getAuthHeaders({ 'Content-Type': 'application/json' }),
             body: JSON.stringify({ user_id: userId })
         });
         if (res.ok) {
             const data = await res.json();
-            STATE.authToken = data.token;
-            localStorage.setItem('bookloop_token', data.token);
+            if (data.token) {
+                STATE.authToken = data.token;
+                localStorage.setItem('bookloop_token', data.token);
+            }
         }
     } catch (e) {
         console.warn("Auth token sync:", e);
@@ -1967,9 +1988,9 @@ function openUnlockModal(listingId) {
     document.getElementById('unlock-result-section').classList.add('hidden');
 
     // 2 Free Contact Unlocks Trial Rule (Rs. 0 for first 2 unlocks, Rs. 50 from 3rd onward)
-    const unlocksUsed = parseInt(STATE.currentUser?.unlocks_bought_count || STATE.currentUser?.trial_unlocks_used || 0, 10);
-    const freeRemaining = Math.max(0, 2 - unlocksUsed);
-    const isFreeTrial = freeRemaining > 0;
+    const unlocksUsed = parseInt(STATE.currentUser?.trial_unlocks_used ?? STATE.currentUser?.unlocks_bought_count ?? 0, 10);
+    const freeRemaining = STATE.currentUser?.free_trial_remaining !== undefined ? STATE.currentUser.free_trial_remaining : Math.max(0, 2 - unlocksUsed);
+    const isFreeTrial = (STATE.currentUser?.is_free_trial_eligible !== undefined) ? STATE.currentUser.is_free_trial_eligible : (freeRemaining > 0);
     STATE.isFreeTrialActive = isFreeTrial;
 
     const trialBanner = document.getElementById('unlock-trial-banner');
@@ -2153,10 +2174,18 @@ async function submitPaymentUnlock() {
     }
 
     try {
+        // Ensure auth token is synced if possible
+        if (!STATE.authToken && STATE.currentUser.id) {
+            await syncUserAuthToken(STATE.currentUser.id);
+        }
+
         const payload = {
             listing_id: STATE.activeListingForUnlock.id,
             buyer_id: STATE.currentUser.id,
+            user_id: STATE.currentUser.id,
             payment_method: isFree ? 'free_trial' : STATE.selectedPaymentMethod,
+            gateway: isFree ? 'free_trial' : STATE.selectedPaymentMethod,
+            amount: isFree ? 0 : (STATE.platformFee || 50),
             account_number: isFree ? '' : (document.getElementById('pay-account-input')?.value || STATE.currentUser.phone_number)
         };
 
@@ -2177,13 +2206,43 @@ async function submitPaymentUnlock() {
         }
 
         if (res.ok) {
+            // Update local user state immediately with returned trial_info
+            if (data.trial_info) {
+                if (typeof data.trial_info.unlocks_used === 'number') {
+                    STATE.currentUser.trial_unlocks_used = data.trial_info.unlocks_used;
+                    STATE.currentUser.unlocks_bought_count = data.trial_info.unlocks_used;
+                }
+                if (typeof data.trial_info.free_remaining === 'number') {
+                    STATE.currentUser.free_trial_remaining = data.trial_info.free_remaining;
+                }
+                if (typeof data.trial_info.is_free_trial === 'boolean') {
+                    STATE.currentUser.is_free_trial_eligible = data.trial_info.is_free_trial;
+                }
+            } else {
+                STATE.currentUser.trial_unlocks_used = (STATE.currentUser.trial_unlocks_used || 0) + 1;
+                STATE.currentUser.unlocks_bought_count = (STATE.currentUser.unlocks_bought_count || 0) + 1;
+                STATE.currentUser.free_trial_remaining = Math.max(0, 2 - STATE.currentUser.trial_unlocks_used);
+                STATE.currentUser.is_free_trial_eligible = STATE.currentUser.free_trial_remaining > 0;
+            }
+
             showUnlockedContactResult(data);
-            const userRes = await fetch('/api/auth/profiles/');
-            STATE.allUsers = await userRes.json();
-            STATE.currentUser = STATE.allUsers.find(u => u.id === STATE.currentUser.id);
+
+            try {
+                const userRes = await fetch('/api/auth/profiles/');
+                if (userRes.ok) {
+                    STATE.allUsers = await userRes.json();
+                    const updated = STATE.allUsers.find(u => u.id === STATE.currentUser.id);
+                    if (updated) {
+                        STATE.currentUser = updated;
+                    }
+                }
+            } catch (e) {
+                console.warn("Background user refresh error:", e);
+            }
             updateUserUI();
         } else {
-            const errText = data.error || "Payment failed. Please retry.";
+            const errText = data.error || data.detail || data.message || "Payment failed. Please retry.";
+            console.error("Unlock error from server:", data);
             if (errBanner && errMsg) {
                 errMsg.textContent = errText;
                 errBanner.classList.remove('hidden');
@@ -2194,6 +2253,7 @@ async function submitPaymentUnlock() {
             }
         }
     } catch (err) {
+        console.error("Payment unlock network error:", err);
         if (btn) {
             btn.disabled = false;
             if (isFree) {
@@ -2203,7 +2263,7 @@ async function submitPaymentUnlock() {
             }
         }
         if (errBanner && errMsg) {
-            errMsg.textContent = "Payment network error. Please try again.";
+            errMsg.textContent = err?.message ? `Network error: ${err.message}` : "Payment network error. Please try again.";
             errBanner.classList.remove('hidden');
             errBanner.classList.add('flex');
             errBanner.style.setProperty('display', 'flex', 'important');

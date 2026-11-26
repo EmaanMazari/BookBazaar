@@ -11,6 +11,7 @@ urlpatterns = [
     path('api/auth/login/', views.login_user, name='api_login'),
     path('api/auth/logout/', views.logout_user, name='api_logout'),
     path('api/auth/demo_login/', views.demo_login, name='api_demo_login'),
+    path('api/auth/demo-login/', views.demo_login, name='api_demo_login_dash'),
     path('api/auth/me/', views.get_current_user_profile, name='api_current_user'),
     path('api/auth/profile/update/', views.update_user_profile, name='api_update_profile'),
     path('api/auth/profiles/', views.get_profiles_list, name='api_profiles'),
@@ -41,6 +42,8 @@ urlpatterns = [
     path('api/favorites/user/<int:user_id>/', views.get_user_favorites, name='api_user_favorites'),
 
     # Contact Unlock & Refund APIs (Phase 1 & Phase 3)
+    path('api/unlocks/', views.request_contact_unlock, name='api_unlock_root'),
+    path('api/unlocks/initiate/', views.initiate_payment_api, name='api_unlock_initiate'),
     path('api/unlocks/trial-status/', views.get_contact_unlock_trial_status, name='api_unlock_trial_status'),
     path('api/unlocks/request/', views.request_contact_unlock, name='api_request_unlock'),
     path('api/unlocks/user/<int:user_id>/', views.get_user_unlocks, name='api_user_unlocks'),
