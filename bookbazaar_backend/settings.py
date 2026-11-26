@@ -24,8 +24,9 @@ if DEBUG:
 else:
     allowed_hosts_env = os.environ.get('ALLOWED_HOSTS', '127.0.0.1,localhost')
     ALLOWED_HOSTS = [h.strip() for h in allowed_hosts_env.split(',') if h.strip()]
-    if '.onrender.com' not in ALLOWED_HOSTS:
-        ALLOWED_HOSTS.append('.onrender.com')
+    for host in ['.onrender.com', 'bookzyai.pk', '.bookzyai.pk', 'www.bookzyai.pk', 'bookbazaar-1m2u.onrender.com']:
+        if host not in ALLOWED_HOSTS:
+            ALLOWED_HOSTS.append(host)
 
 # Application definition
 INSTALLED_APPS = [
@@ -165,12 +166,23 @@ else:
     CORS_ALLOW_ALL_ORIGINS = False
     cors_env = os.environ.get('CORS_ALLOWED_ORIGINS', 'http://127.0.0.1:8000,http://localhost:8000')
     CORS_ALLOWED_ORIGINS = [c.strip() for c in cors_env.split(',') if c.strip()]
+    for c_origin in ['https://bookzyai.pk', 'https://www.bookzyai.pk', 'https://bookbazaar-1m2u.onrender.com']:
+        if c_origin not in CORS_ALLOWED_ORIGINS:
+            CORS_ALLOWED_ORIGINS.append(c_origin)
 
 # CSRF Trusted Origins for Form Submissions & API
 csrf_trusted_env = os.environ.get('CSRF_TRUSTED_ORIGINS', 'http://127.0.0.1:8000,http://localhost:8000')
 CSRF_TRUSTED_ORIGINS = [c.strip() for c in csrf_trusted_env.split(',') if c.strip()]
-if 'https://*.onrender.com' not in CSRF_TRUSTED_ORIGINS:
-    CSRF_TRUSTED_ORIGINS.append('https://*.onrender.com')
+for origin in [
+    'https://*.onrender.com',
+    'https://bookbazaar-1m2u.onrender.com',
+    'https://bookzyai.pk',
+    'https://www.bookzyai.pk',
+    'http://bookzyai.pk',
+    'http://www.bookzyai.pk'
+]:
+    if origin not in CSRF_TRUSTED_ORIGINS:
+        CSRF_TRUSTED_ORIGINS.append(origin)
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
