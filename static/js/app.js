@@ -347,6 +347,59 @@ document.addEventListener('click', (e) => {
     }
 });
 
+// =========================================================================
+// Global Modal Backdrop Click (Outside) & Escape Key Handlers
+// =========================================================================
+const MODAL_POPUP_DEFS = [
+    { id: 'book-webcam-modal', close: () => (typeof closeBookWebcamModal === 'function' ? closeBookWebcamModal() : null) },
+    { id: 'reader-onboarding-modal', close: () => (typeof closeReaderOnboardingModal === 'function' ? closeReaderOnboardingModal(true) : null) },
+    { id: 'auth-modal', close: () => (typeof closeAuthModal === 'function' ? closeAuthModal() : null) },
+    { id: 'unlock-modal', close: () => (typeof closeUnlockModal === 'function' ? closeUnlockModal() : null) },
+    { id: 'edit-listing-modal', close: () => (typeof closeEditListingModal === 'function' ? closeEditListingModal() : null) },
+    { id: 'review-modal', close: () => (typeof closeReviewModal === 'function' ? closeReviewModal() : null) },
+    { id: 'report-issue-modal', close: () => (typeof closeReportModal === 'function' ? closeReportModal() : null) },
+    { id: 'interstitial-ad-modal', close: () => (typeof closeInterstitialAd === 'function' ? closeInterstitialAd() : null) },
+];
+
+// 1. Close Modal When Clicking Outside the Box (Left, Right, Top, or Bottom Backdrop):
+// Clicking anywhere on the dark outer overlay/backdrop outside the white modal card (event.target === modalBackdrop)
+// must immediately close that modal (and cleanly stop any active webcam stream if webcam modal is closed).
+// Clicking INSIDE the white modal card itself must NOT close the modal.
+document.addEventListener('click', (e) => {
+    if (!e.target) return;
+    for (const def of MODAL_POPUP_DEFS) {
+        const modalEl = document.getElementById(def.id);
+        if (modalEl && e.target === modalEl) {
+            def.close();
+            break;
+        }
+    }
+});
+
+// 2. Also Support Escape Key to Close Active Modals:
+// Pressing the Escape key on the keyboard should also close whichever modal is currently open.
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' || e.key === 'Esc') {
+        for (const def of MODAL_POPUP_DEFS) {
+            const modalEl = document.getElementById(def.id);
+            if (modalEl && !modalEl.classList.contains('hidden') && window.getComputedStyle(modalEl).display !== 'none') {
+                e.preventDefault();
+                def.close();
+                return;
+            }
+        }
+        // If scanner tab is open without active overlay modal, Escape cleanly returns to home
+        if (typeof STATE !== 'undefined' && STATE.activeTab === 'scan') {
+            e.preventDefault();
+            if (typeof closeScanModal === 'function') {
+                closeScanModal();
+            } else if (typeof switchTab === 'function') {
+                switchTab('home');
+            }
+        }
+    }
+});
+
 // Language Switching (English / Urdu)
 function toggleLanguage() {
     STATE.currentLang = STATE.currentLang === 'en' ? 'ur' : 'en';
@@ -1974,6 +2027,7 @@ function closeUnlockModal() {
     const errMsg = document.getElementById('unlock-error-message');
     if (errMsg) errMsg.textContent = '';
 }
+window.closeUnlockModal = closeUnlockModal;
 
 function selectPaymentMethod(method) {
     STATE.selectedPaymentMethod = method;
@@ -2451,6 +2505,7 @@ function openEditListingModal(listingId) {
 function closeEditListingModal() {
     document.getElementById('edit-listing-modal').classList.add('hidden');
 }
+window.closeEditListingModal = closeEditListingModal;
 
 async function submitEditListing() {
     const id = document.getElementById('edit-listing-id').value;
@@ -2492,6 +2547,7 @@ function openAuthModal(mode = 'login') {
 function closeAuthModal() {
     document.getElementById('auth-modal').classList.add('hidden');
 }
+window.closeAuthModal = closeAuthModal;
 
 function switchAuthTab(mode) {
     const loginForm = document.getElementById('auth-login-form');
@@ -2587,6 +2643,7 @@ function closeReviewModal() {
     const modal = document.getElementById('review-modal');
     if (modal) modal.classList.add('hidden');
 }
+window.closeReviewModal = closeReviewModal;
 
 async function submitReview() {
     const unlockId = document.getElementById('review-unlock-id').value;
@@ -3086,6 +3143,7 @@ function closeInterstitialAd() {
     if (modal) modal.classList.add('hidden');
     switchTab('home');
 }
+window.closeInterstitialAd = closeInterstitialAd;
 
 // Search and Filter logic
 function setupEventListeners() {
@@ -3271,6 +3329,7 @@ function closeReportModal() {
     const modal = document.getElementById('report-issue-modal');
     if (modal) modal.classList.add('hidden');
 }
+window.closeReportModal = closeReportModal;
 
 async function submitReportForm(e) {
     e.preventDefault();
@@ -3645,14 +3704,11 @@ function openReaderOnboardingModal(options = {}) {
 }
 
 function closeReaderOnboardingModal(force = false) {
-    const isSessionActive = sessionStorage.getItem('bookzy_session_active') || localStorage.getItem('bookloop_token');
-    if (!force && !isSessionActive) {
-        // Mandatory startup login: visitors cannot dismiss before signing in or continuing as reader
-        return;
-    }
+    sessionStorage.setItem('bookzy_session_active', 'true');
     const modal = document.getElementById('reader-onboarding-modal');
     if (modal) modal.classList.add('hidden');
 }
+window.closeReaderOnboardingModal = closeReaderOnboardingModal;
 
 function selectOnboardAgeGroup(ageKey, cardEl) {
     document.querySelectorAll('#onboard-age-group-cards .onboard-age-card').forEach(c => {
