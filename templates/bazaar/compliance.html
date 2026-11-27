@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ page_title }}</title>
+    <meta name="description" content="{{ meta_description }}">
+    <link rel="canonical" href="{{ canonical_url }}">
+    
+    <!-- Open Graph Meta Tags -->
+    <meta property="og:title" content="{{ page_title }}">
+    <meta property="og:description" content="{{ meta_description }}">
+    <meta property="og:url" content="{{ canonical_url }}">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="Bookzy AI">
+
+    <!-- Fonts & Icons -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col antialiased selection:bg-blue-600 selection:text-white">
+
+    <!-- Top Navigation Header -->
+    <header class="sticky top-0 z-50 bg-gradient-to-r from-blue-900 via-blue-800 to-indigo-900 text-white shadow-md border-b border-white/10">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
+            <!-- Brand Logo -->
+            <a href="/" class="flex items-center gap-2.5 group">
+                <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-blue-500 to-teal-400 flex items-center justify-center font-black text-white text-base shadow-sm group-hover:scale-105 transition-transform">
+                    BZ
+                </div>
+                <div>
+                    <div class="flex items-center gap-1.5">
+                        <span class="font-extrabold text-base tracking-tight text-white">Bookzy AI</span>
+                        <span class="bg-blue-500/40 text-[9px] uppercase font-black px-1.5 py-0.5 rounded text-blue-100 border border-blue-400/30">Official</span>
+                    </div>
+                    <p class="text-[10px] text-blue-200 hidden sm:block">Smart Used-Books Marketplace across Pakistan</p>
+                </div>
+            </a>
+
+            <!-- Back to Marketplace Button -->
+            <div class="flex items-center gap-3">
+                <a href="/" class="px-3.5 py-2 rounded-xl bg-white/10 hover:bg-white text-white hover:text-blue-900 border border-white/20 hover:border-white font-bold text-xs sm:text-sm transition-all flex items-center gap-2 shadow-xs">
+                    <i class="fa-solid fa-arrow-left"></i>
+                    <span>← Back to Bookzy AI Marketplace</span>
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Sub-header Breadcrumb & Quick Nav -->
+    <nav class="bg-white border-b border-slate-200 py-3 shadow-xs">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 flex flex-wrap items-center justify-between gap-3 text-xs">
+            <div class="flex items-center gap-2 text-slate-500">
+                <a href="/" class="hover:text-blue-700 font-semibold"><i class="fa-solid fa-house"></i> Home</a>
+                <span>/</span>
+                <span class="text-slate-400">Legal &amp; Policy</span>
+                <span>/</span>
+                <span class="text-blue-700 font-bold capitalize">{{ page_slug }}</span>
+            </div>
+            <!-- Policy Fast Jump Links -->
+            <div class="flex flex-wrap items-center gap-1.5 sm:gap-2">
+                <a href="/about/" class="px-2.5 py-1 rounded-lg font-semibold transition-colors {% if page_slug == 'about' %}bg-blue-50 text-blue-700 font-bold border border-blue-200{% else %}text-slate-600 hover:text-blue-700 hover:bg-slate-100{% endif %}">About Us</a>
+                <a href="/privacy-policy/" class="px-2.5 py-1 rounded-lg font-semibold transition-colors {% if page_slug == 'privacy' %}bg-blue-50 text-blue-700 font-bold border border-blue-200{% else %}text-slate-600 hover:text-blue-700 hover:bg-slate-100{% endif %}">Privacy Policy</a>
+                <a href="/terms/" class="px-2.5 py-1 rounded-lg font-semibold transition-colors {% if page_slug == 'terms' %}bg-blue-50 text-blue-700 font-bold border border-blue-200{% else %}text-slate-600 hover:text-blue-700 hover:bg-slate-100{% endif %}">Terms &amp; Conditions</a>
+                <a href="/refund-policy/" class="px-2.5 py-1 rounded-lg font-semibold transition-colors {% if page_slug == 'refund' %}bg-blue-50 text-blue-700 font-bold border border-blue-200{% else %}text-slate-600 hover:text-blue-700 hover:bg-slate-100{% endif %}">Refund Policy</a>
+                <a href="/contact/" class="px-2.5 py-1 rounded-lg font-semibold transition-colors {% if page_slug == 'contact' %}bg-blue-50 text-blue-700 font-bold border border-blue-200{% else %}text-slate-600 hover:text-blue-700 hover:bg-slate-100{% endif %}">Contact Us</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Container -->
+    <main class="flex-1 max-w-4xl mx-auto w-full px-4 sm:px-6 py-8 sm:py-12">
+        <div class="bg-white rounded-3xl p-6 sm:p-10 shadow-sm border border-slate-200/80">
+
+            {% if page_slug == 'about' %}
+            <!-- ============================================== -->
+            <!-- ABOUT US CONTENT -->
+            <!-- ============================================== -->
+            <div class="space-y-6">
+                <div class="border-b border-slate-100 pb-5">
+                    <span class="inline-flex items-center gap-1.5 bg-blue-50 text-blue-700 border border-blue-200 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider mb-3">
+                        <i class="fa-solid fa-graduation-cap"></i> About Bookzy AI
+                    </span>
+                    <h1 class="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">Empowering Pakistani Students Through Affordable Textbooks</h1>
+                    <p class="text-sm text-slate-500 mt-2">Official platform mission, technology, and community textbook recycling ecosystem across Pakistan.</p>
+                </div>
+
+                <div class="prose prose-slate max-w-none text-sm leading-relaxed space-y-4 text-slate-700">
+                    <p>
+                        <strong>Bookzy AI</strong> (operating at <a href="https://bookzyai.pk" class="text-blue-600 underline font-semibold">https://bookzyai.pk</a>) is an AI-powered educational textbook marketplace designed specifically for school, college, and university students across Pakistan.
+                    </p>
+                    
+                    <h3 class="text-base font-bold text-slate-900 pt-2">Our Mission: Overcoming the Textbook Affordability Barrier</h3>
+                    <p>
+                        Every academic year, millions of students across Punjab, Sindh, Khyber Pakhtunkhwa, Balochistan, and Islamabad spend thousands of rupees purchasing new textbooks. At the same time, graduating seniors and students moving to the next semester have identical, gently-used textbooks lying dormant on their shelves.
+                    </p>
+                    <p>
+                        Bookzy AI closes this gap by providing a transparent, student-centric marketplace where books can be recycled, resold at fair student-to-student prices, or donated completely free of cost to students in financial need.
+                    </p>
+
+                    <h3 class="text-base font-bold text-slate-900 pt-2">Core Features &amp; Student Innovations</h3>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1 not-prose">
+                        <div class="p-4 rounded-2xl bg-slate-50 border border-slate-200">
+                            <div class="w-8 h-8 rounded-lg bg-blue-600 text-white flex items-center justify-center text-xs font-bold mb-2">
+                                <i class="fa-solid fa-barcode"></i>
+                            </div>
+                            <h4 class="font-bold text-slate-900 text-xs">Smart ISBN Barcode Scanner</h4>
+                            <p class="text-[11px] text-slate-600 mt-1">Scan any textbook's 10- or 13-digit barcode with your smartphone camera to instantly compare offers across verified student sellers.</p>
+                        </div>
+
+                        <div class="p-4 rounded-2xl bg-slate-50 border border-slate-200">
+                            <div class="w-8 h-8 rounded-lg bg-emerald-600 text-white flex items-center justify-center text-xs font-bold mb-2">
+                                <i class="fa-solid fa-calculator"></i>
+                            </div>
+                            <h4 class="font-bold text-slate-900 text-xs">AI Smart Price Advisor</h4>
+                            <p class="text-[11px] text-slate-600 mt-1">Calculates fair resale values based on book condition (Brand New 80%, Like New 65%, Good 50%, Fair 35% of retail price) so students never overpay.</p>
+                        </div>
+
+                        <div class="p-4 rounded-2xl bg-slate-50 border border-slate-200">
+                            <div class="w-8 h-8 rounded-lg bg-amber-500 text-white flex items-center justify-center text-xs font-bold mb-2">
+                                <i class="fa-solid fa-hand-holding-heart"></i>
+                            </div>
+                            <h4 class="font-bold text-slate-900 text-xs">🎁 100% Free Donated Books</h4>
+                            <p class="text-[11px] text-slate-600 mt-1">Dedicated shelf for generous seniors donating books at Rs. 0, complete with free downloadable digital curriculum PDFs.</p>
+                        </div>
+
+                        <div class="p-4 rounded-2xl bg-slate-50 border border-slate-200">
+                            <div class="w-8 h-8 rounded-lg bg-purple-600 text-white flex items-center justify-center text-xs font-bold mb-2">
+                                <i class="fa-brands fa-whatsapp"></i>
+                            </div>
+                            <h4 class="font-bold text-slate-900 text-xs">Direct WhatsApp Handshake</h4>
+                            <p class="text-[11px] text-slate-600 mt-1">No commission on the book price. Buyers and sellers connect directly on WhatsApp to coordinate campus or nearby local pickup.</p>
+                        </div>
+                    </div>
+
+                    <h3 class="text-base font-bold text-slate-900 pt-3">Curriculum &amp; Education Boards Covered</h3>
+                    <p>
+                        Bookzy AI provides specialized category shelves tailored to Pakistan's academic ecosystem:
+                    </p>
+                    <ul class="list-disc pl-5 space-y-1">
+                        <li><strong>Punjab Curriculum &amp; Textbook Board (PCTB)</strong>: Complete curriculum from Class 1 through Matric (9th–10th) and FSc / ICS (11th–12th).</li>
+                        <li><strong>Medical &amp; MBBS / BDS Textbooks</strong>: Anatomy, Physiology, Pharmacology, Pathology, and MDCAT preparatory guides.</li>
+                        <li><strong>Higher Education &amp; University</strong>: Computer Science, Software Engineering, BBA/MBA, Economics, and Social Sciences.</li>
+                        <li><strong>Cambridge O/A Levels</strong>: Physics, Chemistry, Mathematics, Accounting, and Business Studies.</li>
+                    </ul>
+                </div>
+            </div>
+
+            {% elif page_slug == 'privacy' %}
+            <!-- ============================================== -->
+            <!-- PRIVACY POLICY CONTENT -->
+            <!-- ============================================== -->
+            <div class="space-y-6">
+                <div class="border-b border-slate-100 pb-5">
+                    <span class="inline-flex items-center gap-1.5 bg-emerald-50 text-emerald-700 border border-emerald-200 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider mb-3">
+                        <i class="fa-solid fa-shield-halved"></i> Privacy Policy
+                    </span>
+                    <h1 class="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">User Privacy &amp; Data Protection Policy</h1>
+                    <p class="text-sm text-slate-500 mt-2">Last Updated: Academic Year 2026. Compliant with Pakistani Electronic Transactions Ordinance (ETO) and international digital privacy standards.</p>
+                </div>
+
+                <div class="prose prose-slate max-w-none text-sm leading-relaxed space-y-4 text-slate-700">
+                    <p>
+                        At <strong>Bookzy AI</strong> (reachable at <a href="https://bookzyai.pk" class="text-blue-600 underline font-semibold">https://bookzyai.pk</a>), the privacy of our student users and website visitors is one of our utmost priorities. This Privacy Policy outlines the types of information we collect, how it is used, and the measures we take to safeguard student confidentiality.
+                    </p>
+
+                    <h3 class="text-base font-bold text-slate-900 pt-2">1. Information We Collect</h3>
+                    <ul class="list-disc pl-5 space-y-1">
+                        <li><strong>Account Details</strong>: Full name, Pakistani mobile number (e.g. 03XX-XXXXXXX), academic city, and optional reading preferences.</li>
+                        <li><strong>Book Listings</strong>: Book titles, ISBNs, condition, seller-defined pickup area (e.g. university campus), and genuine textbook photos uploaded by sellers.</li>
+                        <li><strong>Transactions Ledger</strong>: Contact unlock records, wallet balance credits/refunds, and 5-star seller ratings.</li>
+                        <li><strong>Technical Access Logs</strong>: IP address, browser type, referral URLs, and timestamps used solely for security auditing and blocking abusive bot spam.</li>
+                    </ul>
+
+                    <h3 class="text-base font-bold text-slate-900 pt-2">2. Strict Phone Number &amp; Contact Privacy</h3>
+                    <p>
+                        We understand that student phone numbers must remain private:
+                    </p>
+                    <ul class="list-disc pl-5 space-y-1">
+                        <li><strong>Public Phone Masking</strong>: A seller's mobile number is strictly masked on public listing cards. Anonymous visitors and non-unlocked users can never see your private telephone number.</li>
+                        <li><strong>Verified Contact Unlock Only</strong>: Direct WhatsApp contact links are revealed solely to verified logged-in users who unlock the listing (using their 2 Free Trial Unlocks or refundable security fee).</li>
+                        <li><strong>No Telemarketing or Commercial Resale</strong>: We do not sell, rent, trade, or distribute student telephone numbers or personal records to marketing agencies, advertising brokers, or call centers.</li>
+                    </ul>
+
+                    <h3 class="text-base font-bold text-slate-900 pt-2">3. Google AdSense &amp; Third-Party Advertising Cookies</h3>
+                    <p>
+                        Bookzy AI displays clean, non-intrusive advertisements powered by Google AdSense to sustain free platform hosting and AI algorithms for students:
+                    </p>
+                    <ul class="list-disc pl-5 space-y-1">
+                        <li>Third-party vendors, including Google, use cookies to serve ads based on a user's prior visits to our website or other websites.</li>
+                        <li>Google's use of advertising cookies (such as the DoubleClick cookie) enables it and its partners to serve relevant ads to users based on their visit to Bookzy AI and other sites on the Internet.</li>
+                        <li>Users may opt out of personalized advertising at any time by visiting <a href="https://www.google.com/settings/ads" target="_blank" rel="noopener noreferrer" class="text-blue-600 underline font-semibold">Google Ads Settings</a>. Alternatively, users can opt out of a third-party vendor's use of cookies for personalized advertising by visiting <a href="https://www.aboutads.info" target="_blank" rel="noopener noreferrer" class="text-blue-600 underline font-semibold">www.aboutads.info</a>.</li>
+                    </ul>
+
+                    <h3 class="text-base font-bold text-slate-900 pt-2">4. Payment Gateway Security (PayFast &amp; SafePay Compliance)</h3>
+                    <p>
+                        All online payments on Bookzy AI (such as JazzCash, Easypaisa, or merchant card gateways PayFast / SafePay) are processed through encrypted, PCI-DSS compliant payment gateway environments.
+                    </p>
+                    <p>
+                        Bookzy AI servers <strong>never</strong> intercept, process, or store credit/debit card numbers, CVVs, or mobile banking MPINs.
+                    </p>
+
+                    <h3 class="text-base font-bold text-slate-900 pt-2">5. User Rights &amp; Data Deletion</h3>
+                    <p>
+                        Every registered user has the right to view, modify, or permanently delete their account and associated listings. To request complete data erasure, contact our privacy officer at <a href="mailto:privacy@bookzyai.pk" class="text-blue-600 font-semibold">privacy@bookzyai.pk</a> or <a href="mailto:support@bookzyai.pk" class="text-blue-600 font-semibold">support@bookzyai.pk</a>.
+                    </p>
+                </div>
+            </div>
+
+            {% elif page_slug == 'terms' %}
+            <!-- ============================================== -->
+            <!-- TERMS & CONDITIONS CONTENT -->
+            <!-- ============================================== -->
+            <div class="space-y-6">
+                <div class="border-b border-slate-100 pb-5">
+                    <span class="inline-flex items-center gap-1.5 bg-amber-50 text-amber-700 border border-amber-200 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider mb-3">
+                        <i class="fa-solid fa-file-contract"></i> Terms &amp; Conditions
+                    </span>
+                    <h1 class="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">Marketplace Terms of Service</h1>
+                    <p class="text-sm text-slate-500 mt-2">Rules governing peer-to-peer textbook discovery, contact unlocks, in-app deal closing, and ratings.</p>
+                </div>
+
+                <div class="prose prose-slate max-w-none text-sm leading-relaxed space-y-4 text-slate-700">
+                    <p>
+                        Welcome to <strong>Bookzy AI</strong>. By accessing or using our website (<a href="https://bookzyai.pk" class="text-blue-600 underline font-semibold">https://bookzyai.pk</a>), you agree to comply with and be bound by the following Terms of Service.
+                    </p>
+
+                    <h3 class="text-base font-bold text-slate-900 pt-2">1. Nature of the Marketplace</h3>
+                    <p>
+                        Bookzy AI provides an online technological venue connecting individual buyers, sellers, and donors of educational textbooks. The actual sale agreement, payment of book price, and physical book handover are conducted directly between the buyer and seller. Bookzy AI does not take custody of physical books and charges zero commission on the book sale price.
+                    </p>
+
+                    <h3 class="text-base font-bold text-slate-900 pt-2">2. The 2 Free Contact Unlocks Trial Rule</h3>
+                    <p>
+                        To ensure every student in Pakistan can test our platform without financial obligation:
+                    </p>
+                    <ul class="list-disc pl-5 space-y-1">
+                        <li>Every new registered account receives <strong>2 Free Contact Unlocks</strong> (Fee: Rs. 0.00).</li>
+                        <li>Free trial unlocks grant full, instant access to the seller's direct phone number and WhatsApp conversation link.</li>
+                    </ul>
+
+                    <h3 class="text-base font-bold text-slate-900 pt-2">3. The Rs. 50 Refundable Security &amp; Platform Fee</h3>
+                    <p>
+                        Starting from the 3rd unlock onward, an affordable platform connection fee of <strong>Rs. 50</strong> applies per contact unlock:
+                    </p>
+                    <ul class="list-disc pl-5 space-y-1">
+                        <li>This nominal fee supports platform hosting, server upkeep, AI recommendation infrastructure, and anti-spam protection.</li>
+                        <li><strong>100% Refundable</strong>: If the seller is unresponsive, has already sold the book, or no mutual deal is finalized, the Rs. 50 fee is credited back immediately to the buyer's wallet.</li>
+                    </ul>
+
+                    <h3 class="text-base font-bold text-slate-900 pt-2">4. In-App Deal Closing &amp; 5-Star Seller Ratings</h3>
+                    <p>
+                        To preserve trust and authentic feedback in the student community:
+                    </p>
+                    <ul class="list-disc pl-5 space-y-1">
+                        <li><strong>Seller "Mark as Sold"</strong>: When a book is handed over, the seller marks their listing as sold to prevent further WhatsApp inquiries.</li>
+                        <li><strong>Buyer "Deal Done &amp; Rate Seller"</strong>: Buyers complete the deal in their dashboard by submitting a 1 to 5 star rating and optional feedback. Ratings immediately update the seller's verified reputation score.</li>
+                    </ul>
+
+                    <h3 class="text-base font-bold text-slate-900 pt-2">5. Prohibited Items &amp; Content</h3>
+                    <p>
+                        Users agree not to list stolen books, non-educational commercial merchandise, pirated photocopies violating copyright, or abusive content. Bookzy AI administrators reserve the right to remove any listing and suspend offending accounts immediately.
+                    </p>
+                </div>
+            </div>
+
+            {% elif page_slug == 'refund' %}
+            <!-- ============================================== -->
+            <!-- REFUND POLICY CONTENT -->
+            <!-- ============================================== -->
+            <div class="space-y-6">
+                <div class="border-b border-slate-100 pb-5">
+                    <span class="inline-flex items-center gap-1.5 bg-rose-50 text-rose-700 border border-rose-200 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider mb-3">
+                        <i class="fa-solid fa-rotate-left"></i> Refund Policy
+                    </span>
+                    <h1 class="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">100% Instant Refund Policy &amp; Buyer Guarantee</h1>
+                    <p class="text-sm text-slate-500 mt-2">Zero-risk contact unlocking: instant wallet credit if no mutual deal is finalized with a seller.</p>
+                </div>
+
+                <div class="prose prose-slate max-w-none text-sm leading-relaxed space-y-4 text-slate-700">
+                    <p>
+                        Bookzy AI provides a <strong>100% Student Satisfaction Guarantee</strong>. We understand that in peer-to-peer marketplaces, a seller might occasionally be delayed in replying, might have misplaced a textbook, or may have sold it locally.
+                    </p>
+
+                    <div class="p-4 rounded-2xl bg-emerald-50 border border-emerald-200 not-prose my-3">
+                        <div class="flex items-start gap-3">
+                            <div class="w-8 h-8 rounded-full bg-emerald-600 text-white flex items-center justify-center text-sm font-bold shrink-0 mt-0.5">
+                                <i class="fa-solid fa-check"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-extrabold text-emerald-900 text-sm">Instant Wallet Refund Guarantee</h4>
+                                <p class="text-xs text-emerald-800 mt-1">If you unlock a seller's contact and no mutual deal is finalized, you can claim an instant 100% refund of your Rs. 50 platform fee with a single click.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <h3 class="text-base font-bold text-slate-900 pt-2">How to Claim an Instant Refund:</h3>
+                    <ol class="list-decimal pl-5 space-y-2">
+                        <li>Navigate to <strong>"My Deals &amp; Unlocks"</strong> from the top navigation bar.</li>
+                        <li>Locate the unlocked book listing card.</li>
+                        <li>Click the secondary button: <strong>"❌ No Deal (Claim Refund)"</strong>.</li>
+                        <li>Enter a brief note (e.g. <em>"Seller already sold book"</em> or <em>"Seller unresponsive"</em>).</li>
+                        <li>The system automatically updates the deal status to <code class="text-xs bg-slate-100 px-1 py-0.5 rounded text-slate-700">no_deal_refunded</code>, credits Rs. 50.00 back to your wallet immediately, and assigns an official audit reference ID (e.g. <code class="text-xs bg-slate-100 px-1 py-0.5 rounded text-slate-700">REF-XXXXXX</code>).</li>
+                    </ol>
+
+                    <h3 class="text-base font-bold text-slate-900 pt-2">Wallet Refund Terms:</h3>
+                    <ul class="list-disc pl-5 space-y-1">
+                        <li>Refunded wallet credits never expire.</li>
+                        <li>Credits can be utilized immediately to unlock any other textbook on Bookzy AI across Pakistan.</li>
+                        <li>If a technical billing error occurs with our merchant payment gateways (PayFast, SafePay, JazzCash, Easypaisa), students can email <a href="mailto:support@bookzyai.pk" class="text-blue-600 font-semibold">support@bookzyai.pk</a> for manual review and bank account reversal within 2 to 3 business days.</li>
+                    </ul>
+                </div>
+            </div>
+
+            {% elif page_slug == 'contact' %}
+            <!-- ============================================== -->
+            <!-- CONTACT US CONTENT -->
+            <!-- ============================================== -->
+            <div class="space-y-6">
+                <div class="border-b border-slate-100 pb-5">
+                    <span class="inline-flex items-center gap-1.5 bg-purple-50 text-purple-700 border border-purple-200 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider mb-3">
+                        <i class="fa-solid fa-headset"></i> Contact Us
+                    </span>
+                    <h1 class="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">Get in Touch with Bookzy AI Support</h1>
+                    <p class="text-sm text-slate-500 mt-2">We are here to assist Pakistani students, parents, and educators 6 days a week.</p>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 not-prose my-4">
+                    <div class="p-5 rounded-2xl bg-slate-50 border border-slate-200 flex items-start gap-3.5">
+                        <div class="w-10 h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center text-sm font-bold shrink-0">
+                            <i class="fa-solid fa-envelope"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-bold text-slate-900 text-xs uppercase tracking-wider text-slate-500">Official Support Email</h4>
+                            <a href="mailto:support@bookzyai.pk" class="text-sm font-extrabold text-blue-700 hover:underline">support@bookzyai.pk</a>
+                            <p class="text-[11px] text-slate-500 mt-0.5">Average response time under 4 hours.</p>
+                        </div>
+                    </div>
+
+                    <div class="p-5 rounded-2xl bg-slate-50 border border-slate-200 flex items-start gap-3.5">
+                        <div class="w-10 h-10 rounded-xl bg-emerald-600 text-white flex items-center justify-center text-sm font-bold shrink-0">
+                            <i class="fa-solid fa-clock"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-bold text-slate-900 text-xs uppercase tracking-wider text-slate-500">Operating Hours</h4>
+                            <p class="text-sm font-extrabold text-slate-900">Mon – Sat: 9:00 AM – 8:00 PM PKT</p>
+                            <p class="text-[11px] text-slate-500 mt-0.5">Sunday: Automated Support &amp; AI Price Engine.</p>
+                        </div>
+                    </div>
+
+                    <div class="p-5 rounded-2xl bg-slate-50 border border-slate-200 flex items-start gap-3.5">
+                        <div class="w-10 h-10 rounded-xl bg-indigo-600 text-white flex items-center justify-center text-sm font-bold shrink-0">
+                            <i class="fa-solid fa-location-dot"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-bold text-slate-900 text-xs uppercase tracking-wider text-slate-500">Regional Presence</h4>
+                            <p class="text-sm font-bold text-slate-900">Islamabad, Lahore, Karachi, Bahawalpur</p>
+                            <p class="text-[11px] text-slate-500 mt-0.5">Student chapters at IUB, PU, NUST, UET, FAST, &amp; KU.</p>
+                        </div>
+                    </div>
+
+                    <div class="p-5 rounded-2xl bg-slate-50 border border-slate-200 flex items-start gap-3.5">
+                        <div class="w-10 h-10 rounded-xl bg-purple-600 text-white flex items-center justify-center text-sm font-bold shrink-0">
+                            <i class="fa-solid fa-handshake"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-bold text-slate-900 text-xs uppercase tracking-wider text-slate-500">Partnerships &amp; AdSense</h4>
+                            <a href="mailto:partners@bookzyai.pk" class="text-sm font-extrabold text-purple-700 hover:underline">partners@bookzyai.pk</a>
+                            <p class="text-[11px] text-slate-500 mt-0.5">Merchant integration, campus bookstores &amp; sponsors.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="prose prose-slate max-w-none text-sm leading-relaxed text-slate-700 pt-2">
+                    <h3 class="text-base font-bold text-slate-900">Inquiry Types Handled:</h3>
+                    <ul class="list-disc pl-5 space-y-1">
+                        <li><strong>Book Sellers &amp; Donors</strong>: Help uploading bulk textbook listings, setting up curriculum PDFs, or updating pricing.</li>
+                        <li><strong>Payment Inquiries</strong>: Transaction confirmations for PayFast, SafePay, JazzCash, or Easypaisa gateway checks.</li>
+                        <li><strong>Technical Assistance</strong>: Barcode scanning troubleshooting or account access issues.</li>
+                        <li><strong>Report Listing / Dispute</strong>: Mediation for misrepresented book conditions or unresponsive users.</li>
+                    </ul>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Support Box at bottom of each page -->
+            <div class="mt-10 pt-6 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500">
+                <div class="flex items-center gap-2">
+                    <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                    <span>System Status: All Bookzy AI Services Online (Pakistan PKT)</span>
+                </div>
+                <div>
+                    Questions? Email <a href="mailto:support@bookzyai.pk" class="text-blue-700 font-bold hover:underline">support@bookzyai.pk</a>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- Bottom Commercial Footer -->
+    <footer class="bg-white border-t border-slate-200 py-8 text-center text-xs text-slate-500 mt-12">
+        <div class="max-w-7xl mx-auto px-4">
+            <div class="flex items-center justify-center gap-2 mb-3 font-black text-slate-800 text-sm">
+                <div class="w-6 h-6 bg-blue-600 rounded-lg flex items-center justify-center text-white text-xs font-black shadow-xs">BZ</div>
+                <span class="tracking-tight">Bookzy AI</span>
+            </div>
+            <p class="text-[11px] text-slate-500 mb-3 max-w-md mx-auto">
+                Smart Used-Books Marketplace &amp; AI Reader Recommendations across Pakistan. Helping students save up to 70% on academic textbooks.
+            </p>
+
+            <!-- Compliance Page Links -->
+            <div class="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 mb-4 text-xs font-semibold text-slate-600">
+                <a href="/about/" class="hover:text-blue-700 transition-colors">About Us</a>
+                <span class="text-slate-300">•</span>
+                <a href="/privacy-policy/" class="hover:text-blue-700 transition-colors">Privacy Policy</a>
+                <span class="text-slate-300">•</span>
+                <a href="/terms/" class="hover:text-blue-700 transition-colors">Terms &amp; Conditions</a>
+                <span class="text-slate-300">•</span>
+                <a href="/refund-policy/" class="hover:text-blue-700 transition-colors">Refund Policy</a>
+                <span class="text-slate-300">•</span>
+                <a href="/contact/" class="hover:text-blue-700 transition-colors">Contact Us</a>
+            </div>
+
+            <p class="text-[10px] text-slate-400">© 2026 Bookzy AI. All rights reserved. Proudly serving students in Lahore, Islamabad, Karachi, Rawalpindi, Bahawalpur, Multan, Peshawar, and Quetta.</p>
+        </div>
+    </footer>
+
+</body>
+</html>

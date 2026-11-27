@@ -104,6 +104,60 @@ def index_view(request):
     return render(request, 'bazaar/index.html', context)
 
 
+# ==========================================
+# PUBLIC COMPLIANCE & LEGAL VIEWS (AdSense & Merchant Gateways)
+# ==========================================
+
+def about_view(request):
+    """About Us page explaining Bookzy AI mission for Pakistani students"""
+    return render(request, 'bazaar/compliance.html', {
+        'page_slug': 'about',
+        'page_title': 'About Us — Bookzy AI Used Books Marketplace',
+        'meta_description': 'Bookzy AI is Pakistan’s leading smart marketplace helping students buy, sell, and donate used textbooks affordably across all cities.',
+        'canonical_url': 'https://bookzyai.pk/about/'
+    })
+
+
+def privacy_policy_view(request):
+    """Privacy Policy page for user data protection, contact privacy & Google AdSense cookies"""
+    return render(request, 'bazaar/compliance.html', {
+        'page_slug': 'privacy',
+        'page_title': 'Privacy Policy — Bookzy AI',
+        'meta_description': 'Privacy Policy for Bookzy AI: Learn how we protect student data, ensure phone privacy, and use Google AdSense advertising cookies.',
+        'canonical_url': 'https://bookzyai.pk/privacy-policy/'
+    })
+
+
+def terms_view(request):
+    """Terms & Conditions for marketplace rules, free unlocks trial & deal closing"""
+    return render(request, 'bazaar/compliance.html', {
+        'page_slug': 'terms',
+        'page_title': 'Terms & Conditions — Bookzy AI',
+        'meta_description': 'Terms & Conditions for Bookzy AI: Platform rules, the 2 free contact unlocks trial, Rs. 50 refundable security fee, and deal rating rules.',
+        'canonical_url': 'https://bookzyai.pk/terms/'
+    })
+
+
+def refund_policy_view(request):
+    """Refund Policy for 100% instant wallet refund guarantee"""
+    return render(request, 'bazaar/compliance.html', {
+        'page_slug': 'refund',
+        'page_title': 'Refund Policy — 100% Instant Refund Guarantee | Bookzy AI',
+        'meta_description': 'Bookzy AI 100% Instant Refund Policy: Instant wallet refund guarantee if a seller is unreachable or no deal is finalized.',
+        'canonical_url': 'https://bookzyai.pk/refund-policy/'
+    })
+
+
+def contact_view(request):
+    """Contact Us page with official support email and Pakistan campus presence"""
+    return render(request, 'bazaar/compliance.html', {
+        'page_slug': 'contact',
+        'page_title': 'Contact Us — Bookzy AI Customer Support',
+        'meta_description': 'Contact Bookzy AI official customer support via email at support@bookzyai.pk. Fast response within 2–4 hours across Pakistan.',
+        'canonical_url': 'https://bookzyai.pk/contact/'
+    })
+
+
 def admin_view(request):
     """
     Admin Dashboard View with strict role-based access control.

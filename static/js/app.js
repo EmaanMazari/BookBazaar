@@ -215,15 +215,16 @@ async function loadInitialData() {
         STATE.listings = STATE.allListings;
         STATE.ads = await adsRes.json();
 
-        // Default active user is Demo Buyer or first available user
+        // User session initialization (Guest default for new visitors)
         const isExplicitlyLoggedOut = localStorage.getItem('bookzy_logged_out') === 'true';
         const savedUserId = localStorage.getItem('bb_user_id');
-        if (isExplicitlyLoggedOut) {
+        const savedToken = localStorage.getItem('bookloop_token');
+        if (isExplicitlyLoggedOut || (!savedUserId && !savedToken)) {
             STATE.currentUser = null;
         } else if (savedUserId) {
-            STATE.currentUser = STATE.allUsers.find(u => u.id == savedUserId) || STATE.allUsers[0];
+            STATE.currentUser = STATE.allUsers.find(u => u.id == savedUserId) || null;
         } else {
-            STATE.currentUser = STATE.allUsers.find(u => u.username === 'buyer_test') || STATE.allUsers[0];
+            STATE.currentUser = null;
         }
 
         // If reader profile doesn't exist yet, populate from currentUser if available
@@ -290,13 +291,17 @@ function updateUserUI() {
     const authBtnLabel = document.getElementById('auth-btn-label');
     const topWallet = document.getElementById('top-user-wallet-display');
     const topBal = document.getElementById('top-user-balance');
+    const topWalletPill = document.getElementById('top-wallet-pill');
 
     if (!STATE.currentUser) {
-        if (authBtnLabel) authBtnLabel.textContent = 'Sign In';
+        if (authBtnLabel) authBtnLabel.textContent = 'Sign In / Register';
         if (topWallet) topWallet.textContent = 'Rs. 0';
         if (topBal) topBal.textContent = 'Rs. 0';
+        if (topWalletPill) topWalletPill.classList.add('hidden');
         return;
     }
+
+    if (topWalletPill) topWalletPill.classList.remove('hidden');
 
     const nameEl = document.getElementById('current-user-name');
     const balEl = document.getElementById('current-user-balance');
@@ -382,6 +387,7 @@ document.addEventListener('click', (e) => {
 // Global Modal Backdrop Click (Outside) & Escape Key Handlers
 // =========================================================================
 const MODAL_POPUP_DEFS = [
+    { id: 'compliance-modal', close: () => (typeof closeComplianceModal === 'function' ? closeComplianceModal() : null) },
     { id: 'book-webcam-modal', close: () => (typeof closeBookWebcamModal === 'function' ? closeBookWebcamModal() : null) },
     { id: 'reader-onboarding-modal', close: () => (typeof closeReaderOnboardingModal === 'function' ? closeReaderOnboardingModal(true) : null) },
     { id: 'auth-modal', close: () => (typeof closeAuthModal === 'function' ? closeAuthModal() : null) },
@@ -500,12 +506,20 @@ window.openSellSection = openSellSection;
 
 // Open/activate My Deals & Unlocks section
 function openDealsSection() {
+    if (!STATE.currentUser) {
+        openAuthModal('login');
+        return;
+    }
     switchTab('deals');
 }
 window.openDealsSection = openDealsSection;
 
 // Tab Switching (Centralized & Clean)
 function switchTab(tabId) {
+    if ((tabId === 'deals' || tabId === 'profile') && !STATE.currentUser) {
+        openAuthModal('login');
+        return;
+    }
     // If navigating away from scanner and camera is active, turn it off
     if (STATE.activeTab === 'scan' && tabId !== 'scan') {
         if (typeof stopCameraScanner === 'function') {
@@ -1142,6 +1156,46 @@ function renderAds() {
                     <p class="text-xs font-medium">${bottomAd.headline}</p>
                 </div>
                 <button onclick="trackAdClick(${bottomAd.id})" class="px-2 py-0.5 bg-yellow-400 text-slate-900 text-[11px] font-bold rounded hover:bg-yellow-300">Details</button>
+            </div>
+        `;
+    }
+
+    // Horizontal Ad Slot 1 (Middle - Between PTB Textbooks & Kids Books)
+    const middleContainer = document.getElementById('ad-slot-middle-content');
+    const middleAd = STATE.ads && STATE.ads.find(a => a.ad_type === 'banner_middle' || a.ad_type === 'banner_top');
+    if (middleContainer && middleAd) {
+        middleContainer.innerHTML = `
+            <div class="w-full flex flex-col sm:flex-row items-center justify-between gap-3 p-1">
+                <div class="flex items-center gap-3 text-left">
+                    <span class="bg-blue-600 text-white text-[9px] uppercase font-black px-2 py-0.5 rounded tracking-wider shrink-0">Sponsored</span>
+                    <div>
+                        <p class="text-xs sm:text-sm font-extrabold text-slate-800 leading-tight">${middleAd.title || 'Student Academic Partner'}</p>
+                        <p class="text-[11px] text-slate-500 line-clamp-1">${middleAd.headline || 'Exclusive discounts & verified study notes for Pakistani students.'}</p>
+                    </div>
+                </div>
+                <button onclick="trackAdClick(${middleAd.id})" class="shrink-0 px-3 py-1.5 bg-blue-900 hover:bg-black text-white text-xs font-bold rounded-xl transition-colors shadow-xs">
+                    Learn More →
+                </button>
+            </div>
+        `;
+    }
+
+    // Horizontal Ad Slot 2 (Footer - Below Medical Textbooks Shelf)
+    const footerContainer = document.getElementById('ad-slot-footer-content');
+    const footerAd = STATE.ads && STATE.ads.find(a => a.ad_type === 'banner_footer' || a.ad_type === 'banner_bottom');
+    if (footerContainer && footerAd) {
+        footerContainer.innerHTML = `
+            <div class="w-full flex flex-col sm:flex-row items-center justify-between gap-3 p-1">
+                <div class="flex items-center gap-3 text-left">
+                    <span class="bg-emerald-600 text-white text-[9px] uppercase font-black px-2 py-0.5 rounded tracking-wider shrink-0">Partner</span>
+                    <div>
+                        <p class="text-xs sm:text-sm font-extrabold text-slate-800 leading-tight">${footerAd.title || 'Verified Prep & Academy Partner'}</p>
+                        <p class="text-[11px] text-slate-500 line-clamp-1">${footerAd.headline || 'Quality educational resources & exam preparation materials.'}</p>
+                    </div>
+                </div>
+                <button onclick="trackAdClick(${footerAd.id})" class="shrink-0 px-3 py-1.5 bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold rounded-xl transition-colors shadow-xs">
+                    View Offer →
+                </button>
             </div>
         `;
     }
@@ -1999,8 +2053,8 @@ function openUnlockModal(listingId) {
 
     // 2 Free Contact Unlocks Trial Rule (Rs. 0 for first 2 unlocks, Rs. 50 from 3rd onward)
     const unlocksUsed = parseInt(STATE.currentUser?.trial_unlocks_used ?? STATE.currentUser?.unlocks_bought_count ?? 0, 10);
-    const freeRemaining = STATE.currentUser?.free_trial_remaining !== undefined ? STATE.currentUser.free_trial_remaining : Math.max(0, 2 - unlocksUsed);
-    const isFreeTrial = (STATE.currentUser?.is_free_trial_eligible !== undefined) ? STATE.currentUser.is_free_trial_eligible : (freeRemaining > 0);
+    const freeRemaining = STATE.currentUser ? (STATE.currentUser.free_trial_remaining !== undefined ? STATE.currentUser.free_trial_remaining : Math.max(0, 2 - unlocksUsed)) : 2;
+    const isFreeTrial = STATE.currentUser ? ((STATE.currentUser.is_free_trial_eligible !== undefined) ? STATE.currentUser.is_free_trial_eligible : (freeRemaining > 0)) : true;
     STATE.isFreeTrialActive = isFreeTrial;
 
     const trialBanner = document.getElementById('unlock-trial-banner');
@@ -2165,7 +2219,12 @@ function selectPaymentMethod(method) {
 
 // Submit Payment & Unlock Contact
 async function submitPaymentUnlock() {
-    if (!STATE.activeListingForUnlock || !STATE.currentUser) return;
+    if (!STATE.activeListingForUnlock) return;
+    if (!STATE.currentUser) {
+        closeUnlockModal();
+        openAuthModal('login');
+        return;
+    }
 
     const isFree = Boolean(STATE.isFreeTrialActive);
     const errBanner = document.getElementById('unlock-error-banner');
@@ -3941,13 +4000,6 @@ function initReaderProfile() {
         };
         updateReaderHeaderUI();
     }
-
-    // Enforce mandatory startup login / reader onboarding for unauthenticated visitors in current session
-    if (!isSessionActive) {
-        setTimeout(() => {
-            openReaderOnboardingModal({ isStartup: true });
-        }, 150);
-    }
 }
 
 function updateReaderHeaderUI() {
@@ -3964,8 +4016,12 @@ function updateReaderHeaderUI() {
     if (topAge) topAge.textContent = ageLabel;
     if (mobileAge) mobileAge.textContent = ageLabel;
     if (topCity) topCity.textContent = profile.city || (STATE.currentUser ? STATE.currentUser.city : 'Lahore');
-    if (topWallet && STATE.currentUser) {
-        topWallet.textContent = `Rs. ${parseFloat(STATE.currentUser.wallet_balance || 0).toFixed(0)}`;
+    if (topWallet) {
+        if (STATE.currentUser) {
+            topWallet.textContent = `Rs. ${parseFloat(STATE.currentUser.wallet_balance || 0).toFixed(0)}`;
+        } else {
+            topWallet.textContent = 'Rs. 0';
+        }
     }
 }
 
@@ -4241,3 +4297,166 @@ async function handleOnboardAdminLogin(e) {
 function skipReaderOnboarding() {
     closeReaderOnboardingModal();
 }
+
+// =========================================================================
+// Compliance & Legal Policy Modals (Google AdSense & Merchant Approval)
+// =========================================================================
+const COMPLIANCE_CONTENT = {
+    about: {
+        title: "About Bookzy AI",
+        fullPage: "/about/",
+        html: `
+            <div class="space-y-3">
+                <div class="p-3 bg-blue-50/70 border border-blue-200/60 rounded-2xl flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center font-bold text-lg shrink-0">BZ</div>
+                    <div>
+                        <h4 class="font-extrabold text-slate-900 text-sm">Pakistan's Student-First Book Exchange</h4>
+                        <p class="text-[11px] text-slate-600">Empowering 50,000+ students to exchange, buy, sell, and donate textbooks affordably.</p>
+                    </div>
+                </div>
+                <div>
+                    <h5 class="font-extrabold text-slate-800 text-xs mb-1">Our Mission</h5>
+                    <p class="text-slate-600">Bookzy AI is on a mission to democratize academic education across Pakistan by eliminating textbook wastage. We connect students and lifelong readers across Karachi, Lahore, Islamabad, Rawalpindi, Peshawar, Multan, and every corner of Pakistan to discover high-quality used textbooks at 50% to 80% below retail prices, alongside 100% free peer donations.</p>
+                </div>
+                <div>
+                    <h5 class="font-extrabold text-slate-800 text-xs mb-1">AI-Powered Reader Matching</h5>
+                    <p class="text-slate-600">Our smart AI algorithms recommend personalized book feeds matching your age group, academic degree (Matric, FSc, O/A Levels, University, MDCAT, MBBS), and neighborhood campus or city.</p>
+                </div>
+            </div>
+        `
+    },
+    privacy: {
+        title: "Privacy Policy",
+        fullPage: "/privacy-policy/",
+        html: `
+            <div class="space-y-3">
+                <div class="p-3 bg-indigo-50/70 border border-indigo-200/60 rounded-2xl">
+                    <h4 class="font-extrabold text-slate-900 text-xs flex items-center gap-1.5 mb-1">
+                        <i class="fa-solid fa-user-shield text-indigo-600"></i> Data Protection & Privacy Commitment
+                    </h4>
+                    <p class="text-[11px] text-slate-600">We respect and protect student privacy. Your personal information is encrypted and never sold to third parties.</p>
+                </div>
+                <div>
+                    <h5 class="font-extrabold text-slate-800 text-xs mb-1">Phone Number & Contact Privacy</h5>
+                    <p class="text-slate-600">Direct mobile and WhatsApp numbers are hidden by default from public view and internet crawlers. Contact information is only revealed through authenticated, rate-limited contact unlocks.</p>
+                </div>
+                <div>
+                    <h5 class="font-extrabold text-slate-800 text-xs mb-1">Cookies & Google AdSense Advertising</h5>
+                    <p class="text-slate-600">Bookzy AI uses local cookies and web storage to maintain your secure session. Third-party advertising vendors, including Google, may use cookies (such as the DoubleClick cookie) to serve relevant student-interest ads based on prior visits to our site or other websites. Users may opt out of personalized advertising by visiting Google Ads Settings.</p>
+                </div>
+            </div>
+        `
+    },
+    terms: {
+        title: "Terms & Conditions",
+        fullPage: "/terms/",
+        html: `
+            <div class="space-y-3">
+                <div class="p-3 bg-slate-50 border border-slate-200 rounded-2xl">
+                    <h4 class="font-extrabold text-slate-900 text-xs flex items-center gap-1.5 mb-1">
+                        <i class="fa-solid fa-scale-balanced text-blue-600"></i> Marketplace Rules & Guidelines
+                    </h4>
+                    <p class="text-[11px] text-slate-600">By using Bookzy AI (bookzyai.pk), you agree to our community standards and exchange rules.</p>
+                </div>
+                <div>
+                    <h5 class="font-extrabold text-slate-800 text-xs mb-1">2 Free Unlocks & Security Deposit</h5>
+                    <p class="text-slate-600">Every newly registered student account receives <strong>2 Free Contact Unlocks</strong>. Subsequent unlocks require a Rs. 50 refundable security fee to prevent WhatsApp spam and ensure serious buyer interest.</p>
+                </div>
+                <div>
+                    <h5 class="font-extrabold text-slate-800 text-xs mb-1">Community Safety & Deal Closing</h5>
+                    <p class="text-slate-600">Buyers and sellers communicate directly via WhatsApp and meet in safe, public places (university libraries, campus gates, or reputable courier services). Deals are closed in-app with verified 1–5 star ratings.</p>
+                </div>
+            </div>
+        `
+    },
+    refund: {
+        title: "100% Refund Policy",
+        fullPage: "/refund-policy/",
+        html: `
+            <div class="space-y-3">
+                <div class="p-3 bg-emerald-50/70 border border-emerald-200/60 rounded-2xl">
+                    <h4 class="font-extrabold text-slate-900 text-xs flex items-center gap-1.5 mb-1">
+                        <i class="fa-solid fa-shield-halved text-emerald-600"></i> 100% Instant Refund Guarantee
+                    </h4>
+                    <p class="text-[11px] text-slate-600">If a seller does not reply, the book is already sold, or no deal is finalized, you can claim a 100% instant wallet credit refund.</p>
+                </div>
+                <div>
+                    <h5 class="font-extrabold text-slate-800 text-xs mb-1">How Refunds Work</h5>
+                    <p class="text-slate-600">Simply go to <strong>My Deals & Unlocks</strong> and click <strong>"❌ No Deal (Claim Refund)"</strong>. Your Rs. 50 unlock fee will immediately return to your active wallet balance without any deduction.</p>
+                </div>
+                <div>
+                    <h5 class="font-extrabold text-slate-800 text-xs mb-1">Zero Financial Risk</h5>
+                    <p class="text-slate-600">We never hold your fee if a transaction does not succeed. Your wallet balance can be used for any future book unlock on the marketplace.</p>
+                </div>
+            </div>
+        `
+    },
+    contact: {
+        title: "Contact Us",
+        fullPage: "/contact/",
+        html: `
+            <div class="space-y-3">
+                <div class="p-3 bg-blue-50/70 border border-blue-200/60 rounded-2xl">
+                    <h4 class="font-extrabold text-slate-900 text-xs flex items-center gap-1.5 mb-1">
+                        <i class="fa-solid fa-headset text-blue-600"></i> Official Support & Inquiries
+                    </h4>
+                    <p class="text-[11px] text-slate-600">We are here to assist Pakistani students, teachers, institutions, and merchant partners.</p>
+                </div>
+                <div class="space-y-2 text-xs">
+                    <div class="flex items-center gap-2">
+                        <i class="fa-solid fa-envelope text-blue-600 w-4"></i>
+                        <span>Email: <a href="mailto:support@bookzyai.pk" class="text-blue-700 font-bold hover:underline">support@bookzyai.pk</a></span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <i class="fa-solid fa-clock text-amber-600 w-4"></i>
+                        <span>Support Hours: Monday – Saturday, 9:00 AM – 8:00 PM PKT</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <i class="fa-solid fa-location-dot text-rose-600 w-4"></i>
+                        <span>Location: Islamabad & Lahore, Pakistan</span>
+                    </div>
+                </div>
+            </div>
+        `
+    }
+};
+
+function openComplianceModal(slug, e) {
+    if (e && e.preventDefault) e.preventDefault();
+    const modal = document.getElementById('compliance-modal');
+    if (!modal) return;
+    switchComplianceTab(slug || 'about');
+    modal.classList.remove('hidden');
+}
+window.openComplianceModal = openComplianceModal;
+
+function closeComplianceModal() {
+    const modal = document.getElementById('compliance-modal');
+    if (modal) modal.classList.add('hidden');
+}
+window.closeComplianceModal = closeComplianceModal;
+
+function switchComplianceTab(slug) {
+    const data = COMPLIANCE_CONTENT[slug] || COMPLIANCE_CONTENT.about;
+    const titleEl = document.getElementById('compliance-modal-title');
+    const contentEl = document.getElementById('compliance-modal-content');
+    const linkEl = document.getElementById('compliance-fullpage-link');
+
+    if (titleEl) titleEl.textContent = data.title;
+    if (contentEl) contentEl.innerHTML = data.html;
+    if (linkEl) {
+        linkEl.href = data.fullPage;
+        linkEl.innerHTML = `<span>View Full ${data.title} Page</span> <i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i>`;
+    }
+
+    ['about', 'privacy', 'terms', 'refund', 'contact'].forEach(s => {
+        const btn = document.getElementById(`comp-tab-${s}`);
+        if (!btn) return;
+        if (s === slug) {
+            btn.className = 'px-3 py-1.5 rounded-xl bg-blue-50 text-blue-700 border border-blue-200 whitespace-nowrap transition-all font-bold';
+        } else {
+            btn.className = 'px-3 py-1.5 rounded-xl hover:bg-slate-100 border border-transparent whitespace-nowrap transition-all text-slate-600';
+        }
+    });
+}
+window.switchComplianceTab = switchComplianceTab;

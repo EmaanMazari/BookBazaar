@@ -6,6 +6,13 @@ urlpatterns = [
     path('', views.index_view, name='index'),
     path('admin-panel/', views.admin_view, name='admin_panel'),
 
+    # Public Compliance & Legal Pages (Google AdSense & Payment Gateways)
+    path('about/', views.about_view, name='about'),
+    path('privacy-policy/', views.privacy_policy_view, name='privacy_policy'),
+    path('terms/', views.terms_view, name='terms'),
+    path('refund-policy/', views.refund_policy_view, name='refund_policy'),
+    path('contact/', views.contact_view, name='contact'),
+
     # Auth & Profile APIs (Phase 1 & Phase 2)
     path('api/auth/register/', views.register_user, name='api_register'),
     path('api/auth/login/', views.login_user, name='api_login'),

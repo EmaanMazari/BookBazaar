@@ -44,10 +44,10 @@
         <!-- Right Side: Wallet Balance & Profile Menu -->
         <div class="flex items-center gap-2 sm:gap-3 shrink-0">
             <!-- Active Wallet Balance Pill -->
-            <div class="flex items-center gap-1.5 sm:gap-2 bg-white/10 border border-white/20 text-white px-3 py-1.5 rounded-xl shadow-xs text-xs cursor-pointer hover:bg-white/15 transition-all" title="Refundable security credits for contact unlocks" onclick="switchTab('deals')">
+            <div id="top-wallet-pill" class="hidden flex items-center gap-1.5 sm:gap-2 bg-white/10 border border-white/20 text-white px-3 py-1.5 rounded-xl shadow-xs text-xs cursor-pointer hover:bg-white/15 transition-all" title="Refundable security credits for contact unlocks" onclick="switchTab('deals')">
                 <i class="fa-solid fa-wallet text-amber-300 text-xs"></i>
                 <span class="text-[11px] text-blue-200">Refundable Wallet:</span>
-                <span class="text-amber-300 font-extrabold text-xs" id="top-user-wallet-display">Rs. 150</span>
+                <span class="text-amber-300 font-extrabold text-xs" id="top-user-wallet-display">Rs. 0</span>
             </div>
 
             <!-- Profile & Account Dropdown Menu -->
@@ -55,7 +55,7 @@
                 <button id="user-menu-btn" onclick="toggleUserDropdown()" 
                         class="px-3 py-1.5 bg-white/10 hover:bg-white text-white hover:text-blue-900 border border-white/25 hover:border-white rounded-xl font-bold text-xs transition-all flex items-center gap-1.5 focus:outline-none shadow-xs">
                     <i class="fa-solid fa-circle-user text-blue-300 text-sm"></i>
-                    <span id="auth-btn-label" class="max-w-[70px] sm:max-w-[110px] truncate">My Account</span>
+                    <span id="auth-btn-label" class="max-w-[100px] sm:max-w-[130px] truncate">Sign In / Register</span>
                     <i class="fa-solid fa-chevron-down text-[9px] text-blue-200"></i>
                 </button>
 
@@ -425,6 +425,20 @@
                 </div>
 
                 <!-- ============================================== -->
+                <!-- 📢 GOOGLE ADSENSE & SPONSOR BANNER SLOT 1 (MIDDLE) -->
+                <!-- ============================================== -->
+                <div id="ad-slot-middle" class="w-full max-w-7xl mx-auto my-6 px-4">
+                    <div class="bg-gradient-to-r from-slate-50 via-slate-100 to-slate-50 border border-dashed border-slate-300 rounded-2xl p-3 sm:p-4 text-center min-h-[90px] flex items-center justify-center transition-all overflow-hidden relative" id="ad-slot-middle-content">
+                        <!-- Google AdSense / Partner Banner Slot #1 -->
+                        <!-- Place <ins class="adsbygoogle" ...></ins> script here when AdSense is approved -->
+                        <div class="text-center py-2">
+                            <span class="inline-block text-[10px] tracking-widest uppercase font-bold text-slate-400 bg-white/80 px-2.5 py-0.5 rounded-full border border-slate-200 mb-1">Sponsored Advertisement</span>
+                            <p class="text-xs font-semibold text-slate-600">Connect with 50,000+ Pakistani Students & Readers on Bookzy AI</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ============================================== -->
                 <!-- 4. 🧸 KIDS & STORY BOOKS -->
                 <!-- ============================================== -->
                 <div id="kids-books-section" class="shelf-section mb-10 sm:mb-12">
@@ -525,6 +539,20 @@
                 </section>
 
                 <!-- ============================================== -->
+                <!-- 📢 GOOGLE ADSENSE & SPONSOR BANNER SLOT 2 (FOOTER) -->
+                <!-- ============================================== -->
+                <div id="ad-slot-footer" class="w-full max-w-7xl mx-auto my-8 px-4">
+                    <div class="bg-gradient-to-r from-slate-50 via-slate-100 to-slate-50 border border-dashed border-slate-300 rounded-2xl p-3 sm:p-4 text-center min-h-[90px] flex items-center justify-center transition-all overflow-hidden relative" id="ad-slot-footer-content">
+                        <!-- Google AdSense / Partner Banner Slot #2 -->
+                        <!-- Place <ins class="adsbygoogle" ...></ins> script here when AdSense is approved -->
+                        <div class="text-center py-2">
+                            <span class="inline-block text-[10px] tracking-widest uppercase font-bold text-slate-400 bg-white/80 px-2.5 py-0.5 rounded-full border border-slate-200 mb-1">Sponsored Partner</span>
+                            <p class="text-xs font-semibold text-slate-600">Verified Study Resources & Academic Preparation across Pakistan</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ============================================== -->
                 <!-- 🔍 SEARCH / FILTERED RESULTS / ALL OFFERS VIEW -->
                 <!-- ============================================== -->
                 <div id="all-offers-section" class="shelf-section mb-10 sm:mb-12 scroll-mt-24">
@@ -551,7 +579,21 @@
                         <div class="w-6 h-6 bg-blue-600 rounded-lg flex items-center justify-center text-white text-xs font-black shadow-xs">BZ</div>
                         <span class="tracking-tight">Bookzy AI</span>
                     </div>
-                    <p class="text-[11px] text-slate-500 mb-1">Smart Used-Books Marketplace & AI Reader Recommendations across Pakistan</p>
+                    <p class="text-[11px] text-slate-500 mb-2">Smart Used-Books Marketplace & AI Reader Recommendations across Pakistan</p>
+                    
+                    <!-- Compliance & Trust Links (Google AdSense & Merchant Approval) -->
+                    <div class="flex flex-wrap items-center justify-center gap-x-5 gap-y-2 mb-3 text-xs font-semibold text-slate-600">
+                        <a href="/about/" onclick="openComplianceModal('about', event)" class="hover:text-blue-600 transition-colors">About Us</a>
+                        <span class="text-slate-300">•</span>
+                        <a href="/privacy-policy/" onclick="openComplianceModal('privacy', event)" class="hover:text-blue-600 transition-colors">Privacy Policy</a>
+                        <span class="text-slate-300">•</span>
+                        <a href="/terms/" onclick="openComplianceModal('terms', event)" class="hover:text-blue-600 transition-colors">Terms & Conditions</a>
+                        <span class="text-slate-300">•</span>
+                        <a href="/refund-policy/" onclick="openComplianceModal('refund', event)" class="hover:text-blue-600 transition-colors">Refund Policy</a>
+                        <span class="text-slate-300">•</span>
+                        <a href="/contact/" onclick="openComplianceModal('contact', event)" class="hover:text-blue-600 transition-colors">Contact Us</a>
+                    </div>
+
                     <p class="text-[10px] text-slate-400">© 2026 Bookzy AI. All rights reserved.</p>
                 </footer>
             </section>
@@ -1823,6 +1865,54 @@
                     </div>
                 </div>
             </form>
+        </div>
+    </div>
+</div>
+
+<!-- ============================================== -->
+<!-- MODAL: COMPLIANCE, TRUST & POLICIES (Google AdSense & Merchants) -->
+<!-- ============================================== -->
+<div id="compliance-modal" onclick="if(event.target === this) closeComplianceModal();" class="fixed inset-0 bg-black/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4 z-[130] hidden">
+    <div class="bg-white rounded-3xl max-w-2xl w-full p-5 sm:p-6 shadow-2xl relative max-h-[90vh] flex flex-col border border-slate-200 text-slate-800">
+        <!-- Close button -->
+        <button onclick="closeComplianceModal()" class="absolute top-4 right-4 w-8 h-8 bg-slate-100 hover:bg-slate-200 rounded-full flex items-center justify-center text-slate-600 hover:text-slate-900 text-sm transition-colors" title="Close">
+            <i class="fa-solid fa-xmark"></i>
+        </button>
+
+        <!-- Header -->
+        <div class="flex items-center gap-2.5 pb-3 border-b border-slate-100 shrink-0 pr-8">
+            <div class="w-8 h-8 bg-blue-600 text-white rounded-xl flex items-center justify-center font-black text-xs shadow-xs">
+                BZ
+            </div>
+            <div>
+                <h3 class="font-extrabold text-slate-900 text-sm sm:text-base" id="compliance-modal-title">About Bookzy AI</h3>
+                <p class="text-[11px] text-slate-500 font-medium">Compliance, User Privacy & Platform Trust Policies</p>
+            </div>
+        </div>
+
+        <!-- Navigation Tabs -->
+        <div class="flex items-center gap-1.5 py-2.5 border-b border-slate-100 overflow-x-auto shrink-0 scrollbar-none text-xs font-bold text-slate-600">
+            <button type="button" onclick="switchComplianceTab('about')" id="comp-tab-about" class="px-3 py-1.5 rounded-xl bg-blue-50 text-blue-700 border border-blue-200 whitespace-nowrap transition-all">About Us</button>
+            <button type="button" onclick="switchComplianceTab('privacy')" id="comp-tab-privacy" class="px-3 py-1.5 rounded-xl hover:bg-slate-100 border border-transparent whitespace-nowrap transition-all">Privacy Policy</button>
+            <button type="button" onclick="switchComplianceTab('terms')" id="comp-tab-terms" class="px-3 py-1.5 rounded-xl hover:bg-slate-100 border border-transparent whitespace-nowrap transition-all">Terms & Conditions</button>
+            <button type="button" onclick="switchComplianceTab('refund')" id="comp-tab-refund" class="px-3 py-1.5 rounded-xl hover:bg-slate-100 border border-transparent whitespace-nowrap transition-all">Refund Policy</button>
+            <button type="button" onclick="switchComplianceTab('contact')" id="comp-tab-contact" class="px-3 py-1.5 rounded-xl hover:bg-slate-100 border border-transparent whitespace-nowrap transition-all">Contact Us</button>
+        </div>
+
+        <!-- Scrollable Content Body -->
+        <div class="flex-1 overflow-y-auto py-4 space-y-4 text-xs text-slate-600 leading-relaxed pr-1" id="compliance-modal-content">
+            <!-- Dynamic content injected by switchComplianceTab() -->
+        </div>
+
+        <!-- Footer Bar with Direct Link -->
+        <div class="pt-3 border-t border-slate-100 flex items-center justify-between text-xs shrink-0">
+            <a id="compliance-fullpage-link" href="/about/" class="text-blue-700 hover:text-blue-900 font-bold hover:underline inline-flex items-center gap-1">
+                <span>View Full Dedicated Page</span>
+                <i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i>
+            </a>
+            <button type="button" onclick="closeComplianceModal()" class="px-4 py-2 bg-slate-900 hover:bg-black text-white font-bold rounded-xl text-xs transition-colors">
+                Done / Close
+            </button>
         </div>
     </div>
 </div>
