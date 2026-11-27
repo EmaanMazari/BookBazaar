@@ -2787,59 +2787,140 @@ function switchAuthTab(mode) {
 
 async function handleAuthLogin(e) {
     e.preventDefault();
-    const ident = document.getElementById('login-identifier').value.trim();
-    const pass = document.getElementById('login-password').value;
+    const identInput = document.getElementById('login-identifier');
+    let ident = identInput ? identInput.value.trim() : '';
+    const passInput = document.getElementById('login-password');
+    const pass = passInput ? passInput.value : '';
+
+    if (!ident || !pass) {
+        alert("Please enter both username/phone and password.");
+        return;
+    }
+
+    // Strip spaces, dashes, parens if it looks like a phone number
+    let cleanIdent = ident;
+    if (/[0-9]/.test(ident) && !ident.includes('@')) {
+        let digitsOnly = ident.replace(/[^0-9]/g, '');
+        if (digitsOnly.startsWith('0092') && digitsOnly.length >= 13) {
+            cleanIdent = '0' + digitsOnly.slice(4);
+        } else if (digitsOnly.startsWith('92') && digitsOnly.length >= 12) {
+            cleanIdent = '0' + digitsOnly.slice(2);
+        } else if (digitsOnly.length === 10 && digitsOnly.startsWith('3')) {
+            cleanIdent = '0' + digitsOnly;
+        } else if (digitsOnly.length === 11 && digitsOnly.startsWith('03')) {
+            cleanIdent = digitsOnly;
+        } else if (digitsOnly.length >= 10) {
+            cleanIdent = digitsOnly;
+        }
+    }
 
     try {
+        const csrfToken = getCookie('csrftoken');
+        const headers = { 'Content-Type': 'application/json' };
+        if (csrfToken) headers['X-CSRFToken'] = csrfToken;
+
         const res = await fetch('/api/auth/login/', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ phone_or_username: ident, password: pass })
+            headers: headers,
+            body: JSON.stringify({ phone_or_username: cleanIdent, password: pass })
         });
-        const data = await res.json();
+        const data = await res.json().catch(() => ({}));
         if (res.ok) {
             localStorage.removeItem('bookzy_logged_out');
             sessionStorage.setItem('bookzy_session_active', 'true');
-            localStorage.setItem('bookloop_token', data.token);
-            localStorage.setItem('bb_user_id', data.profile.id);
-            alert(`Welcome back, ${data.profile.full_name}!`);
+            const token = data.token || (data.profile && data.profile.token);
+            if (token) {
+                localStorage.setItem('bookloop_token', token);
+                STATE.authToken = token;
+            }
+            const userId = data.id || (data.profile && data.profile.id);
+            if (userId) {
+                localStorage.setItem('bb_user_id', userId);
+            }
+            alert(`Welcome back, ${data.profile?.full_name || 'Reader'}!`);
             closeAuthModal();
             location.reload();
         } else {
-            alert(data.error || "Login failed");
+            if (res.status === 404 || (data.error && data.error.toLowerCase().includes('not found'))) {
+                alert(data.error || "Account not found. Click 'Create Account' above to register in 10 seconds!");
+                if (typeof switchAuthTab === 'function') {
+                    switchAuthTab('register');
+                    const regPhone = document.getElementById('reg-phone');
+                    if (regPhone && cleanIdent) regPhone.value = cleanIdent;
+                }
+            } else {
+                alert(data.error || data.detail || "Login failed. Please check your credentials.");
+            }
         }
     } catch (err) {
-        alert("Login error");
+        console.error("Login error:", err);
+        alert(err.message || "Network error during login. Please try again.");
     }
 }
 
 async function handleAuthRegister(e) {
     e.preventDefault();
-    const fullname = document.getElementById('reg-fullname').value.trim();
-    const phone = document.getElementById('reg-phone').value.trim();
-    const city = document.getElementById('reg-city').value;
-    const password = document.getElementById('reg-password').value;
+    const fullname = document.getElementById('reg-fullname')?.value.trim() || '';
+    const phoneRaw = document.getElementById('reg-phone')?.value.trim() || '';
+    const city = document.getElementById('reg-city')?.value || 'Islamabad';
+    const password = document.getElementById('reg-password')?.value || '';
+
+    if (!fullname || !phoneRaw || !password) {
+        alert("Please fill in all required fields.");
+        return;
+    }
+
+    // Strip spaces and dashes from phone input automatically
+    let cleanPhone = phoneRaw.replace(/[\s\-\(\)]/g, '');
+    let digitsOnly = phoneRaw.replace(/[^0-9]/g, '');
+    if (digitsOnly.startsWith('0092') && digitsOnly.length >= 13) {
+        cleanPhone = '0' + digitsOnly.slice(4);
+    } else if (digitsOnly.startsWith('92') && digitsOnly.length >= 12) {
+        cleanPhone = '0' + digitsOnly.slice(2);
+    } else if (digitsOnly.length === 10 && digitsOnly.startsWith('3')) {
+        cleanPhone = '0' + digitsOnly;
+    } else if (digitsOnly.length === 11 && digitsOnly.startsWith('03')) {
+        cleanPhone = digitsOnly;
+    }
 
     try {
+        const csrfToken = getCookie('csrftoken');
+        const headers = { 'Content-Type': 'application/json' };
+        if (csrfToken) headers['X-CSRFToken'] = csrfToken;
+
         const res = await fetch('/api/auth/register/', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ full_name: fullname, phone_number: phone, city: city, password: password })
+            headers: headers,
+            body: JSON.stringify({
+                full_name: fullname,
+                phone_number: cleanPhone,
+                city: city,
+                password: password
+            })
         });
-        const data = await res.json();
+        const data = await res.json().catch(() => ({}));
         if (res.ok) {
             localStorage.removeItem('bookzy_logged_out');
             sessionStorage.setItem('bookzy_session_active', 'true');
-            localStorage.setItem('bookloop_token', data.token);
-            localStorage.setItem('bb_user_id', data.profile.id);
-            alert(data.message);
+            const token = data.token || (data.profile && data.profile.token);
+            if (token) {
+                localStorage.setItem('bookloop_token', token);
+                STATE.authToken = token;
+            }
+            const userId = data.id || (data.profile && data.profile.id);
+            if (userId) {
+                localStorage.setItem('bb_user_id', userId);
+            }
+            alert(data.message || "Registration successful! Welcome to Bookzy AI.");
             closeAuthModal();
             location.reload();
         } else {
-            alert(data.error || "Registration failed");
+            const errorMsg = data.error || data.detail || (typeof data === 'string' ? data : "Registration failed. Please check your details.");
+            alert(errorMsg);
         }
     } catch (err) {
-        alert("Registration error");
+        console.error("Registration error:", err);
+        alert(err.message || "Registration error. Please check your connection and try again.");
     }
 }
 

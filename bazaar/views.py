@@ -169,14 +169,34 @@ def admin_view(request):
 # AUTHENTICATION & PROFILES API
 # ==========================================
 
+def normalize_phone_number(raw_phone):
+    """
+    Normalizes Pakistani phone numbers to standard 11-digit format (03XXXXXXXXX):
+    - Strips whitespace, dashes (-), parens, pluses (+)
+    - Converts +923XXXXXXXXX, 923XXXXXXXXX, 00923XXXXXXXXX -> 03XXXXXXXXX
+    - Converts 3XXXXXXXXX -> 03XXXXXXXXX
+    """
+    if not raw_phone:
+        return ''
+    cleaned = ''.join(c for c in str(raw_phone) if c.isdigit())
+    if cleaned.startswith('0092') and len(cleaned) >= 13:
+        cleaned = '0' + cleaned[4:]
+    elif cleaned.startswith('92') and len(cleaned) >= 12:
+        cleaned = '0' + cleaned[2:]
+    elif len(cleaned) == 10 and cleaned.startswith('3'):
+        cleaned = '0' + cleaned
+    return cleaned
+
+
 @api_view(['POST'])
+@authentication_classes([TokenAuthentication, CsrfExemptSessionAuthentication])
 @permission_classes([AllowAny])
 def register_user(request):
     """
     Secure user registration:
-    - Minimum password length validation (>= 6 chars)
-    - Passwords securely hashed via Django's default PBKDF2/SHA256
-    - Returns Auth Token and UserProfile
+    - Passwords securely hashed via Django's default PBKDF2/SHA256 (min 4+ chars)
+    - Automatically normalizes phone numbers (03XXXXXXXXX)
+    - Auto-logs in user and returns Auth Token and UserProfile
     """
     data = request.data
     phone = str(data.get('phone_number', '')).strip()
@@ -189,18 +209,16 @@ def register_user(request):
     if not phone or not password or not full_name:
         return Response({'error': 'Phone number, password, and full name are required.'}, status=status.HTTP_400_BAD_REQUEST)
 
-    if len(password) < 6:
-        return Response({'error': 'Password must be at least 6 characters long.'}, status=status.HTTP_400_BAD_REQUEST)
+    if len(password) < 4:
+        return Response({'error': 'Password must be at least 4 characters long.'}, status=status.HTTP_400_BAD_REQUEST)
 
-    phone_clean = ''.join(c for c in phone if c.isdigit())
-    if len(phone_clean) == 10 and phone_clean.startswith('3'):
-        phone_clean = '0' + phone_clean
+    phone_clean = normalize_phone_number(phone)
 
-    if len(phone_clean) < 11:
+    if len(phone_clean) < 11 or not phone_clean.startswith('03'):
         return Response({'error': 'Please enter a valid 11-digit Pakistani phone number (e.g. 03001234567).'}, status=status.HTTP_400_BAD_REQUEST)
 
     if UserProfile.objects.filter(phone_number=phone_clean).exists():
-        return Response({'error': 'An account with this phone number already exists.'}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({'error': 'This mobile number is already registered. Please Sign In.'}, status=status.HTTP_400_BAD_REQUEST)
 
     username = f"user_{phone_clean}"
     if User.objects.filter(username=username).exists():
@@ -221,17 +239,34 @@ def register_user(request):
         wallet_balance=Decimal('100.00')  # Welcome initial credit
     )
 
+    try:
+        django_login(request, user, backend='django.contrib.auth.backends.ModelBackend')
+    except Exception as e:
+        logger.debug(f"Session login note during register: {e}")
+
     token, _ = Token.objects.get_or_create(user=user)
     logger.info(f"User registered successfully: {username} ({phone_clean})")
+
+    profile_data = UserProfileSerializer(profile, context={'request': request, 'is_owner': True}).data
+    profile_data['phone'] = profile.phone_number
+    profile_data['token'] = token.key
+    profile_data['free_unlocks_remaining'] = profile_data.get('free_trial_remaining', 2)
 
     return Response({
         'message': 'Registration successful! Welcome to Bookzy AI.',
         'token': token.key,
-        'profile': UserProfileSerializer(profile, context={'request': request, 'is_owner': True}).data
+        'profile': profile_data,
+        'id': profile.id,
+        'full_name': profile.full_name,
+        'phone': profile.phone_number,
+        'city': profile.city,
+        'wallet_balance': str(profile.wallet_balance),
+        'free_unlocks_remaining': profile_data.get('free_trial_remaining', 2)
     }, status=status.HTTP_201_CREATED)
 
 
 @api_view(['POST'])
+@authentication_classes([TokenAuthentication, CsrfExemptSessionAuthentication])
 @permission_classes([AllowAny])
 def login_user(request):
     """
@@ -245,9 +280,7 @@ def login_user(request):
     if not phone_or_user or not password:
         return Response({'error': 'Credentials are required.'}, status=status.HTTP_400_BAD_REQUEST)
 
-    phone_clean = ''.join(c for c in phone_or_user if c.isdigit())
-    if len(phone_clean) == 10 and phone_clean.startswith('3'):
-        phone_clean = '0' + phone_clean
+    phone_clean = normalize_phone_number(phone_or_user)
 
     profile = None
     if phone_clean:
@@ -267,7 +300,7 @@ def login_user(request):
         ).first()
 
     if not target_user:
-        return Response({'error': 'No account found with this phone number, username, or email.'}, status=status.HTTP_404_NOT_FOUND)
+        return Response({'error': "Account not found. Click 'Create Account' above to register in 10 seconds!"}, status=status.HTTP_404_NOT_FOUND)
 
     if profile and profile.is_blocked:
         return Response({'error': 'This account has been blocked by Bookzy AI Admin.'}, status=status.HTTP_403_FORBIDDEN)
@@ -292,10 +325,21 @@ def login_user(request):
 
     logger.info(f"User logged in: {user.username}")
 
+    profile_data = UserProfileSerializer(profile, context={'request': request, 'is_owner': True}).data
+    profile_data['phone'] = profile.phone_number
+    profile_data['token'] = token.key
+    profile_data['free_unlocks_remaining'] = profile_data.get('free_trial_remaining', 2)
+
     return Response({
         'message': 'Login successful',
         'token': token.key,
-        'profile': UserProfileSerializer(profile, context={'request': request, 'is_owner': True}).data,
+        'profile': profile_data,
+        'id': profile.id,
+        'full_name': profile.full_name,
+        'phone': profile.phone_number,
+        'city': profile.city,
+        'wallet_balance': str(profile.wallet_balance),
+        'free_unlocks_remaining': profile_data.get('free_trial_remaining', 2),
         'is_staff': bool(user.is_staff or user.is_superuser)
     })
 
