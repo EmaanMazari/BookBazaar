@@ -617,6 +617,119 @@ def get_listing_detail(request, listing_id):
     return Response(serializer.data)
 
 
+def filter_listings_by_search(queryset, q_raw):
+    """
+    Smart multi-field case-insensitive search across:
+    - title, subject, category, education_board, grade_class, author, ISBN, descriptions, city, pickup_location
+    - Normalizes class queries automatically ('9', '9th', 'class 9', 'ninth' -> Grade 9; '10', '10th' -> Grade 10, etc.)
+    - Expands stream synonyms (e.g. 'fsc', 'ics', 'mbbs', 'bds', 'math', 'taleem', 'punjab', etc.)
+    """
+    q = (q_raw or '').strip()
+    if not q:
+        return queryset
+
+    q_lower = q.lower()
+
+    GRADE_TERMS = {
+        '1': ['1', '1st', 'class 1', 'class 1st', 'first', 'grade 1', 'primary'],
+        '2': ['2', '2nd', 'class 2', 'class 2nd', 'second', 'grade 2'],
+        '3': ['3', '3rd', 'class 3', 'class 3rd', 'third', 'grade 3'],
+        '4': ['4', '4th', 'class 4', 'class 4th', 'fourth', 'grade 4'],
+        '5': ['5', '5th', 'class 5', 'class 5th', 'fifth', 'grade 5'],
+        '6': ['6', '6th', 'class 6', 'class 6th', 'sixth', 'grade 6'],
+        '7': ['7', '7th', 'class 7', 'class 7th', 'seventh', 'grade 7'],
+        '8': ['8', '8th', 'class 8', 'class 8th', 'eighth', 'grade 8'],
+        '9': ['9', '9th', 'class 9', 'class 9th', 'ninth', 'grade 9', 'ssc 1', 'ssc-1', 'ssc-i', 'ssc i', 'matric 1'],
+        '10': ['10', '10th', 'class 10', 'class 10th', 'tenth', 'grade 10', 'ssc 2', 'ssc-2', 'ssc-ii', 'ssc ii', 'matric 2'],
+        '11': ['11', '11th', 'class 11', 'class 11th', 'eleventh', 'grade 11', '1st year', 'first year', 'fsc 1', 'fsc-1', 'fsc part 1', 'hssc 1', 'hssc-1', 'hssc-i'],
+        '12': ['12', '12th', 'class 12', 'class 12th', 'twelfth', 'grade 12', '2nd year', 'second year', 'fsc 2', 'fsc-2', 'fsc part 2', 'hssc 2', 'hssc-2', 'hssc-ii'],
+    }
+
+    STREAM_TERMS = {
+        'fsc': ['fsc', 'ics', 'intermediate', 'inter', 'hssc', 'fa'],
+        'matric': ['matric', 'ssc'],
+        'mbbs': ['mbbs', 'bds', 'medical', 'mdcat', 'nursing', 'physiology', 'pathology', 'anatomy'],
+        'olevel': ['o level', 'o-level', 'olevel', 'cambridge', 'igcse'],
+        'alevel': ['a level', 'a-level', 'alevel'],
+        'taleem': ['taleem', 'punjab', 'ptb', 'punjab textbook', 'punjab board'],
+        'math': ['math', 'maths', 'mathematics', 'calculus', 'algebra', 'geometry'],
+    }
+
+    # 1. Standalone Class Query
+    for grade, aliases in GRADE_TERMS.items():
+        if q_lower in aliases:
+            g_q = (
+                Q(book__title__icontains=f'Class {grade}') |
+                Q(book__title__icontains=f'{grade}th') |
+                Q(book__title__icontains=f'Grade {grade}') |
+                Q(book__subject__icontains=f'Class {grade}') |
+                Q(book__subject__icontains=f'{grade}th')
+            )
+            if grade in ['9', '10']:
+                g_q |= (Q(book__grade_class__icontains='Matric') & (Q(book__title__icontains=grade) | Q(book__subject__icontains=grade)))
+                if grade == '9':
+                    g_q |= Q(book__title__icontains='SSC Part-1') | Q(book__title__icontains='SSC-1')
+                    return queryset.filter(g_q).exclude(book__title__icontains='Class 10').exclude(book__title__icontains='10th').exclude(book__title__icontains='Class 11').exclude(book__title__icontains='Class 12')
+                else:
+                    g_q |= Q(book__title__icontains='SSC Part-2') | Q(book__title__icontains='SSC-2') | Q(book__title__icontains='SSC-II')
+                    return queryset.filter(g_q).exclude(book__title__icontains='Class 9').exclude(book__title__icontains='9th').exclude(book__title__icontains='Class 11').exclude(book__title__icontains='Class 12')
+            elif grade in ['11', '12']:
+                g_q |= (Q(book__grade_class__icontains='Intermediate') & (Q(book__title__icontains=grade) | Q(book__subject__icontains=grade)))
+                if grade == '11':
+                    g_q |= Q(book__title__icontains='1st Year') | Q(book__title__icontains='HSSC-I') | Q(book__title__icontains='Part-1') | Q(book__title__icontains='Part 1')
+                    return queryset.filter(g_q).exclude(book__title__icontains='Class 12').exclude(book__title__icontains='12th').exclude(book__title__icontains='2nd Year').exclude(book__title__icontains='Part-2').exclude(book__title__icontains='Part 2').exclude(book__title__icontains='Part-II')
+                else:
+                    g_q |= Q(book__title__icontains='2nd Year') | Q(book__title__icontains='HSSC-II') | Q(book__title__icontains='Part-2') | Q(book__title__icontains='Part 2') | Q(book__title__icontains='Part-II')
+                    return queryset.filter(g_q).exclude(book__title__icontains='Class 11').exclude(book__title__icontains='11th').exclude(book__title__icontains='1st Year').exclude(book__title__icontains='Part-1').exclude(book__title__icontains='Part 1').exclude(book__title__icontains='Part-I')
+            return queryset.filter(g_q)
+
+    # 2. Multi-word / tokenized search across all fields
+    words = [w.strip() for w in re.split(r'\s+', q) if w.strip()]
+    combined_q = Q()
+
+    for word in words:
+        w_lower = word.lower()
+        word_q = (
+            Q(book__title__icontains=word) |
+            Q(book__subject__icontains=word) |
+            Q(book__category__icontains=word) |
+            Q(book__education_board__icontains=word) |
+            Q(book__grade_class__icontains=word) |
+            Q(book__author__icontains=word) |
+            Q(book__isbn__icontains=word) |
+            Q(book__description__icontains=word) |
+            Q(description__icontains=word) |
+            Q(city__icontains=word) |
+            Q(pickup_location__icontains=word)
+        )
+
+        for grade, aliases in GRADE_TERMS.items():
+            if w_lower in aliases:
+                word_q |= (
+                    Q(book__title__icontains=f'Class {grade}') |
+                    Q(book__title__icontains=f'{grade}th') |
+                    Q(book__subject__icontains=f'Class {grade}') |
+                    Q(book__subject__icontains=f'{grade}th')
+                )
+                break
+
+        for stream, aliases in STREAM_TERMS.items():
+            if w_lower in aliases or any(sa in w_lower for sa in aliases):
+                for sa in aliases:
+                    word_q |= (
+                        Q(book__title__icontains=sa) |
+                        Q(book__subject__icontains=sa) |
+                        Q(book__category__icontains=sa) |
+                        Q(book__education_board__icontains=sa) |
+                        Q(book__grade_class__icontains=sa)
+                    )
+                break
+
+        combined_q &= word_q
+
+    return queryset.filter(combined_q)
+
+
 @api_view(['GET'])
 @permission_classes([AllowAny])
 def get_listings(request):
@@ -640,15 +753,7 @@ def get_listings(request):
     listings = Listing.objects.filter(status='active').select_related('book', 'seller')
 
     if q:
-        listings = listings.filter(
-            Q(book__title__icontains=q) |
-            Q(book__author__icontains=q) |
-            Q(book__isbn__icontains=q) |
-            Q(book__subject__icontains=q) |
-            Q(book__grade_class__icontains=q) |
-            Q(book__education_board__icontains=q) |
-            Q(description__icontains=q)
-        )
+        listings = filter_listings_by_search(listings, q)
 
     if category and category != 'All':
         listings = listings.filter(book__category=category)

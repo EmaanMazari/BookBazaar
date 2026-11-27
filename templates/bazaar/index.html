@@ -180,12 +180,22 @@
                             <div class="relative flex-1 flex items-center">
                                 <i class="fa-solid fa-magnifying-glass absolute left-3.5 sm:left-4 text-blue-600 text-sm sm:text-base pointer-events-none"></i>
                                 <input type="text" id="search-input" 
-                                       placeholder="Search by title, author, subject, or ISBN..." 
-                                       class="w-full pl-10 sm:pl-12 pr-4 py-2.5 sm:py-3 bg-transparent text-slate-800 text-xs sm:text-sm font-medium placeholder-slate-400 focus:outline-none">
+                                       placeholder="Search by title, subject (e.g. English), class (e.g. 9th, FSc), or author..." 
+                                       class="w-full pl-10 sm:pl-12 pr-10 py-2.5 sm:py-3 bg-transparent text-slate-800 text-xs sm:text-sm font-medium placeholder-slate-400 focus:outline-none">
+                                <button type="button" id="search-clear-input-btn" onclick="clearSearchAndFilters()" 
+                                        class="hidden absolute right-3 text-slate-400 hover:text-slate-600 p-1 text-sm transition-colors cursor-pointer" 
+                                        title="Clear Search">
+                                    <i class="fa-solid fa-circle-xmark"></i>
+                                </button>
                             </div>
+                            <button type="button" id="search-submit-btn" onclick="applyFilters(true)" 
+                                    class="hidden sm:inline-flex px-4 py-2.5 sm:py-3 bg-blue-600 hover:bg-blue-700 text-white font-extrabold rounded-xl text-xs sm:text-sm items-center gap-1.5 transition-all shadow-xs cursor-pointer active:scale-95">
+                                <i class="fa-solid fa-magnifying-glass text-xs"></i>
+                                <span>Search</span>
+                            </button>
                             <!-- Single Filters Toggle Button Next to Search Bar -->
                             <button type="button" id="filter-toggle-btn" onclick="toggleAdvancedFilters()" 
-                                    class="px-3.5 sm:px-5 py-2.5 sm:py-3 bg-blue-50 hover:bg-blue-100 text-blue-700 font-bold rounded-xl text-xs sm:text-sm flex items-center gap-2 transition-all shrink-0 border border-blue-200 active:scale-95">
+                                    class="px-3.5 sm:px-5 py-2.5 sm:py-3 bg-blue-50 hover:bg-blue-100 text-blue-700 font-bold rounded-xl text-xs sm:text-sm flex items-center gap-2 transition-all shrink-0 border border-blue-200 active:scale-95 cursor-pointer">
                                 <i class="fa-solid fa-sliders text-blue-600"></i>
                                 <span id="filter-toggle-label">Filters</span>
                                 <i class="fa-solid fa-chevron-down text-[10px] text-blue-500 transition-transform duration-200" id="filter-arrow-icon"></i>
@@ -341,6 +351,37 @@
                         </button>
                     </div>
                 </div>
+
+                <!-- ============================================== -->
+                <!-- 🔍 DEDICATED TOP SEARCH RESULTS SECTION -->
+                <!-- ============================================== -->
+                <section id="search-results-section" class="hidden mb-10 sm:mb-12 scroll-mt-24">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 pb-3 border-b border-slate-200">
+                        <div class="flex items-center gap-2.5">
+                            <div class="w-8 h-8 rounded-xl bg-blue-600 text-white flex items-center justify-center text-sm shadow-xs shrink-0">
+                                <i class="fa-solid fa-magnifying-glass"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-sm sm:text-base font-extrabold text-slate-900 flex items-center gap-2" id="search-results-title">
+                                    <span>Search Results</span>
+                                </h3>
+                                <p class="text-[11px] text-slate-500 font-medium" id="search-results-subtitle">
+                                    Matching books across title, subject, grade/class, board, author & city
+                                </p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <button type="button" onclick="clearSearchAndFilters()" 
+                                    class="px-3.5 py-1.5 bg-slate-100 hover:bg-rose-50 text-slate-700 hover:text-rose-700 border border-slate-200 hover:border-rose-200 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 active:scale-95 shadow-xs cursor-pointer">
+                                <i class="fa-solid fa-xmark text-xs"></i>
+                                <span>✕ Clear Search</span>
+                            </button>
+                        </div>
+                    </div>
+                    <div id="search-results-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                        <!-- Populated dynamically by JavaScript -->
+                    </div>
+                </section>
 
                 <!-- ============================================== -->
                 <!-- 1. ✨ AI RECOMMENDED FOR YOU -->

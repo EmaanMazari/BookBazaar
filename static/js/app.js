@@ -974,6 +974,15 @@ function renderPtbShelf(listings, filterClass = 'all') {
 }
 
 function filterShelfSection(shelfKey) {
+    const searchSection = document.getElementById('search-results-section');
+    if (searchSection) searchSection.classList.add('hidden');
+    const searchInput = document.getElementById('search-input');
+    if (searchInput && searchInput.value) {
+        searchInput.value = '';
+        const clearBtn = document.getElementById('search-clear-input-btn');
+        if (clearBtn) clearBtn.classList.add('hidden');
+    }
+
     const pills = document.querySelectorAll('#shelf-pills-bar .shelf-pill-btn');
     pills.forEach(p => {
         p.classList.remove('active', 'bg-blue-600', 'text-white', 'shadow-xs');
@@ -3559,29 +3568,63 @@ function closeInterstitialAd() {
 window.closeInterstitialAd = closeInterstitialAd;
 
 // Search and Filter logic
+const debouncedApplyFilters = debounce(() => applyFilters(false), 250);
+
+function escapeSearchHtml(str) {
+    if (!str) return '';
+    return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+}
+
 function setupEventListeners() {
     const searchInput = document.getElementById('search-input');
     if (searchInput) {
-        searchInput.addEventListener('input', debounce(applyFilters, 300));
+        searchInput.addEventListener('input', (e) => {
+            const val = (e.target.value || '').trim();
+            const clearBtn = document.getElementById('search-clear-input-btn');
+            if (clearBtn) {
+                if (val.length > 0) clearBtn.classList.remove('hidden');
+                else clearBtn.classList.add('hidden');
+            }
+            debouncedApplyFilters();
+        });
+        searchInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                applyFilters(true);
+            }
+        });
+    }
+
+    const searchSubmitBtn = document.getElementById('search-submit-btn');
+    if (searchSubmitBtn) {
+        searchSubmitBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            applyFilters(true);
+        });
     }
 
     const catSelect = document.getElementById('filter-category');
-    if (catSelect) catSelect.addEventListener('change', applyFilters);
+    if (catSelect) catSelect.addEventListener('change', () => applyFilters(true));
 
     const citySelect = document.getElementById('filter-city');
-    if (citySelect) citySelect.addEventListener('change', applyFilters);
+    if (citySelect) citySelect.addEventListener('change', () => applyFilters(true));
 
     const condSelect = document.getElementById('filter-condition');
-    if (condSelect) condSelect.addEventListener('change', applyFilters);
+    if (condSelect) condSelect.addEventListener('change', () => applyFilters(true));
 
     const boardSelect = document.getElementById('filter-board');
-    if (boardSelect) boardSelect.addEventListener('change', applyFilters);
+    if (boardSelect) boardSelect.addEventListener('change', () => applyFilters(true));
 
     const classSelect = document.getElementById('filter-class');
-    if (classSelect) classSelect.addEventListener('change', applyFilters);
+    if (classSelect) classSelect.addEventListener('change', () => applyFilters(true));
 
     const sortSelect = document.getElementById('filter-sort');
-    if (sortSelect) sortSelect.addEventListener('change', applyFilters);
+    if (sortSelect) sortSelect.addEventListener('change', () => applyFilters(true));
 
     const sellForm = document.getElementById('sell-book-form');
     if (sellForm) sellForm.addEventListener('submit', handleCreateListingSubmit);
@@ -3676,8 +3719,15 @@ function setupEventListeners() {
     }
 }
 
-async function applyFilters() {
-    const q = document.getElementById('search-input')?.value || '';
+async function applyFilters(isImmediate = false) {
+    const searchInput = document.getElementById('search-input');
+    const q = (searchInput?.value || '').trim();
+    const clearBtn = document.getElementById('search-clear-input-btn');
+    if (clearBtn) {
+        if (q.length > 0) clearBtn.classList.remove('hidden');
+        else clearBtn.classList.add('hidden');
+    }
+
     const cat = document.getElementById('filter-category')?.value || 'All';
     const city = document.getElementById('filter-city')?.value || 'All';
     const cond = document.getElementById('filter-condition')?.value || 'All';
@@ -3685,14 +3735,83 @@ async function applyFilters() {
     const gradeClass = document.getElementById('filter-class')?.value || 'All';
     const sort = document.getElementById('filter-sort')?.value || 'cheapest';
 
-    const hasFilter = Boolean(q.trim() || cat !== 'All' || (city !== 'All' && city !== 'all') || cond !== 'All' || board !== 'All' || gradeClass !== 'All');
+    const hasFilter = Boolean(q || cat !== 'All' || (city !== 'All' && city !== 'all') || cond !== 'All' || board !== 'All' || gradeClass !== 'All');
+
+    const searchSection = document.getElementById('search-results-section');
+    const searchGrid = document.getElementById('search-results-grid');
+    const searchTitle = document.getElementById('search-results-title');
+    const searchSubtitle = document.getElementById('search-results-subtitle');
     const feedTitle = document.getElementById('listings-feed-title');
 
+    // If on another tab, switch to home tab so results are visible
+    if (hasFilter && typeof STATE !== 'undefined' && STATE.activeTab !== 'home' && typeof switchTab === 'function') {
+        switchTab('home');
+    }
+
     const url = `/api/listings/?search=${encodeURIComponent(q)}&category=${encodeURIComponent(cat)}&city=${encodeURIComponent(city)}&condition=${encodeURIComponent(cond)}&board=${encodeURIComponent(board)}&grade_class=${encodeURIComponent(gradeClass)}&sort=${encodeURIComponent(sort)}`;
+
     try {
         const res = await fetch(url);
         const data = await res.json();
         STATE.listings = data;
+
+        if (hasFilter) {
+            // Display top search results section
+            if (searchSection) searchSection.classList.remove('hidden');
+
+            // Hide default shelves so search results are prominent and uncluttered
+            document.querySelectorAll('.shelf-section').forEach(sec => sec.classList.add('hidden'));
+
+            if (searchTitle) {
+                if (q) {
+                    searchTitle.innerHTML = `<i class="fa-solid fa-magnifying-glass text-blue-600"></i> <span>Showing ${data.length} ${data.length === 1 ? 'book' : 'books'} for "${escapeSearchHtml(q)}"</span>`;
+                } else {
+                    searchTitle.innerHTML = `<i class="fa-solid fa-filter text-blue-600"></i> <span>Filtered Results (${data.length} ${data.length === 1 ? 'book' : 'books'} found)</span>`;
+                }
+            }
+
+            if (searchSubtitle) {
+                if (data.length > 0) {
+                    searchSubtitle.textContent = `Matching books across title, subject, grade/class, board, author & city`;
+                } else {
+                    searchSubtitle.textContent = `No exact matches found. Try another keyword or clear search.`;
+                }
+            }
+
+            if (searchGrid) {
+                if (data.length > 0) {
+                    searchGrid.innerHTML = data.map(item => createBookCardHtml(item)).join('');
+                } else {
+                    searchGrid.innerHTML = `
+                        <div class="col-span-full p-8 sm:p-12 text-center bg-white rounded-2xl border border-dashed border-slate-300">
+                            <div class="w-14 h-14 mx-auto mb-3 rounded-2xl bg-slate-100 flex items-center justify-center text-slate-400 text-2xl">
+                                <i class="fa-solid fa-book-open"></i>
+                            </div>
+                            <h4 class="text-base font-extrabold text-slate-800 mb-1">No books found for "${escapeSearchHtml(q || 'your filters')}"</h4>
+                            <p class="text-xs text-slate-500 mb-4 max-w-md mx-auto">Try checking your spelling, using broader keywords (e.g. "English", "9th", "FSc", "Medical"), or clearing filters.</p>
+                            <div class="flex items-center justify-center gap-2">
+                                <button type="button" onclick="clearSearchAndFilters()" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold transition-all shadow-xs cursor-pointer active:scale-95">
+                                    ✕ Clear Search & Show All Shelves
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                }
+            }
+
+            // Smoothly auto-scroll to search results section
+            if (searchSection && (isImmediate || q.length >= 2)) {
+                searchSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        } else {
+            // When no filter or search query is active, restore default shelves
+            if (searchSection) {
+                searchSection.classList.add('hidden');
+                if (searchGrid) searchGrid.innerHTML = '';
+            }
+            document.querySelectorAll('.shelf-section').forEach(sec => sec.classList.remove('hidden'));
+        }
+
         if (feedTitle) {
             feedTitle.innerHTML = hasFilter 
                 ? `<i class="fa-solid fa-filter text-blue-600"></i> Filtered Results (${data.length} found)`
@@ -3703,15 +3822,51 @@ async function applyFilters() {
         console.error(e);
     }
 }
+window.applyFilters = applyFilters;
 
-function resetFilters() {
-    if (document.getElementById('search-input')) document.getElementById('search-input').value = '';
+function clearSearchAndFilters() {
+    const searchInput = document.getElementById('search-input');
+    if (searchInput) searchInput.value = '';
+
+    const clearBtn = document.getElementById('search-clear-input-btn');
+    if (clearBtn) clearBtn.classList.add('hidden');
+
     if (document.getElementById('filter-category')) document.getElementById('filter-category').value = 'All';
     if (document.getElementById('filter-city')) document.getElementById('filter-city').value = 'All';
     if (document.getElementById('filter-condition')) document.getElementById('filter-condition').value = 'All';
     if (document.getElementById('filter-board')) document.getElementById('filter-board').value = 'All';
     if (document.getElementById('filter-class')) document.getElementById('filter-class').value = 'All';
-    applyFilters();
+    if (document.getElementById('filter-sort')) document.getElementById('filter-sort').value = 'cheapest';
+
+    const searchSection = document.getElementById('search-results-section');
+    if (searchSection) {
+        searchSection.classList.add('hidden');
+        const grid = document.getElementById('search-results-grid');
+        if (grid) grid.innerHTML = '';
+    }
+
+    // Restore all default shelves cleanly
+    document.querySelectorAll('.shelf-section').forEach(sec => sec.classList.remove('hidden'));
+
+    // Reset shelf pills to "All Shelves" active state if present
+    const pills = document.querySelectorAll('#shelf-pills-bar .shelf-pill-btn');
+    pills.forEach(p => {
+        p.classList.remove('active', 'bg-blue-600', 'text-white', 'shadow-xs');
+        p.classList.add('bg-white', 'text-slate-700', 'border-slate-200');
+    });
+    const allPill = document.getElementById('shelf-pill-all');
+    if (allPill) {
+        allPill.classList.add('active', 'bg-blue-600', 'text-white', 'shadow-xs');
+        allPill.classList.remove('bg-white', 'text-slate-700', 'border-slate-200');
+    }
+
+    applyFilters(false);
+}
+window.clearSearchAndFilters = clearSearchAndFilters;
+window.resetFilters = clearSearchAndFilters;
+
+function resetFilters() {
+    clearSearchAndFilters();
 }
 
 function debounce(func, delay) {
