@@ -13,6 +13,10 @@ urlpatterns = [
     path('refund-policy/', views.refund_policy_view, name='refund_policy'),
     path('contact/', views.contact_view, name='contact'),
 
+    # Google AdSense Publisher Verification (ads.txt)
+    path('ads.txt', views.ads_txt_view, name='ads_txt'),
+    path('ads.txt/', views.ads_txt_view, name='ads_txt_slash'),
+
     # Auth & Profile APIs (Phase 1 & Phase 2)
     path('api/auth/register/', views.register_user, name='api_register'),
     path('api/auth/login/', views.login_user, name='api_login'),

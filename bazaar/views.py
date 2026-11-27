@@ -158,6 +158,11 @@ def contact_view(request):
     })
 
 
+def ads_txt_view(request):
+    """Serve Google AdSense ads.txt publisher verification at root URL"""
+    return HttpResponse("google.com, pub-2089287900015421, DIRECT, f08c47fec0942fa0\n", content_type="text/plain")
+
+
 def admin_view(request):
     """
     Admin Dashboard View with strict role-based access control.
