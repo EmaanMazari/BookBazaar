@@ -607,9 +607,10 @@ function createBookCardHtml(item, options = {}) {
     const priceNum = parseFloat(item.price || 0);
     const isSold = item.status === 'sold';
     const isOwner = Boolean(STATE.currentUser && (item.seller_id === STATE.currentUser.id || (item.seller && item.seller.id === STATE.currentUser.id)));
+    const isJustScanned = Boolean(options.highlightNew || item.is_just_scanned);
 
     return `
-        <div class="bg-white rounded-2xl border ${isSold ? 'border-slate-200 opacity-95' : 'border-slate-200 hover:border-blue-300'} shadow-xs hover:shadow-lg transition-all duration-200 overflow-hidden flex flex-col justify-between group h-full relative">
+        <div class="bg-white rounded-2xl border ${isSold ? 'border-slate-200 opacity-95' : (isJustScanned ? 'border-emerald-400 ring-2 ring-emerald-200 shadow-md' : 'border-slate-200 hover:border-blue-300')} shadow-xs hover:shadow-lg transition-all duration-200 overflow-hidden flex flex-col justify-between group h-full relative">
             <div>
                 <!-- Book Cover Image -->
                 <div class="relative w-full aspect-[3/4] bg-slate-100 overflow-hidden cursor-pointer" onclick="openUnlockModal(${item.id})">
@@ -624,7 +625,13 @@ function createBookCardHtml(item, options = {}) {
                                 <i class="fa-solid fa-tag text-[9px]"></i> SOLD
                             </span>
                         </div>
-                    ` : ''}
+                    ` : (isJustScanned ? `
+                        <div class="absolute top-2.5 left-2.5 z-10">
+                            <span class="bg-emerald-600 text-white font-black text-[10px] uppercase tracking-wider px-2.5 py-0.5 rounded-full shadow-md border border-white/20 flex items-center gap-1 animate-pulse">
+                                <i class="fa-solid fa-sparkles text-[9px]"></i> JUST SCANNED / NEW
+                            </span>
+                        </div>
+                    ` : '')}
                     ${isFree && !isSold ? `
                         <div class="absolute top-2.5 right-2.5">
                             <span class="bg-emerald-600 text-white font-extrabold text-[11px] px-2.5 py-0.5 rounded-full shadow-sm">
@@ -2172,58 +2179,48 @@ function selectPaymentMethod(method) {
     const infoBox = document.getElementById('payment-method-details');
     if (!infoBox) return;
 
-    if (method === 'jazzcash') {
-        infoBox.innerHTML = `
-            <div class="space-y-2">
-                <label class="block text-xs font-semibold text-slate-700">JazzCash Mobile Account Number</label>
-                <input type="text" id="pay-account-input" placeholder="03001234567" value="${STATE.currentUser ? STATE.currentUser.phone_number : '03023344556'}" 
-                       class="w-full text-xs p-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-red-500 focus:outline-none">
-                <label class="block text-xs font-semibold text-slate-700 mt-2">4-Digit MPIN</label>
-                <input type="password" id="pay-pin-input" placeholder="••••" value="1234" maxlength="4"
-                       class="w-full text-xs p-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-red-500 focus:outline-none">
-                <p class="text-[10px] text-slate-400">Sandbox prompt: Rs. ${STATE.platformFee} will be authorized.</p>
-            </div>
-        `;
-    } else if (method === 'easypaisa') {
-        infoBox.innerHTML = `
-            <div class="space-y-2">
-                <label class="block text-xs font-semibold text-slate-700">Easypaisa Mobile Number</label>
-                <input type="text" id="pay-account-input" placeholder="03451234567" value="${STATE.currentUser ? STATE.currentUser.phone_number : '03023344556'}" 
-                       class="w-full text-xs p-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-emerald-500 focus:outline-none">
-                <label class="block text-xs font-semibold text-slate-700 mt-2">5-Digit Easypaisa PIN</label>
-                <input type="password" id="pay-pin-input" placeholder="•••••" value="12345" maxlength="5"
-                       class="w-full text-xs p-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-emerald-500 focus:outline-none">
-                <p class="text-[10px] text-slate-400">Sandbox prompt: Rs. ${STATE.platformFee} will be authorized.</p>
-            </div>
-        `;
-    } else if (method === 'card_safepay') {
-        infoBox.innerHTML = `
-            <div class="space-y-2">
-                <label class="block text-xs font-semibold text-slate-700">Debit / Credit Card (Safepay / PayFast)</label>
-                <input type="text" placeholder="4242 •••• •••• 4242" value="4242 4242 4242 4242" 
-                       class="w-full text-xs p-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:outline-none">
-                <div class="grid grid-cols-2 gap-2">
-                    <input type="text" placeholder="MM/YY" value="12/28" class="text-xs p-2.5 rounded-lg border border-slate-300">
-                    <input type="password" placeholder="CVV" value="786" maxlength="4" class="text-xs p-2.5 rounded-lg border border-slate-300">
-                </div>
-            </div>
-        `;
-    } else {
-        const bal = STATE.currentUser ? parseFloat(STATE.currentUser.wallet_balance) : 0;
-        infoBox.innerHTML = `
-            <div class="p-3 bg-slate-50 border border-slate-200 rounded-lg text-xs">
-                <div class="flex justify-between items-center mb-1">
-                    <span class="text-slate-600 font-semibold">Available Wallet Balance:</span>
-                    <span class="font-bold text-blue-900">Rs. ${bal.toFixed(2)}</span>
-                </div>
-                ${bal >= STATE.platformFee ? `
-                    <p class="text-blue-700 text-[11px] font-semibold">Sufficient balance. Instant deduction with zero gateway surcharge.</p>
-                ` : `
-                    <p class="text-red-600 text-[11px] font-semibold">Insufficient wallet balance. Please choose JazzCash or Easypaisa.</p>
-                `}
-            </div>
-        `;
+    const defaultPhone = (STATE.currentUser && STATE.currentUser.phone_number) ? STATE.currentUser.phone_number : '03001234567';
+
+    let methodLabel = "JazzCash Mobile Account Number";
+    let methodPlaceholder = "03001234567";
+    let tidHint = "Enter 11-digit TID from your SMS receipt or click Confirm Demo Deposit for instant sandbox unlock";
+
+    if (method === 'easypaisa') {
+        methodLabel = "Easypaisa Mobile Number";
+        methodPlaceholder = "03451234567";
+    } else if (method === 'nayapay_sadapay') {
+        methodLabel = "NayaPay / SadaPay Mobile or Account Number";
+        methodPlaceholder = "03121234567";
+    } else if (method === 'raast_bank') {
+        methodLabel = "Sender Raast ID / Mobile / IBAN";
+        methodPlaceholder = "03001234567 or PK00...";
     }
+
+    infoBox.innerHTML = `
+        <div class="space-y-2.5">
+            <div>
+                <label class="block text-xs font-semibold text-slate-700 mb-1">${methodLabel}</label>
+                <input type="text" id="pay-account-input" placeholder="${methodPlaceholder}" value="${defaultPhone}" 
+                       class="w-full text-xs p-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:outline-none">
+            </div>
+            <div>
+                <div class="flex items-center justify-between mb-1">
+                    <label class="text-xs font-semibold text-slate-700">Transaction ID (TID) <span class="text-slate-400 font-normal">(Optional)</span></label>
+                    <span class="text-[10px] text-blue-600 font-medium">Sandbox Verified</span>
+                </div>
+                <input type="text" id="pay-tid-input" placeholder="e.g. 10492837492"
+                       class="w-full text-xs p-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                <p class="text-[10px] text-slate-400 mt-1">${tidHint}</p>
+            </div>
+            <div class="p-2.5 bg-emerald-50 border border-emerald-200 rounded-xl flex items-start gap-2 text-[10px] text-emerald-800">
+                <i class="fa-solid fa-shield-halved text-emerald-600 text-xs mt-0.5 shrink-0"></i>
+                <div class="leading-tight">
+                    <strong class="font-bold block text-emerald-900">🔒 Trust & Security Guarantee</strong>
+                    <span>Never share your JazzCash/Easypaisa PIN with anyone. Bookzy AI never asks for your PIN.</span>
+                </div>
+            </div>
+        </div>
+    `;
 }
 
 // Submit Payment & Unlock Contact
@@ -2261,10 +2258,12 @@ async function submitPaymentUnlock() {
             listing_id: STATE.activeListingForUnlock.id,
             buyer_id: STATE.currentUser.id,
             user_id: STATE.currentUser.id,
-            payment_method: isFree ? 'free_trial' : STATE.selectedPaymentMethod,
-            gateway: isFree ? 'free_trial' : STATE.selectedPaymentMethod,
+            payment_method: isFree ? 'free_trial' : (STATE.selectedPaymentMethod || 'jazzcash'),
+            gateway: isFree ? 'free_trial' : (STATE.selectedPaymentMethod || 'jazzcash'),
             amount: isFree ? 0 : (STATE.platformFee || 50),
-            account_number: isFree ? '' : (document.getElementById('pay-account-input')?.value || STATE.currentUser.phone_number)
+            account_number: isFree ? '' : (document.getElementById('pay-account-input')?.value || STATE.currentUser.phone_number),
+            transaction_id: document.getElementById('pay-tid-input')?.value?.trim() || '',
+            tid: document.getElementById('pay-tid-input')?.value?.trim() || ''
         };
 
         let res = await fetch('/api/unlocks/request/', {
@@ -3495,14 +3494,24 @@ async function handleCreateListingSubmit(e) {
 
         const data = await res.json();
         if (res.ok) {
-            // Refresh catalog listings
-            try {
-                const listRes = await fetch('/api/listings/');
-                if (listRes.ok) {
-                    STATE.allListings = await listRes.json();
-                    STATE.listings = STATE.allListings;
-                }
-            } catch (err) {}
+            const publishedListing = data.listing;
+            if (publishedListing) {
+                publishedListing.is_just_scanned = true;
+                if (!STATE.allListings) STATE.allListings = [];
+                STATE.allListings = [publishedListing, ...STATE.allListings.filter(l => l.id !== publishedListing.id)];
+                STATE.listings = STATE.allListings;
+                renderShelves(STATE.allListings);
+                renderListings(STATE.listings);
+            } else {
+                // Refresh catalog listings
+                try {
+                    const listRes = await fetch('/api/listings/');
+                    if (listRes.ok) {
+                        STATE.allListings = await listRes.json();
+                        STATE.listings = STATE.allListings;
+                    }
+                } catch (err) {}
+            }
 
             // Clean up photo preview, pdf input, and form
             removeBookPhoto();
@@ -3513,12 +3522,11 @@ async function handleCreateListingSubmit(e) {
             document.getElementById('sell-book-form')?.reset();
 
             if (data.interstitial_ad) {
+                window.lastPublishedListing = publishedListing;
                 showInterstitialAd(data.interstitial_ad);
             } else {
-                alert(isFree ? "🎁 Thank you! Your book was successfully listed as a Free Community Donation (Rs. 0)." : "Book listed successfully!");
-                switchTab('home');
+                displayRecentlyPublishedBook(publishedListing);
             }
-            applyFilters();
             loadMySellerListings();
             loadAiRecommendations();
         } else {
@@ -3529,11 +3537,68 @@ async function handleCreateListingSubmit(e) {
     }
 }
 
+function displayRecentlyPublishedBook(listing) {
+    if (!listing) return;
+    const strip = document.getElementById('recently-published-strip');
+    const container = document.getElementById('recently-published-card-container');
+    if (!strip || !container) return;
+
+    listing.is_just_scanned = true;
+    container.innerHTML = `
+        <div class="col-span-full sm:col-span-1 max-w-xs">
+            ${createBookCardHtml(listing, { highlightNew: true })}
+        </div>
+        <div class="col-span-full sm:col-span-3 flex flex-col justify-center gap-2.5 p-3 sm:p-5 bg-white/80 backdrop-blur-xs rounded-2xl border border-emerald-200">
+            <div class="flex items-center gap-2">
+                <span class="w-6 h-6 rounded-full bg-emerald-600 text-white flex items-center justify-center text-xs font-bold shrink-0">
+                    <i class="fa-solid fa-check"></i>
+                </span>
+                <h4 class="font-black text-slate-900 text-sm sm:text-base">Listing Published Successfully!</h4>
+            </div>
+            <p class="text-xs text-slate-600 leading-relaxed">
+                Your book <strong class="text-slate-900 font-bold">"${escapeSearchHtml(listing.book?.title || listing.title || 'Untitled')}"</strong> is now live at the very top of the marketplace and placed first on its matching shelf. Buyers across Pakistan can now view and claim it.
+            </p>
+            <div class="flex items-center gap-2 mt-1">
+                <button type="button" onclick="openUnlockModal(${listing.id})" class="px-3.5 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-xl transition-all shadow-xs flex items-center gap-1.5 cursor-pointer">
+                    <i class="fa-solid fa-eye text-xs"></i> View Listing Details
+                </button>
+                <button type="button" onclick="dismissRecentlyPublishedStrip()" class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl transition-all cursor-pointer">
+                    Dismiss
+                </button>
+            </div>
+        </div>
+    `;
+    strip.classList.remove('hidden');
+
+    switchTab('home');
+
+    // Smooth scroll to top of the marketplace where the strip is
+    setTimeout(() => {
+        strip.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 200);
+
+    if (typeof showToast === 'function') {
+        showToast(`🎉 "${listing.book?.title || 'Your book'}" is now live at the top of the marketplace!`, 'success');
+    }
+}
+window.displayRecentlyPublishedBook = displayRecentlyPublishedBook;
+
+function dismissRecentlyPublishedStrip() {
+    const strip = document.getElementById('recently-published-strip');
+    if (strip) strip.classList.add('hidden');
+}
+window.dismissRecentlyPublishedStrip = dismissRecentlyPublishedStrip;
+
 function showInterstitialAd(ad) {
     const modal = document.getElementById('interstitial-ad-modal');
     if (!modal) {
-        alert("Book listed successfully!");
-        switchTab('home');
+        if (window.lastPublishedListing) {
+            displayRecentlyPublishedBook(window.lastPublishedListing);
+            window.lastPublishedListing = null;
+        } else {
+            alert("Book listed successfully!");
+            switchTab('home');
+        }
         return;
     }
 
@@ -3564,6 +3629,10 @@ function closeInterstitialAd() {
     const modal = document.getElementById('interstitial-ad-modal');
     if (modal) modal.classList.add('hidden');
     switchTab('home');
+    if (window.lastPublishedListing) {
+        displayRecentlyPublishedBook(window.lastPublishedListing);
+        window.lastPublishedListing = null;
+    }
 }
 window.closeInterstitialAd = closeInterstitialAd;
 
@@ -3733,7 +3802,7 @@ async function applyFilters(isImmediate = false) {
     const cond = document.getElementById('filter-condition')?.value || 'All';
     const board = document.getElementById('filter-board')?.value || 'All';
     const gradeClass = document.getElementById('filter-class')?.value || 'All';
-    const sort = document.getElementById('filter-sort')?.value || 'cheapest';
+    const sort = document.getElementById('filter-sort')?.value || 'newest';
 
     const hasFilter = Boolean(q || cat !== 'All' || (city !== 'All' && city !== 'all') || cond !== 'All' || board !== 'All' || gradeClass !== 'All');
 
@@ -3836,7 +3905,7 @@ function clearSearchAndFilters() {
     if (document.getElementById('filter-condition')) document.getElementById('filter-condition').value = 'All';
     if (document.getElementById('filter-board')) document.getElementById('filter-board').value = 'All';
     if (document.getElementById('filter-class')) document.getElementById('filter-class').value = 'All';
-    if (document.getElementById('filter-sort')) document.getElementById('filter-sort').value = 'cheapest';
+    if (document.getElementById('filter-sort')) document.getElementById('filter-sort').value = 'newest';
 
     const searchSection = document.getElementById('search-results-section');
     if (searchSection) {

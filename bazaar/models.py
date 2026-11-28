@@ -214,6 +214,8 @@ class ContactUnlock(models.Model):
         ('free_trial', 'Free Trial Unlock (Rs. 0)'),
         ('jazzcash', 'JazzCash Mobile Account'),
         ('easypaisa', 'Easypaisa Mobile Wallet'),
+        ('nayapay_sadapay', 'NayaPay / SadaPay'),
+        ('raast_bank', 'Raast / Bank Transfer'),
         ('card_safepay', 'Debit/Credit Card (Safepay / PayFast)'),
         ('wallet', 'BookLoop In-App Balance'),
     ]
@@ -268,6 +270,8 @@ class PaymentTransaction(models.Model):
         ('free_trial', 'Free Trial Unlock (Rs. 0)'),
         ('jazzcash', 'JazzCash'),
         ('easypaisa', 'Easypaisa'),
+        ('nayapay_sadapay', 'NayaPay / SadaPay'),
+        ('raast_bank', 'Raast / Bank Transfer'),
         ('card_safepay', 'Debit/Credit Card (Safepay / PayFast)'),
         ('wallet', 'In-App Wallet Balance'),
     ]

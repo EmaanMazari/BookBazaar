@@ -301,10 +301,10 @@
                         <div>
                             <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-wide mb-1.5">Sort By</label>
                             <select id="filter-sort" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-2 text-slate-800 text-xs font-semibold focus:border-blue-500 focus:bg-white focus:outline-none transition-colors">
+                                <option value="newest" selected>Newly Listed</option>
                                 <option value="cheapest">Price: Low to High</option>
                                 <option value="expensive">Price: High to Low</option>
                                 <option value="rating">Top Rated Sellers</option>
-                                <option value="newest">Newly Listed</option>
                             </select>
                         </div>
                     </div>
@@ -379,6 +379,30 @@
                         </div>
                     </div>
                     <div id="search-results-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                        <!-- Populated dynamically by JavaScript -->
+                    </div>
+                </section>
+
+                <!-- ============================================== -->
+                <!-- ✨ JUST PUBLISHED / RECENTLY SCANNED STRIP -->
+                <!-- ============================================== -->
+                <section id="recently-published-strip" class="hidden mb-8 scroll-mt-24 bg-gradient-to-r from-emerald-50 via-teal-50 to-blue-50 border-2 border-emerald-400/80 rounded-3xl p-4 sm:p-5 shadow-md relative overflow-hidden transition-all duration-300">
+                    <div class="flex items-center justify-between gap-3 mb-3.5 pb-2.5 border-b border-emerald-200">
+                        <div class="flex items-center gap-2">
+                            <span class="flex h-3 w-3 relative">
+                                <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                                <span class="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
+                            </span>
+                            <span class="bg-emerald-600 text-white font-black text-[10px] sm:text-xs uppercase tracking-wider px-2.5 py-0.5 rounded-full shadow-xs flex items-center gap-1">
+                                <i class="fa-solid fa-sparkles text-[10px]"></i> JUST PUBLISHED &bull; LIVE AT TOP
+                            </span>
+                            <span class="text-xs font-bold text-slate-700 hidden sm:inline" id="recently-published-strip-label">Your scanned book is now live at the very top of the marketplace!</span>
+                        </div>
+                        <button type="button" onclick="dismissRecentlyPublishedStrip()" class="text-slate-400 hover:text-slate-600 p-1 text-xs transition-colors cursor-pointer" title="Dismiss Strip">
+                            <i class="fa-solid fa-xmark text-sm"></i>
+                        </button>
+                    </div>
+                    <div id="recently-published-card-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                         <!-- Populated dynamically by JavaScript -->
                     </div>
                 </section>
@@ -1314,15 +1338,15 @@
                         <span class="w-3.5 h-3.5 rounded-full bg-emerald-600 text-white text-[8px] flex items-center justify-center font-black">E</span>
                         <span>Easypaisa</span>
                     </button>
-                    <button type="button" onclick="selectPaymentMethod('card_safepay')" data-method="card_safepay" 
+                    <button type="button" onclick="selectPaymentMethod('nayapay_sadapay')" data-method="nayapay_sadapay" 
                             class="pay-tab p-2 rounded-xl border border-slate-200 bg-white text-slate-600 text-xs font-bold flex items-center gap-1.5 transition-all">
-                        <i class="fa-solid fa-credit-card text-blue-600 text-xs"></i>
-                        <span>Debit/Card</span>
+                        <span class="w-3.5 h-3.5 rounded-full bg-orange-500 text-white text-[8px] flex items-center justify-center font-black">N</span>
+                        <span>NayaPay / SadaPay</span>
                     </button>
-                    <button type="button" onclick="selectPaymentMethod('wallet')" data-method="wallet" 
+                    <button type="button" onclick="selectPaymentMethod('raast_bank')" data-method="raast_bank" 
                             class="pay-tab p-2 rounded-xl border border-slate-200 bg-white text-slate-600 text-xs font-bold flex items-center gap-1.5 transition-all">
-                        <i class="fa-solid fa-wallet text-amber-500 text-xs"></i>
-                        <span>In-App Wallet</span>
+                        <span class="w-3.5 h-3.5 rounded-full bg-teal-600 text-white text-[8px] flex items-center justify-center font-black">R</span>
+                        <span>Raast / Bank</span>
                     </button>
                 </div>
 

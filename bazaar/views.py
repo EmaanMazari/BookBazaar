@@ -748,7 +748,7 @@ def get_listings(request):
     grade_class = request.GET.get('grade_class', '').strip()
     min_price = request.GET.get('min_price')
     max_price = request.GET.get('max_price')
-    sort_by = request.GET.get('sort', 'cheapest')
+    sort_by = request.GET.get('sort', '').strip().lower()
 
     listings = Listing.objects.filter(status='active').select_related('book', 'seller')
 
@@ -786,15 +786,15 @@ def get_listings(request):
         except Exception:
             pass
 
-    # Sorting
+    # Sorting: default is newest first (-created_at)
     if sort_by == 'cheapest':
-        listings = listings.order_by('-is_sponsored', 'price')
+        listings = listings.order_by('-is_sponsored', 'price', '-created_at')
     elif sort_by == 'expensive':
-        listings = listings.order_by('-is_sponsored', '-price')
+        listings = listings.order_by('-is_sponsored', '-price', '-created_at')
     elif sort_by == 'rating':
-        listings = listings.order_by('-is_sponsored', '-seller__rating')
+        listings = listings.order_by('-is_sponsored', '-seller__rating', '-created_at')
     else:
-        listings = listings.order_by('-is_sponsored', '-created_at')
+        listings = listings.order_by('-created_at')
 
     serializer = ListingSerializer(listings, many=True, context={'request': request})
     return Response(serializer.data)
@@ -1237,12 +1237,15 @@ def request_contact_unlock(request):
     if trial_status['is_free_trial'] or (payment_method or '').lower() in ['free_trial', 'free', 'trial'] or str(data.get('amount')) == '0':
         payment_method = 'free_trial'
 
+    transaction_id = data.get('transaction_id') or data.get('tid', '')
+
     try:
         unlock, is_new_charge, message = process_contact_unlock(
             listing=listing,
             buyer=buyer,
             payment_method=payment_method,
-            account_number=account_number
+            account_number=account_number,
+            transaction_id=transaction_id
         )
     except PaymentGatewayError as e:
         return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)

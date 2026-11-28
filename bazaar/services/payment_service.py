@@ -528,6 +528,12 @@ ADAPTERS = {
     'trial': FreeTrialPaymentAdapter,
     'jazzcash': JazzCashGatewayAdapter,
     'easypaisa': EasypaisaGatewayAdapter,
+    'nayapay_sadapay': SafepayGatewayAdapter,
+    'nayapay': SafepayGatewayAdapter,
+    'sadapay': SafepayGatewayAdapter,
+    'raast_bank': WalletPaymentAdapter,
+    'raast': WalletPaymentAdapter,
+    'bank': WalletPaymentAdapter,
     'card_safepay': SafepayGatewayAdapter,
     'wallet': WalletPaymentAdapter,
 }
@@ -813,7 +819,7 @@ def cancel_payment_transaction(transaction_id: str | uuid.UUID, reason: str = "U
         return payment_txn
 
 
-def process_contact_unlock(listing: Listing, buyer: UserProfile, payment_method: str = 'jazzcash', account_number: str = ''):
+def process_contact_unlock(listing: Listing, buyer: UserProfile, payment_method: str = 'jazzcash', account_number: str = '', transaction_id: str = ''):
     """
     Convenience orchestrator preserving backward compatibility with Phase 1 & 2 callers:
     1. Automatically applies 2 Free Trial Unlocks rule for buyer (Rs. 0 fee for first 2 unlocks).
@@ -835,6 +841,10 @@ def process_contact_unlock(listing: Listing, buyer: UserProfile, payment_method:
 
     if init_data.get('already_unlocked'):
         return init_data['unlock'], False, init_data['message']
+
+    if transaction_id:
+        payment_txn.gateway_ref = str(transaction_id)[:120]
+        payment_txn.save(update_fields=['gateway_ref'])
 
     # For Sandbox, Wallet, or Free Trial: execute server-side verification and unlock
     mode = getattr(settings, 'PAYMENT_GATEWAY_MODE', 'sandbox').lower()
