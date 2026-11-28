@@ -1891,6 +1891,91 @@
 </div>
 
 <!-- ============================================== -->
+<!-- MODAL: MANDATORY NON-DISMISSIBLE DEAL LOCK -->
+<!-- ============================================== -->
+<div id="mandatory-deal-lock-modal" class="fixed inset-0 bg-slate-950/90 backdrop-blur-md flex items-center justify-center p-3 sm:p-4 z-[200] hidden">
+    <div class="bg-white rounded-3xl max-w-lg w-full p-5 sm:p-6 shadow-2xl relative border-2 border-amber-400 overflow-hidden text-slate-800">
+        <!-- Header Lock Icon & Badge -->
+        <div class="text-center pb-2">
+            <div class="w-12 h-12 rounded-2xl bg-amber-500/15 border border-amber-400/40 text-amber-600 flex items-center justify-center text-xl mx-auto mb-2 shadow-xs">
+                <i class="fa-solid fa-lock"></i>
+            </div>
+            <div class="flex items-center justify-center mb-1.5">
+                <span id="deal-lock-progress-badge" class="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-amber-100 text-amber-900 border border-amber-300 uppercase tracking-wider">
+                    Action Required: Deal 1 of 1
+                </span>
+            </div>
+            <h3 class="font-black text-slate-900 text-base sm:text-lg text-center leading-snug">
+                🔒 Action Required: Confirm Your Pending Deal to Unlock Your Account
+            </h3>
+            <p class="text-xs text-slate-600 text-center mt-2 leading-relaxed">
+                Buyer <strong id="deal-lock-buyer-name" class="text-slate-900">Buyer</strong> unlocked your contact for <strong id="deal-lock-book-title" class="text-blue-900">Book</strong>. Jab tak aap <span class="font-bold text-emerald-700">Yes</span> ya <span class="font-bold text-rose-700">No (with reason)</span> select nahi karenge, aapka Seller Account locked rahega.
+            </p>
+        </div>
+
+        <!-- Book & Buyer Details Card -->
+        <div class="bg-slate-50 border border-slate-200 rounded-2xl p-3 my-3 flex items-center gap-3">
+            <img id="deal-lock-book-cover" src="https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=120" alt="Cover" class="w-12 h-16 object-cover rounded-xl border border-slate-200 bg-white shrink-0">
+            <div class="min-w-0 flex-1">
+                <h4 id="deal-lock-card-title" class="font-bold text-xs text-slate-900 truncate">Book Title</h4>
+                <div class="text-[11px] text-slate-500 mt-0.5">Price: <strong id="deal-lock-card-price" class="text-blue-700 font-extrabold">Rs. 0</strong></div>
+                <div class="text-[11px] text-slate-600 mt-0.5 flex flex-wrap items-center gap-x-2">
+                    <span id="deal-lock-card-buyer">Buyer: Student</span> • 
+                    <span id="deal-lock-card-phone" class="font-mono text-slate-500">0300-XXXXXXX</span>
+                </div>
+                <div id="deal-lock-card-time" class="text-[10px] text-slate-400 mt-0.5 font-mono">Unlocked recently</div>
+            </div>
+        </div>
+
+        <input type="hidden" id="deal-lock-current-unlock-id">
+
+        <!-- Two Mandatory Actions -->
+        <div id="deal-lock-main-actions" class="flex flex-col sm:flex-row gap-2.5">
+            <button type="button" onclick="handleSellerDealResponse('yes')" id="btn-deal-lock-yes" class="flex-1 py-3 px-4 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl font-black text-xs sm:text-sm flex items-center justify-center gap-2 shadow-md hover:shadow-lg transition-all active:scale-95 cursor-pointer">
+                <i class="fa-solid fa-check text-base"></i>
+                <span>✅ Yes — Deal Done</span>
+            </button>
+            <button type="button" onclick="showDealLockNoSection()" id="btn-deal-lock-no" class="flex-1 py-3 px-4 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-300 rounded-2xl font-black text-xs sm:text-sm flex items-center justify-center gap-2 transition-all active:scale-95 cursor-pointer">
+                <i class="fa-solid fa-xmark text-base"></i>
+                <span>❌ No — Deal Not Done</span>
+            </button>
+        </div>
+
+        <!-- Mandatory Reason Section (Revealed when No is clicked) -->
+        <div id="deal-lock-no-section" class="hidden space-y-2.5 pt-2">
+            <div class="flex items-center justify-between">
+                <label class="block text-xs font-extrabold text-rose-800">
+                    Mandatory Reason: Why was the deal not completed? *
+                </label>
+                <button type="button" onclick="hideDealLockNoSection()" class="text-[11px] text-slate-500 hover:text-slate-800 font-bold underline">
+                    Back to Yes/No
+                </button>
+            </div>
+            <!-- Quick Chips -->
+            <div class="flex flex-wrap gap-1.5" id="deal-lock-chips">
+                <button type="button" onclick="setDealLockReason('Buyer ne rabta nahi kiya')" class="px-2.5 py-1 bg-slate-100 hover:bg-rose-50 text-slate-700 hover:text-rose-700 border border-slate-200 hover:border-rose-300 rounded-lg text-[10px] font-bold transition-colors">
+                    Buyer ne rabta nahi kiya
+                </button>
+                <button type="button" onclick="setDealLockReason('Price par baat nahi bani')" class="px-2.5 py-1 bg-slate-100 hover:bg-rose-50 text-slate-700 hover:text-rose-700 border border-slate-200 hover:border-rose-300 rounded-lg text-[10px] font-bold transition-colors">
+                    Price par baat nahi bani
+                </button>
+                <button type="button" onclick="setDealLockReason('Buyer ne cancel kar diya')" class="px-2.5 py-1 bg-slate-100 hover:bg-rose-50 text-slate-700 hover:text-rose-700 border border-slate-200 hover:border-rose-300 rounded-lg text-[10px] font-bold transition-colors">
+                    Buyer ne cancel kar diya
+                </button>
+                <button type="button" onclick="setDealLockReason('Book pehle hi sale ho gayi')" class="px-2.5 py-1 bg-slate-100 hover:bg-rose-50 text-slate-700 hover:text-rose-700 border border-slate-200 hover:border-rose-300 rounded-lg text-[10px] font-bold transition-colors">
+                    Book pehle hi sale ho gayi
+                </button>
+            </div>
+            <textarea id="deal-lock-reason-input" rows="2" placeholder="Enter reason (or click a quick chip above)..." class="w-full text-xs p-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-rose-500 focus:outline-none"></textarea>
+            <button type="button" onclick="handleSellerDealResponse('no')" id="btn-deal-lock-submit-no" class="w-full py-2.5 bg-rose-600 hover:bg-rose-700 text-white rounded-xl font-black text-xs shadow-xs transition-all flex items-center justify-center gap-1.5 cursor-pointer">
+                <i class="fa-solid fa-paper-plane"></i>
+                <span>Submit Reason & Confirm Deal Not Done</span>
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- ============================================== -->
 <!-- MODAL: STARTUP LOGIN & AI READER PROFILE ONBOARDING -->
 <!-- ============================================== -->
 <div id="reader-onboarding-modal" onclick="if(event.target === this) closeReaderOnboardingModal(true);" class="fixed inset-0 bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-3 sm:p-4 z-[130] hidden">

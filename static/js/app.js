@@ -200,6 +200,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     switchTab('home');
     updateLanguageTexts();
 
+    // Check if logged-in seller has mandatory pending deals requiring confirmation
+    if (STATE.currentUser && typeof checkSellerPendingDeals === 'function') {
+        await checkSellerPendingDeals();
+    }
+
     // Automatically resume Sell action if user just signed up / signed in
     if (sessionStorage.getItem('bookzy_open_sell_after_reload')) {
         sessionStorage.removeItem('bookzy_open_sell_after_reload');
@@ -287,6 +292,9 @@ function renderUserSwitcher() {
             switchers.forEach(s => s.value = selectedId);
             await syncUserAuthToken(selectedId);
             updateUserUI();
+            if (typeof checkSellerPendingDeals === 'function') {
+                await checkSellerPendingDeals();
+            }
             if (typeof loadAiRecommendations === 'function') {
                 loadAiRecommendations();
             }
@@ -435,6 +443,16 @@ document.addEventListener('click', (e) => {
 // 2. Also Support Escape Key to Close Active Modals:
 // Pressing the Escape key on the keyboard should also close whichever modal is currently open.
 document.addEventListener('keydown', (e) => {
+    // Strictly NO Escape dismissal when Mandatory Deal Confirmation Lock is active
+    const lockModal = document.getElementById('mandatory-deal-lock-modal');
+    if (lockModal && !lockModal.classList.contains('hidden') && window.getComputedStyle(lockModal).display !== 'none') {
+        if (e.key === 'Escape' || e.key === 'Esc') {
+            e.preventDefault();
+            e.stopPropagation();
+            return;
+        }
+    }
+
     if (e.key === 'Escape' || e.key === 'Esc') {
         for (const def of MODAL_POPUP_DEFS) {
             const modalEl = document.getElementById(def.id);
@@ -518,11 +536,15 @@ window.openScanModal = openBarcodeScanner;
 window.closeScanModal = () => switchTab('home');
 
 // Open/activate Sell or Donate section
-function openSellSection() {
+async function openSellSection() {
     if (!STATE.currentUser) {
         window.openSellAfterAuth = true;
         openAuthModal('register', 'Sign in or create your free Student Seller account (Name, Contact & City) to list books and manage orders.');
         return;
+    }
+    if (typeof checkSellerPendingDeals === 'function') {
+        const isLocked = await checkSellerPendingDeals();
+        if (isLocked) return;
     }
     switchTab('sell');
 }
@@ -546,6 +568,14 @@ function switchTab(tabId) {
             openAuthModal('register', 'Sign in or create your free Student Seller account (Name, Contact & City) to list books and manage orders.');
         } else {
             openAuthModal('login');
+        }
+        return;
+    }
+
+    // Intercept seller navigation if Mandatory Deal Lock is active
+    if ((tabId === 'sell' || tabId === 'profile') && typeof DEAL_LOCK_STATE !== 'undefined' && DEAL_LOCK_STATE.isLocked) {
+        if (typeof displayMandatoryDealLockModal === 'function') {
+            displayMandatoryDealLockModal();
         }
         return;
     }
@@ -2803,7 +2833,11 @@ async function deleteListingAction(listingId) {
 }
 
 // Edit Listing Modal
-function openEditListingModal(listingId) {
+async function openEditListingModal(listingId) {
+    if (typeof checkSellerPendingDeals === 'function') {
+        const isLocked = await checkSellerPendingDeals();
+        if (isLocked) return;
+    }
     const listing = STATE.listings.find(l => l.id === listingId);
     if (!listing) return;
 
@@ -2845,6 +2879,16 @@ async function submitEditListing() {
             })
         });
         const data = await res.json();
+        if (res.status === 423 || data.locked) {
+            closeEditListingModal();
+            if (data.pending_deals && data.pending_deals.length > 0 && typeof displayMandatoryDealLockModal === 'function') {
+                displayMandatoryDealLockModal(data.pending_deals);
+            } else if (typeof checkSellerPendingDeals === 'function') {
+                await checkSellerPendingDeals();
+            }
+            alert(data.error || "Action Required: You have pending deals that require confirmation.");
+            return;
+        }
         alert(data.message);
         closeEditListingModal();
         loadMySellerListings();
@@ -3189,6 +3233,10 @@ async function openMyAccountModal() {
         openAuthModal('login');
         return;
     }
+    if (typeof checkSellerPendingDeals === 'function') {
+        const isLocked = await checkSellerPendingDeals();
+        if (isLocked) return;
+    }
     const modal = document.getElementById('my-account-modal');
     if (!modal) return;
     modal.classList.remove('hidden');
@@ -3230,6 +3278,16 @@ async function loadMyAccountData() {
         const res = await fetch('/api/seller/dashboard/', {
             headers: getAuthHeaders()
         });
+        if (res.status === 423) {
+            const lockedData = await res.json().catch(() => ({}));
+            closeMyAccountModal();
+            if (lockedData.pending_deals && lockedData.pending_deals.length > 0 && typeof displayMandatoryDealLockModal === 'function') {
+                displayMandatoryDealLockModal(lockedData.pending_deals);
+            } else if (typeof checkSellerPendingDeals === 'function') {
+                await checkSellerPendingDeals();
+            }
+            return;
+        }
         if (!res.ok) {
             console.warn("Failed to fetch seller dashboard data:", res.status);
             return;
@@ -3563,13 +3621,247 @@ function openListBookFromAccount() {
 }
 window.openListBookFromAccount = openListBookFromAccount;
 
+// =========================================================================
+// Mandatory Non-Dismissible Deal Confirmation Lock System
+// =========================================================================
+let DEAL_LOCK_STATE = {
+    isLocked: false,
+    pendingDeals: [],
+    currentIndex: 0
+};
+
+async function checkSellerPendingDeals() {
+    if (!STATE.currentUser) {
+        DEAL_LOCK_STATE.isLocked = false;
+        DEAL_LOCK_STATE.pendingDeals = [];
+        hideMandatoryDealLockModal();
+        return false;
+    }
+
+    try {
+        const res = await fetch('/api/seller/pending-deals/', {
+            headers: getAuthHeaders()
+        });
+        const data = await res.json().catch(() => ({}));
+        if ((res.status === 423 || data.locked) && data.pending_deals && data.pending_deals.length > 0) {
+            DEAL_LOCK_STATE.isLocked = true;
+            DEAL_LOCK_STATE.pendingDeals = data.pending_deals;
+            DEAL_LOCK_STATE.currentIndex = 0;
+            displayMandatoryDealLockModal();
+            return true;
+        } else {
+            DEAL_LOCK_STATE.isLocked = false;
+            DEAL_LOCK_STATE.pendingDeals = [];
+            hideMandatoryDealLockModal();
+            return false;
+        }
+    } catch (err) {
+        console.warn("Error checking seller pending deals:", err);
+        return false;
+    }
+}
+window.checkSellerPendingDeals = checkSellerPendingDeals;
+
+function displayMandatoryDealLockModal(deals) {
+    if (deals && Array.isArray(deals)) {
+        DEAL_LOCK_STATE.pendingDeals = deals;
+        DEAL_LOCK_STATE.isLocked = deals.length > 0;
+    }
+
+    if (!DEAL_LOCK_STATE.pendingDeals || DEAL_LOCK_STATE.pendingDeals.length === 0) {
+        hideMandatoryDealLockModal();
+        return;
+    }
+
+    // Close all other dismissible modals to keep focus on mandatory lock
+    if (typeof closeMyAccountModal === 'function') closeMyAccountModal();
+    if (typeof closeAuthModal === 'function') closeAuthModal();
+    if (typeof closeUnlockModal === 'function') closeUnlockModal();
+    if (typeof closeEditListingModal === 'function') closeEditListingModal();
+    if (typeof closeReviewModal === 'function') closeReviewModal();
+
+    if (DEAL_LOCK_STATE.currentIndex >= DEAL_LOCK_STATE.pendingDeals.length) {
+        DEAL_LOCK_STATE.currentIndex = 0;
+    }
+
+    const deal = DEAL_LOCK_STATE.pendingDeals[DEAL_LOCK_STATE.currentIndex];
+    if (!deal) {
+        hideMandatoryDealLockModal();
+        return;
+    }
+
+    const modal = document.getElementById('mandatory-deal-lock-modal');
+    if (!modal) return;
+
+    // Populate data into the modal card
+    const unlockIdInput = document.getElementById('deal-lock-current-unlock-id');
+    if (unlockIdInput) unlockIdInput.value = deal.unlock_id;
+
+    const badge = document.getElementById('deal-lock-progress-badge');
+    if (badge) {
+        badge.textContent = `Action Required: Deal ${DEAL_LOCK_STATE.currentIndex + 1} of ${DEAL_LOCK_STATE.pendingDeals.length}`;
+    }
+
+    const buyerName = document.getElementById('deal-lock-buyer-name');
+    if (buyerName) buyerName.textContent = deal.buyer_name || 'Buyer';
+
+    const bookTitle = document.getElementById('deal-lock-book-title');
+    if (bookTitle) bookTitle.textContent = deal.book_title || 'Book';
+
+    const cardTitle = document.getElementById('deal-lock-card-title');
+    if (cardTitle) cardTitle.textContent = deal.book_title || 'Book';
+
+    const cardPrice = document.getElementById('deal-lock-card-price');
+    if (cardPrice) {
+        cardPrice.textContent = deal.is_free ? 'FREE / Donation' : `Rs. ${deal.book_price || 0}`;
+    }
+
+    const cardBuyer = document.getElementById('deal-lock-card-buyer');
+    if (cardBuyer) {
+        cardBuyer.textContent = `Buyer: ${deal.buyer_name || 'Student'}${deal.buyer_city ? ' (' + deal.buyer_city + ')' : ''}`;
+    }
+
+    const cardPhone = document.getElementById('deal-lock-card-phone');
+    if (cardPhone) cardPhone.textContent = deal.buyer_phone || '';
+
+    const cardTime = document.getElementById('deal-lock-card-time');
+    if (cardTime) {
+        cardTime.textContent = deal.unlocked_at ? `Unlocked on ${deal.unlocked_at}` : 'Unlocked recently';
+    }
+
+    const coverImg = document.getElementById('deal-lock-book-cover');
+    if (coverImg) {
+        coverImg.src = deal.cover_image || 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=120';
+        coverImg.alt = deal.book_title || 'Cover';
+    }
+
+    // Reset Reason input and UI
+    hideDealLockNoSection();
+    const reasonInput = document.getElementById('deal-lock-reason-input');
+    if (reasonInput) reasonInput.value = '';
+
+    modal.classList.remove('hidden');
+    modal.style.display = 'flex';
+}
+window.displayMandatoryDealLockModal = displayMandatoryDealLockModal;
+
+function hideMandatoryDealLockModal() {
+    const modal = document.getElementById('mandatory-deal-lock-modal');
+    if (modal) {
+        modal.classList.add('hidden');
+        modal.style.display = 'none';
+    }
+    DEAL_LOCK_STATE.isLocked = false;
+}
+window.hideMandatoryDealLockModal = hideMandatoryDealLockModal;
+
+function showDealLockNoSection() {
+    const noSec = document.getElementById('deal-lock-no-section');
+    if (noSec) noSec.classList.remove('hidden');
+    const input = document.getElementById('deal-lock-reason-input');
+    if (input) input.focus();
+}
+window.showDealLockNoSection = showDealLockNoSection;
+
+function hideDealLockNoSection() {
+    const noSec = document.getElementById('deal-lock-no-section');
+    if (noSec) noSec.classList.add('hidden');
+}
+window.hideDealLockNoSection = hideDealLockNoSection;
+
+function setDealLockReason(reasonText) {
+    const input = document.getElementById('deal-lock-reason-input');
+    if (input) {
+        input.value = reasonText;
+        input.focus();
+    }
+}
+window.setDealLockReason = setDealLockReason;
+
+async function handleSellerDealResponse(responseType) {
+    const unlockId = document.getElementById('deal-lock-current-unlock-id')?.value;
+    if (!unlockId) {
+        alert("Invalid deal reference.");
+        return;
+    }
+
+    let reason = '';
+    if (responseType === 'no') {
+        const input = document.getElementById('deal-lock-reason-input');
+        reason = input?.value?.trim() || '';
+        if (!reason) {
+            alert("Mandatory Reason Required: Please select or enter why the deal was not completed before submitting.");
+            input?.focus();
+            return;
+        }
+    }
+
+    const btnYes = document.getElementById('btn-deal-lock-yes');
+    const btnNo = document.getElementById('btn-deal-lock-no');
+    const btnSubmitNo = document.getElementById('btn-deal-lock-submit-no');
+    if (btnYes) btnYes.disabled = true;
+    if (btnNo) btnNo.disabled = true;
+    if (btnSubmitNo) btnSubmitNo.disabled = true;
+
+    try {
+        const csrfToken = getCookie('csrftoken');
+        const headers = getAuthHeaders({ 'Content-Type': 'application/json' });
+        if (csrfToken) headers['X-CSRFToken'] = csrfToken;
+
+        const res = await fetch(`/api/seller/deals/${unlockId}/respond/`, {
+            method: 'POST',
+            headers: headers,
+            body: JSON.stringify({
+                response: responseType,
+                reason: reason
+            })
+        });
+
+        const data = await res.json().catch(() => ({}));
+
+        if (!res.ok) {
+            alert(data.error || "Failed to submit deal confirmation.");
+            return;
+        }
+
+        if (responseType === 'yes') {
+            showToast("Deal confirmed as COMPLETED! Book marked as Sold.");
+        } else {
+            showToast("Deal recorded as Not Done.");
+        }
+
+        if (!data.locked || data.remaining_count === 0) {
+            hideMandatoryDealLockModal();
+            showToast("🎉 All pending deals confirmed! Your seller account is now fully unlocked.");
+            if (typeof loadInitialData === 'function') loadInitialData();
+            if (typeof loadMySellerListings === 'function') loadMySellerListings();
+            if (typeof loadMyAccountData === 'function') loadMyAccountData();
+        } else {
+            // There are still more pending deals: refresh the list and show next
+            await checkSellerPendingDeals();
+        }
+    } catch (err) {
+        console.error("Error submitting deal response:", err);
+        alert("Network error submitting deal response. Please try again.");
+    } finally {
+        if (btnYes) btnYes.disabled = false;
+        if (btnNo) btnNo.disabled = false;
+        if (btnSubmitNo) btnSubmitNo.disabled = false;
+    }
+}
+window.handleSellerDealResponse = handleSellerDealResponse;
+
 // Selling Flow with Multipart Image Upload & Interstitial Ad
-function prefillSellForm(isbn) {
+async function prefillSellForm(isbn) {
     if (!STATE.currentUser) {
         window.openSellAfterAuth = true;
         window.pendingSellIsbn = isbn;
         openAuthModal('register', 'Sign in or create your free Student Seller account (Name, Contact & City) to list books and manage orders.');
         return;
+    }
+    if (typeof checkSellerPendingDeals === 'function') {
+        const isLocked = await checkSellerPendingDeals();
+        if (isLocked) return;
     }
     switchTab('sell');
     const input = document.getElementById('sell-isbn-input');
@@ -4013,6 +4305,15 @@ async function handleCreateListingSubmit(e) {
             loadMySellerListings();
             loadAiRecommendations();
         } else {
+            if (res.status === 423 || data.locked) {
+                if (data.pending_deals && data.pending_deals.length > 0 && typeof displayMandatoryDealLockModal === 'function') {
+                    displayMandatoryDealLockModal(data.pending_deals);
+                } else if (typeof checkSellerPendingDeals === 'function') {
+                    await checkSellerPendingDeals();
+                }
+                alert(data.error || "Action Required: You have pending deals that require confirmation before you can list new books.");
+                return;
+            }
             alert(data.error || "Failed to publish listing.");
         }
     } catch (err) {

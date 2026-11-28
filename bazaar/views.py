@@ -811,6 +811,51 @@ def get_listings(request):
     return Response(serializer.data)
 
 
+def get_pending_deals_for_seller(profile):
+    """
+    Returns list of pending ContactUnlock records for this seller that require mandatory response.
+    A deal is considered pending if the seller has not confirmed or rejected it yet.
+    """
+    if not profile:
+        return []
+    pending_qs = ContactUnlock.objects.filter(
+        seller=profile
+    ).filter(
+        Q(deal_status__in=['pending', 'unlocked_pending']) | Q(seller_confirmation='pending')
+    ).exclude(
+        seller_confirmation__in=['confirmed', 'rejected']
+    ).exclude(
+        deal_status__in=['deal_made', 'no_deal_refunded']
+    ).select_related('buyer', 'listing', 'listing__book').order_by('payment_timestamp')
+
+    deals_data = []
+    for unl in pending_qs:
+        buyer_name = unl.buyer.full_name if unl.buyer else 'Buyer'
+        buyer_phone = unl.buyer.phone_number if unl.buyer else ''
+        buyer_city = unl.buyer.city if unl.buyer else ''
+        book_title = unl.listing.book.title if (unl.listing and unl.listing.book) else 'Book'
+        book_price = float(unl.listing.price) if unl.listing else 0.0
+        is_free = unl.listing.is_free if unl.listing else False
+        cover_image = unl.listing.display_image_url if unl.listing else ''
+
+        deals_data.append({
+            'unlock_id': str(unl.unlock_id),
+            'listing_id': unl.listing.id if unl.listing else None,
+            'book_title': book_title,
+            'book_price': book_price,
+            'is_free': is_free,
+            'cover_image': cover_image,
+            'buyer_name': buyer_name,
+            'buyer_phone': buyer_phone,
+            'buyer_city': buyer_city,
+            'fee_amount': float(unl.fee_amount),
+            'unlocked_at': unl.payment_timestamp.strftime('%d %b %Y, %I:%M %p') if unl.payment_timestamp else '',
+            'deal_status': unl.deal_status,
+            'seller_confirmation': unl.seller_confirmation
+        })
+    return deals_data
+
+
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 @parser_classes([MultiPartParser, FormParser, JSONParser])
@@ -820,6 +865,7 @@ def create_listing(request):
     - Protected: Authenticated users only
     - Validates image file type, size (<= 5MB), and integrity with Pillow
     - Validates price (> 0) and required book details
+    - Enforces Mandatory Deal Lock Guard if seller has pending deals
     """
     data = request.data
     user = request.user
@@ -835,6 +881,17 @@ def create_listing(request):
 
     if seller.is_blocked:
         return Response({'error': 'Your seller account has been blocked by Admin.'}, status=status.HTTP_403_FORBIDDEN)
+
+    # Mandatory Non-Dismissible Deal Lock: Sellers cannot publish while deals are pending response
+    pending_deals = get_pending_deals_for_seller(seller)
+    if pending_deals:
+        return Response({
+            'locked': True,
+            'error': 'Action Required: You have pending book deal confirmations. Please confirm whether your pending deals were completed or cancelled before listing new books.',
+            'reason': 'pending_deal_confirmation',
+            'pending_deals': pending_deals,
+            'total_pending': len(pending_deals)
+        }, status=status.HTTP_423_LOCKED)
 
     raw_is_free = data.get('is_free') or data.get('is_donation')
     is_free = str(raw_is_free).lower() in ['true', '1', 'yes'] if raw_is_free is not None else False
@@ -1002,6 +1059,18 @@ def edit_listing(request, listing_id):
     # Enforce Owner-Only or Staff permission
     if not (request.user.is_staff or (listing.seller.user and listing.seller.user == request.user)):
         return Response({'error': 'Permission denied: You can only edit your own listings.'}, status=status.HTTP_403_FORBIDDEN)
+
+    # Mandatory Non-Dismissible Deal Lock: Sellers cannot edit listings while deals are pending response
+    if not request.user.is_staff:
+        pending_deals = get_pending_deals_for_seller(listing.seller)
+        if pending_deals:
+            return Response({
+                'locked': True,
+                'error': 'Action Required: You have pending book deal confirmations. Please confirm whether your pending deals were completed or cancelled before managing listings.',
+                'reason': 'pending_deal_confirmation',
+                'pending_deals': pending_deals,
+                'total_pending': len(pending_deals)
+            }, status=status.HTTP_423_LOCKED)
 
     data = request.data
     if 'is_free' in data:
@@ -2002,22 +2071,21 @@ def submit_seller_review(request):
     })
 
 
-@api_view(['GET'])
-@permission_classes([IsAuthenticated])
-def get_seller_dashboard(request):
-    """
-    Returns complete dashboard data for the authenticated seller/user:
-    - Profile header stats (rating, review count, wallet balance)
-    - 4 summary metrics (Listings, Unlocks Received, Deals Done/Pending, Wallet)
-    - Tab 1: My Listings (with unlocks count, mark sold, relist, delete)
-    - Tab 2: Contact Unlocks Received (buyers who unlocked seller's books)
-    - Tab 3: Deal History (deals as buyer & seller, refunds)
-    - Tab 4: Reviews & Ratings (received reviews with stars and comments)
-    """
-    user = request.user
+def _build_seller_dashboard_response(user, bypass_lock=False):
     profile = getattr(user, 'profile', None) or UserProfile.objects.filter(user=user).first()
     if not profile:
         return Response({'error': 'Profile not found.'}, status=status.HTTP_404_NOT_FOUND)
+
+    # Mandatory Non-Dismissible Deal Lock Guard: Sellers must confirm pending deals first
+    pending_deals = get_pending_deals_for_seller(profile)
+    if pending_deals and not bypass_lock:
+        return Response({
+            'locked': True,
+            'reason': 'pending_deal_confirmation',
+            'message': 'Action Required: Confirm your pending deal to unlock your account.',
+            'pending_deals': pending_deals,
+            'total_pending': len(pending_deals)
+        }, status=status.HTTP_423_LOCKED)
 
     # 1. My Listings
     my_listings = Listing.objects.filter(seller=profile).select_related('book').order_by('-created_at')
@@ -2138,6 +2206,153 @@ def get_seller_dashboard(request):
         'deal_history': deal_history_data,
         'reviews': reviews_data
     })
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_seller_dashboard(request):
+    """
+    GET /api/seller/dashboard/
+    Returns complete dashboard data for the authenticated seller/user:
+    - Profile header stats (rating, review count, wallet balance)
+    - 4 summary metrics (Listings, Unlocks Received, Deals Done/Pending, Wallet)
+    - Tab 1: My Listings (with unlocks count, mark sold, relist, delete)
+    - Tab 2: Contact Unlocks Received (buyers who unlocked seller's books)
+    - Tab 3: Deal History (deals as buyer & seller, refunds)
+    - Tab 4: Reviews & Ratings (received reviews with stars and comments)
+    - Mandatory Deal Lock Guard: returns HTTP 423 LOCKED if seller has pending deals
+    """
+    bypass_lock = bool(request.GET.get('bypass_lock'))
+    return _build_seller_dashboard_response(request.user, bypass_lock=bypass_lock)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_seller_profile_api(request):
+    """
+    GET /api/seller/profile/
+    Returns seller profile/dashboard with Mandatory Deal Lock guard.
+    """
+    bypass_lock = bool(request.GET.get('bypass_lock'))
+    return _build_seller_dashboard_response(request.user, bypass_lock=bypass_lock)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_seller_pending_deals(request):
+    """
+    GET /api/seller/pending-deals/
+    Fast check whether seller has mandatory deal confirmation lock active.
+    """
+    user = request.user
+    seller = getattr(user, 'profile', None) or UserProfile.objects.filter(user=user).first()
+    if not seller:
+        return Response({'locked': False, 'total_pending': 0, 'pending_deals': []})
+
+    pending_deals = get_pending_deals_for_seller(seller)
+    return Response({
+        'locked': len(pending_deals) > 0,
+        'total_pending': len(pending_deals),
+        'pending_deals': pending_deals
+    }, status=status.HTTP_200_OK)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def respond_to_seller_deal(request, unlock_id):
+    """
+    POST /api/seller/deals/<unlock_id>/respond/
+    Mandatory Seller Deal Confirmation Response:
+    - Yes (Deal Done): marks deal_status = 'deal_made', listing.status = 'sold', notifies Admin.
+    - No (Deal Not Done): requires mandatory non-empty reason, marks seller_confirmation = 'rejected',
+      saves cancellation_reason, notifies Admin with exact reason.
+    - Returns remaining pending deals count and locked status.
+    """
+    user = request.user
+    seller = getattr(user, 'profile', None) or UserProfile.objects.filter(user=user).first()
+    if not seller and not user.is_staff:
+        return Response({'error': 'Seller profile required.'}, status=status.HTTP_400_BAD_REQUEST)
+
+    try:
+        if isinstance(unlock_id, uuid.UUID):
+            unlock = ContactUnlock.objects.select_related('buyer', 'seller', 'listing', 'listing__book').get(unlock_id=unlock_id)
+        else:
+            unlock = ContactUnlock.objects.select_related('buyer', 'seller', 'listing', 'listing__book').get(Q(unlock_id=unlock_id) | Q(transaction_id=unlock_id))
+    except (ContactUnlock.DoesNotExist, ValueError):
+        return Response({'error': f'Unlock record #{unlock_id} not found.'}, status=status.HTTP_404_NOT_FOUND)
+
+    if not user.is_staff and unlock.seller != seller and (not unlock.seller.user or unlock.seller.user != user):
+        return Response({'error': 'Permission denied: You can only respond to deals for your own listings.'}, status=status.HTTP_403_FORBIDDEN)
+
+    data = request.data
+    raw_response = str(data.get('response') or data.get('action') or data.get('status') or '').strip().lower()
+    reason = str(data.get('reason', '')).strip()
+
+    buyer_name = unlock.buyer.full_name if unlock.buyer else 'Buyer'
+    book_title = unlock.listing.book.title if (unlock.listing and unlock.listing.book) else 'Book'
+
+    if raw_response in ['yes', 'deal_done', 'confirmed', 'done', 'true', '1']:
+        unlock.seller_confirmation = 'confirmed'
+        unlock.deal_status = 'deal_made'
+        unlock.resolved_at = timezone.now()
+        unlock.save()
+
+        listing = unlock.listing
+        if listing and listing.status != 'sold':
+            listing.status = 'sold'
+            listing.save()
+
+        try:
+            AdminNotification.objects.create(
+                notification_type='DEAL_SUCCESSFUL',
+                title="Deal Confirmed by Seller",
+                message=f"✅ Deal Done confirmed by seller {unlock.seller.full_name} with buyer {buyer_name} for '{book_title}' (Unlocked account).",
+                user=unlock.seller,
+                buyer=unlock.buyer,
+                seller=unlock.seller,
+                listing=unlock.listing,
+                unlock=unlock,
+                is_resolved=True
+            )
+        except Exception as e:
+            logger.warning(f"Failed to create admin notification for seller deal response: {e}")
+
+    elif raw_response in ['no', 'deal_not_done', 'rejected', 'not_done', 'false', '0']:
+        if not reason or len(reason) < 3:
+            return Response({'error': 'Mandatory reason required when reporting that deal was not done.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        unlock.seller_confirmation = 'rejected'
+        unlock.cancellation_reason = reason
+        unlock.deal_status = 'disputed'
+        unlock.save()
+
+        try:
+            AdminNotification.objects.create(
+                notification_type='DEAL_DISPUTED',
+                title="Deal Not Done Reported by Seller",
+                message=f"❌ Seller {unlock.seller.full_name} reported Deal Not Done for '{book_title}' with buyer {buyer_name}. Reason: '{reason}'",
+                user=unlock.seller,
+                buyer=unlock.buyer,
+                seller=unlock.seller,
+                listing=unlock.listing,
+                unlock=unlock,
+                is_resolved=False
+            )
+        except Exception as e:
+            logger.warning(f"Failed to create admin notification for deal rejected: {e}")
+    else:
+        return Response({'error': "Invalid response. Must be 'yes' (Deal Done) or 'no' (Deal Not Done with reason)."}, status=status.HTTP_400_BAD_REQUEST)
+
+    remaining_pending = get_pending_deals_for_seller(unlock.seller)
+    is_locked = len(remaining_pending) > 0
+
+    return Response({
+        'success': True,
+        'message': 'Deal confirmed and account unlocked!' if not is_locked else f'Response recorded. {len(remaining_pending)} pending deal(s) remaining.',
+        'locked': is_locked,
+        'remaining_count': len(remaining_pending),
+        'pending_deals': remaining_pending
+    }, status=status.HTTP_200_OK)
 
 
 @api_view(['GET'])
