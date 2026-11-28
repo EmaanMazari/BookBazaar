@@ -306,6 +306,17 @@ def register_user(request):
     token, _ = Token.objects.get_or_create(user=user)
     logger.info(f"User registered successfully: {username} ({phone_clean})")
 
+    # Trigger Admin Notification: New Seller Registered
+    try:
+        AdminNotification.objects.create(
+            notification_type='SELLER_REGISTERED',
+            title='New Seller Account Registered',
+            message=f"🆕 New Seller Account: {profile.full_name} ({profile.phone_number}, {profile.city}) registered.",
+            user=profile
+        )
+    except Exception as notif_err:
+        logger.warning(f"Failed to create admin notification for seller registration: {notif_err}")
+
     profile_data = UserProfileSerializer(profile, context={'request': request, 'is_owner': True}).data
     profile_data['phone'] = profile.phone_number
     profile_data['token'] = token.key
@@ -923,6 +934,20 @@ def create_listing(request):
 
     interstitial_ad = Advertisement.objects.filter(ad_type='interstitial', is_active=True).first()
     ad_data = AdvertisementSerializer(interstitial_ad).data if interstitial_ad else None
+
+    # Trigger Admin Notification: New Book Listed
+    try:
+        price_display = f"Rs. {int(price)}" if price > 0 else "Free / Donated"
+        AdminNotification.objects.create(
+            notification_type='BOOK_LISTED',
+            title='New Book Listed',
+            message=f"📚 {seller.full_name} listed '{book.title}' ({price_display}).",
+            user=seller,
+            seller=seller,
+            listing=listing
+        )
+    except Exception as notif_err:
+        logger.warning(f"Failed to create admin notification for book listing: {notif_err}")
 
     logger.info(f"Listing created: id={listing.id}, book='{book.title}', seller={seller.full_name}")
 
@@ -1831,12 +1856,17 @@ def request_deal_refund_api(request, unlock_id):
 @permission_classes([IsAuthenticated])
 def submit_seller_review(request):
     """
-    Submit rating & review for seller after confirmed deal:
-    - Protected: Buyer of that unlock or staff
-    - Validates rating (1 to 5)
+    Submit rating & review for seller after confirmed deal or contact unlock:
+    - Protected: Authenticated user who unlocked the book/contact or staff
+    - Accepts unlock_id OR (listing_id and/or seller_id)
+    - Validates rating (1 to 5) and comment
+    - Updates SellerReview, recalculates seller's average rating
+    - Logs AdminNotification: DEAL_SUCCESSFUL
     """
     data = request.data
     unlock_id = data.get('unlock_id')
+    listing_id = data.get('listing_id')
+    seller_id = data.get('seller_id')
     raw_rating = data.get('rating', 5)
     comment = str(data.get('comment', '')).strip()
 
@@ -1847,71 +1877,283 @@ def submit_seller_review(request):
     except Exception:
         return Response({'error': 'Invalid rating format.'}, status=status.HTTP_400_BAD_REQUEST)
 
-    unlock = get_object_or_404(ContactUnlock, unlock_id=unlock_id)
+    user = request.user
+    buyer = getattr(user, 'profile', None) or UserProfile.objects.filter(user=user).first()
+    if not buyer and not user.is_staff:
+        return Response({'error': 'User profile required.'}, status=status.HTTP_400_BAD_REQUEST)
 
-    # Enforce Buyer-only review permission
-    is_buyer = unlock.buyer.user and unlock.buyer.user == request.user
-    if not (request.user.is_staff or is_buyer):
-        return Response({'error': 'Permission denied: Only the buyer who unlocked this book can leave a review.'}, status=status.HTTP_403_FORBIDDEN)
+    unlock = None
+    listing = None
+    seller = None
 
-    if unlock.deal_status == 'no_deal_refunded':
-        return Response({'error': 'Cannot review a seller for a deal that has been refunded.'}, status=status.HTTP_400_BAD_REQUEST)
+    if unlock_id:
+        unlock = get_object_or_404(ContactUnlock, unlock_id=unlock_id)
+        listing = unlock.listing
+        seller = unlock.seller
+        is_buyer = unlock.buyer == buyer or (unlock.buyer.user and unlock.buyer.user == user)
+        if not (user.is_staff or is_buyer):
+            return Response({'error': 'Permission denied: Only the buyer who unlocked this book can leave a review.'}, status=status.HTTP_403_FORBIDDEN)
+        if unlock.deal_status == 'no_deal_refunded':
+            return Response({'error': 'Cannot review a seller for a deal that has been refunded.'}, status=status.HTTP_400_BAD_REQUEST)
+    elif listing_id:
+        listing = get_object_or_404(Listing, id=listing_id)
+        seller = listing.seller
+        if seller == buyer and not user.is_staff:
+            return Response({'error': 'You cannot rate your own listing.'}, status=status.HTTP_400_BAD_REQUEST)
+        unlock = ContactUnlock.objects.filter(listing=listing, buyer=buyer).order_by('-unlocked_at').first()
+        if not unlock and not user.is_staff:
+            return Response({'error': 'You must unlock contact details before submitting a review for this book.'}, status=status.HTTP_403_FORBIDDEN)
+    elif seller_id:
+        seller = get_object_or_404(UserProfile, id=seller_id)
+        if seller == buyer and not user.is_staff:
+            return Response({'error': 'You cannot rate your own profile.'}, status=status.HTTP_400_BAD_REQUEST)
+        unlock = ContactUnlock.objects.filter(seller=seller, buyer=buyer).order_by('-unlocked_at').first()
+        if unlock:
+            listing = unlock.listing
+        if not unlock and not user.is_staff:
+            return Response({'error': 'You must have an interaction or unlock with this seller to leave a review.'}, status=status.HTTP_403_FORBIDDEN)
+    else:
+        return Response({'error': 'Either unlock_id, listing_id, or seller_id is required.'}, status=status.HTTP_400_BAD_REQUEST)
 
     # Submitting the rating completes the deal if it was still pending
-    if unlock.deal_status != 'deal_made':
-        unlock.deal_status = 'deal_made'
-        unlock.buyer_confirmation = 'confirmed'
-        unlock.seller_confirmation = 'confirmed'
-        unlock.resolved_at = timezone.now()
-        unlock.save()
+    if unlock:
+        if unlock.deal_status != 'deal_made':
+            unlock.deal_status = 'deal_made'
+            unlock.buyer_confirmation = 'confirmed'
+            unlock.seller_confirmation = 'confirmed'
+            unlock.resolved_at = timezone.now()
+            unlock.save()
 
-        listing = unlock.listing
-        if listing and listing.status != 'sold':
-            listing.status = 'sold'
-            listing.save()
+    if listing and listing.status != 'sold':
+        listing.status = 'sold'
+        listing.save()
 
-        # Trigger Admin Notification: DEAL_SUCCESSFUL
-        try:
-            buyer_name = unlock.buyer.full_name or (unlock.buyer.user.username if unlock.buyer.user else "Buyer")
-            book_title = unlock.listing.book.title
-            AdminNotification.objects.create(
-                notification_type='DEAL_SUCCESSFUL',
-                title="Deal Completed & Seller Rated",
-                message=f"Deal Successful: '{book_title}' deal finalized. Fee of Rs. {unlock.fee_amount} retained by platform.",
-                user=unlock.buyer,
-                buyer=unlock.buyer,
-                seller=unlock.seller,
-                listing=unlock.listing,
-                unlock=unlock,
-                is_resolved=True
-            )
-        except Exception as notif_err:
-            logger.warning(f"Failed to create AdminNotification for deal confirmation: {notif_err}")
+    # Trigger Admin Notification: DEAL_SUCCESSFUL
+    try:
+        buyer_name = buyer.full_name if buyer else user.username
+        seller_name = seller.full_name if seller else "Seller"
+        stars_str = '★' * rating
+        comment_snippet = f" '{comment[:50]}'" if comment else ""
+        AdminNotification.objects.create(
+            notification_type='DEAL_SUCCESSFUL',
+            title="Deal Done & Seller Rated",
+            message=f"✅ Deal Done between {buyer_name} & {seller_name} ({stars_str}{comment_snippet})",
+            user=buyer,
+            buyer=buyer,
+            seller=seller,
+            listing=listing,
+            unlock=unlock,
+            is_resolved=True
+        )
+    except Exception as notif_err:
+        logger.warning(f"Failed to create AdminNotification for deal confirmation: {notif_err}")
 
-    review, created = SellerReview.objects.get_or_create(
-        unlock=unlock,
-        defaults={
-            'seller': unlock.seller,
-            'buyer': unlock.buyer,
-            'rating': rating,
-            'comment': comment
-        }
-    )
-    if not created:
-        review.rating = rating
-        review.comment = comment
-        review.save()
+    # Create or update review
+    review = None
+    if unlock:
+        review, created = SellerReview.objects.get_or_create(
+            unlock=unlock,
+            defaults={
+                'seller': seller,
+                'buyer': buyer or unlock.buyer,
+                'listing': listing,
+                'rating': rating,
+                'comment': comment
+            }
+        )
+        if not created:
+            review.rating = rating
+            review.comment = comment
+            if listing and not review.listing:
+                review.listing = listing
+            review.save()
+    elif listing:
+        review, created = SellerReview.objects.get_or_create(
+            listing=listing,
+            buyer=buyer,
+            defaults={
+                'seller': seller,
+                'rating': rating,
+                'comment': comment
+            }
+        )
+        if not created:
+            review.rating = rating
+            review.comment = comment
+            review.save()
+    else:
+        review = SellerReview.objects.create(
+            seller=seller,
+            buyer=buyer,
+            rating=rating,
+            comment=comment
+        )
 
-    unlock.seller.update_rating()
-    unlock.seller.refresh_from_db()
+    seller.update_rating()
+    seller.refresh_from_db()
 
     return Response({
         'success': True,
         'message': 'Deal closed! Thank you for rating the seller.',
         'review': SellerReviewSerializer(review).data,
-        'new_seller_rating': float(unlock.seller.rating),
-        'seller_rating': float(unlock.seller.rating),
-        'total_reviews': unlock.seller.total_reviews
+        'new_seller_rating': float(seller.rating),
+        'seller_rating': float(seller.rating),
+        'total_reviews': seller.total_reviews
+    })
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_seller_dashboard(request):
+    """
+    Returns complete dashboard data for the authenticated seller/user:
+    - Profile header stats (rating, review count, wallet balance)
+    - 4 summary metrics (Listings, Unlocks Received, Deals Done/Pending, Wallet)
+    - Tab 1: My Listings (with unlocks count, mark sold, relist, delete)
+    - Tab 2: Contact Unlocks Received (buyers who unlocked seller's books)
+    - Tab 3: Deal History (deals as buyer & seller, refunds)
+    - Tab 4: Reviews & Ratings (received reviews with stars and comments)
+    """
+    user = request.user
+    profile = getattr(user, 'profile', None) or UserProfile.objects.filter(user=user).first()
+    if not profile:
+        return Response({'error': 'Profile not found.'}, status=status.HTTP_404_NOT_FOUND)
+
+    # 1. My Listings
+    my_listings = Listing.objects.filter(seller=profile).select_related('book').order_by('-created_at')
+    listings_data = []
+    total_listings = my_listings.count()
+    active_listings = 0
+    sold_listings = 0
+
+    for lst in my_listings:
+        if lst.status == 'active':
+            active_listings += 1
+        elif lst.status == 'sold':
+            sold_listings += 1
+        unlocks_count = ContactUnlock.objects.filter(listing=lst).count()
+        listings_data.append({
+            'id': lst.id,
+            'title': lst.book.title if lst.book else 'Untitled Book',
+            'author': lst.book.author if lst.book else '',
+            'price': float(lst.price),
+            'is_free': lst.is_free,
+            'status': lst.status,
+            'cover_image': lst.display_image_url,
+            'created_at': lst.created_at.strftime('%d %b %Y') if lst.created_at else '',
+            'unlocks_count': unlocks_count,
+            'condition': lst.condition,
+            'city': lst.city
+        })
+
+    # 2. Contact Unlocks Received (where current user is the seller)
+    unlocks_received_qs = ContactUnlock.objects.filter(seller=profile).select_related('buyer', 'listing', 'listing__book').order_by('-payment_timestamp')
+    unlocks_received_data = []
+    deals_done_count = 0
+    deals_pending_count = 0
+
+    for unl in unlocks_received_qs:
+        if unl.deal_status == 'deal_made':
+            deals_done_count += 1
+        elif unl.deal_status in ['unlocked_pending', 'disputed']:
+            deals_pending_count += 1
+
+        buyer_name = unl.buyer.full_name if unl.buyer else 'Buyer'
+        buyer_phone = unl.buyer.phone_number if unl.buyer else ''
+        book_title = unl.listing.book.title if (unl.listing and unl.listing.book) else 'Book'
+
+        unlocks_received_data.append({
+            'unlock_id': str(unl.unlock_id),
+            'listing_id': unl.listing.id if unl.listing else None,
+            'book_title': book_title,
+            'buyer_name': buyer_name,
+            'buyer_phone': buyer_phone,
+            'buyer_city': unl.buyer.city if unl.buyer else '',
+            'fee_amount': float(unl.fee_amount),
+            'deal_status': unl.deal_status,
+            'status_display': unl.get_deal_status_display() if hasattr(unl, 'get_deal_status_display') else unl.deal_status,
+            'unlocked_at': unl.payment_timestamp.strftime('%d %b %Y, %I:%M %p') if unl.payment_timestamp else '',
+            'can_mark_done': unl.deal_status != 'deal_made' and unl.deal_status != 'no_deal_refunded'
+        })
+
+    # 3. Deal History (as buyer and seller)
+    buyer_unlocks_qs = ContactUnlock.objects.filter(buyer=profile).select_related('seller', 'listing', 'listing__book').order_by('-payment_timestamp')
+    deal_history_data = []
+    for unl in buyer_unlocks_qs:
+        deal_history_data.append({
+            'unlock_id': str(unl.unlock_id),
+            'role': 'Buyer',
+            'book_title': unl.listing.book.title if (unl.listing and unl.listing.book) else 'Book',
+            'other_party_name': unl.seller.full_name if unl.seller else 'Seller',
+            'other_party_phone': unl.seller.phone_number if unl.seller else '',
+            'deal_status': unl.deal_status,
+            'status_display': unl.get_deal_status_display() if hasattr(unl, 'get_deal_status_display') else unl.deal_status,
+            'fee_amount': float(unl.fee_amount),
+            'date': unl.payment_timestamp.strftime('%d %b %Y') if unl.payment_timestamp else ''
+        })
+    for unl in unlocks_received_qs:
+        deal_history_data.append({
+            'unlock_id': str(unl.unlock_id),
+            'role': 'Seller',
+            'book_title': unl.listing.book.title if (unl.listing and unl.listing.book) else 'Book',
+            'other_party_name': unl.buyer.full_name if unl.buyer else 'Buyer',
+            'other_party_phone': unl.buyer.phone_number if unl.buyer else '',
+            'deal_status': unl.deal_status,
+            'status_display': unl.get_deal_status_display() if hasattr(unl, 'get_deal_status_display') else unl.deal_status,
+            'fee_amount': float(unl.fee_amount),
+            'date': unl.payment_timestamp.strftime('%d %b %Y') if unl.payment_timestamp else ''
+        })
+
+    # 4. Ratings & Reviews Received
+    reviews_qs = SellerReview.objects.filter(seller=profile).select_related('buyer', 'listing', 'listing__book').order_by('-created_at')
+    reviews_data = SellerReviewSerializer(reviews_qs, many=True).data
+
+    profile_data = {
+        'id': profile.id,
+        'full_name': profile.full_name,
+        'phone_number': profile.phone_number,
+        'city': profile.city,
+        'campus_or_area': profile.campus_or_area,
+        'user_type': profile.user_type,
+        'wallet_balance': float(profile.wallet_balance),
+        'rating': float(profile.rating),
+        'total_reviews': profile.total_reviews
+    }
+
+    summary = {
+        'total_listings': total_listings,
+        'active_listings': active_listings,
+        'sold_listings': sold_listings,
+        'unlocks_received': unlocks_received_qs.count(),
+        'deals_done': deals_done_count,
+        'deals_pending': deals_pending_count,
+        'wallet_balance': float(profile.wallet_balance)
+    }
+
+    return Response({
+        'profile': profile_data,
+        'summary': summary,
+        'listings': listings_data,
+        'unlocks_received': unlocks_received_data,
+        'deal_history': deal_history_data,
+        'reviews': reviews_data
+    })
+
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def get_seller_reviews(request, seller_id):
+    """
+    Returns public reviews and ratings for a given seller.
+    """
+    seller = get_object_or_404(UserProfile, id=seller_id)
+    reviews = SellerReview.objects.filter(seller=seller).select_related('buyer', 'listing', 'listing__book').order_by('-created_at')
+    return Response({
+        'seller_id': seller.id,
+        'seller_name': seller.full_name,
+        'rating': float(seller.rating),
+        'total_reviews': seller.total_reviews,
+        'reviews': SellerReviewSerializer(reviews, many=True).data
     })
 
 
@@ -2255,9 +2497,12 @@ def get_admin_sellers(request):
             'campus_or_area': s.campus_or_area,
             'rating': float(s.rating),
             'total_reviews': s.total_reviews,
+            'books_listed': s.active_books + s.sold_books,
             'active_listings': s.active_books,
             'sold_listings': s.sold_books,
             'unlocks_received': s.total_unlocks,
+            'deals_done': s.unlocked_contacts_received.filter(deal_status='deal_made').count(),
+            'deals_pending': s.unlocked_contacts_received.filter(deal_status='unlocked_pending').count(),
             'is_blocked': s.is_blocked,
             'wallet_balance': float(s.wallet_balance),
             'created_at': s.created_at
@@ -2622,7 +2867,7 @@ def list_admin_notifications_api(request):
     """
     unread_count = AdminNotification.objects.filter(is_read=False).count()
     limit = int(request.GET.get('limit', 50))
-    notifications = AdminNotification.objects.select_related('user', 'listing', 'listing__book', 'unlock', 'transaction').all()[:limit]
+    notifications = AdminNotification.objects.select_related('user', 'buyer', 'seller', 'listing', 'listing__book', 'unlock', 'transaction').order_by('-created_at')[:limit]
 
     serializer = AdminNotificationSerializer(notifications, many=True)
     return Response({

@@ -14,6 +14,9 @@ class UserProfileSerializer(serializers.ModelSerializer):
     sold_listings_count = serializers.SerializerMethodField()
     unlocks_bought_count = serializers.SerializerMethodField()
     unlocks_received_count = serializers.SerializerMethodField()
+    books_listed_count = serializers.SerializerMethodField()
+    deals_done_count = serializers.SerializerMethodField()
+    deals_pending_count = serializers.SerializerMethodField()
     free_trial_remaining = serializers.SerializerMethodField()
     is_free_trial_eligible = serializers.SerializerMethodField()
     trial_unlocks_used = serializers.SerializerMethodField()
@@ -24,8 +27,9 @@ class UserProfileSerializer(serializers.ModelSerializer):
             'id', 'username', 'full_name', 'phone_number', 'city', 
             'campus_or_area', 'profile_picture_url', 'user_type', 'age_group', 'reading_interests', 'rating', 'total_reviews', 
             'wallet_balance', 'is_blocked', 'created_at',
-            'active_listings_count', 'sold_listings_count',
+            'active_listings_count', 'sold_listings_count', 'books_listed_count',
             'unlocks_bought_count', 'unlocks_received_count',
+            'deals_done_count', 'deals_pending_count',
             'free_trial_remaining', 'is_free_trial_eligible', 'trial_unlocks_used'
         ]
 
@@ -55,6 +59,15 @@ class UserProfileSerializer(serializers.ModelSerializer):
 
     def get_unlocks_received_count(self, obj):
         return obj.unlocked_contacts_received.count()
+
+    def get_books_listed_count(self, obj):
+        return obj.listings.count()
+
+    def get_deals_done_count(self, obj):
+        return obj.unlocked_contacts_received.filter(deal_status='deal_made').count()
+
+    def get_deals_pending_count(self, obj):
+        return obj.unlocked_contacts_received.filter(deal_status='unlocked_pending').count()
 
     def get_phone_number(self, obj):
         """
@@ -214,10 +227,24 @@ class ContactUnlockSerializer(serializers.ModelSerializer):
 class SellerReviewSerializer(serializers.ModelSerializer):
     buyer_name = serializers.CharField(source='buyer.full_name', read_only=True)
     seller_name = serializers.CharField(source='seller.full_name', read_only=True)
+    listing_title = serializers.SerializerMethodField()
+    formatted_date = serializers.SerializerMethodField()
 
     class Meta:
         model = SellerReview
-        fields = ['id', 'unlock', 'seller', 'seller_name', 'buyer', 'buyer_name', 'rating', 'comment', 'created_at']
+        fields = ['id', 'unlock', 'seller', 'seller_name', 'buyer', 'buyer_name', 'listing', 'listing_title', 'rating', 'comment', 'created_at', 'formatted_date']
+
+    def get_listing_title(self, obj):
+        if obj.listing and obj.listing.book:
+            return obj.listing.book.title
+        if obj.unlock and obj.unlock.listing and obj.unlock.listing.book:
+            return obj.unlock.listing.book.title
+        return 'Verified Book Listing'
+
+    def get_formatted_date(self, obj):
+        if obj.created_at:
+            return obj.created_at.strftime('%b %d, %Y')
+        return ''
 
 
 class AdvertisementSerializer(serializers.ModelSerializer):

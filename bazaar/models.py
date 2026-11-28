@@ -315,9 +315,10 @@ class PaymentTransaction(models.Model):
 
 
 class SellerReview(models.Model):
-    unlock = models.OneToOneField(ContactUnlock, on_delete=models.CASCADE, related_name='review', null=True, blank=True)
+    unlock = models.ForeignKey(ContactUnlock, on_delete=models.SET_NULL, related_name='reviews', null=True, blank=True)
     seller = models.ForeignKey(UserProfile, on_delete=models.CASCADE, related_name='received_reviews')
     buyer = models.ForeignKey(UserProfile, on_delete=models.CASCADE, related_name='given_reviews')
+    listing = models.ForeignKey(Listing, on_delete=models.SET_NULL, null=True, blank=True, related_name='reviews')
     rating = models.IntegerField(choices=[(1, '1'), (2, '2'), (3, '3'), (4, '4'), (5, '5')], default=5)
     comment = models.TextField(blank=True, default='')
     created_at = models.DateTimeField(auto_now_add=True)
@@ -414,9 +415,13 @@ class MarketplaceReport(models.Model):
 
 class AdminNotification(models.Model):
     NOTIFICATION_TYPES = [
+        ('SELLER_REGISTERED', 'New Seller Registered'),
+        ('BOOK_LISTED', 'New Book Listed'),
+        ('CONTACT_UNLOCKED', 'Contact Unlocked'),
         ('PAYMENT_RECEIVED', 'Payment Received'),
         ('PAYMENT_FAILED', 'Payment Failed'),
         ('DEAL_SUCCESSFUL', 'Deal Successful'),
+        ('DEAL_PENDING', 'Deal Pending'),
         ('DEAL_FAILED_REFUND_REQ', 'Deal Unsuccessful & Refund Request'),
         ('REFUND_PROCESSED', 'Refund Processed'),
         ('SYSTEM_ALERT', 'System Alert'),

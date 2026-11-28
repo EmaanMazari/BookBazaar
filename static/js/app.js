@@ -199,6 +199,18 @@ document.addEventListener('DOMContentLoaded', async () => {
     await loadAiRecommendations();
     switchTab('home');
     updateLanguageTexts();
+
+    // Automatically resume Sell action if user just signed up / signed in
+    if (sessionStorage.getItem('bookzy_open_sell_after_reload')) {
+        sessionStorage.removeItem('bookzy_open_sell_after_reload');
+        const pendingIsbn = sessionStorage.getItem('bookzy_pending_sell_isbn');
+        if (pendingIsbn) {
+            sessionStorage.removeItem('bookzy_pending_sell_isbn');
+            setTimeout(() => prefillSellForm(pendingIsbn), 300);
+        } else {
+            setTimeout(() => openSellSection(), 300);
+        }
+    }
 });
 
 // Load profiles, listings, ads, platform fee
@@ -292,16 +304,22 @@ function updateUserUI() {
     const topWallet = document.getElementById('top-user-wallet-display');
     const topBal = document.getElementById('top-user-balance');
     const topWalletPill = document.getElementById('top-wallet-pill');
+    const headerMyAccountBtn = document.getElementById('header-my-account-btn');
+    const mobileMyAccountBtn = document.getElementById('mobile-my-account-btn');
 
     if (!STATE.currentUser) {
         if (authBtnLabel) authBtnLabel.textContent = 'Sign In / Register';
         if (topWallet) topWallet.textContent = 'Rs. 0';
         if (topBal) topBal.textContent = 'Rs. 0';
         if (topWalletPill) topWalletPill.classList.add('hidden');
+        if (headerMyAccountBtn) headerMyAccountBtn.classList.add('hidden');
+        if (mobileMyAccountBtn) mobileMyAccountBtn.classList.add('hidden');
         return;
     }
 
     if (topWalletPill) topWalletPill.classList.remove('hidden');
+    if (headerMyAccountBtn) headerMyAccountBtn.classList.remove('hidden');
+    if (mobileMyAccountBtn) mobileMyAccountBtn.classList.remove('hidden');
 
     const nameEl = document.getElementById('current-user-name');
     const balEl = document.getElementById('current-user-balance');
@@ -387,6 +405,7 @@ document.addEventListener('click', (e) => {
 // Global Modal Backdrop Click (Outside) & Escape Key Handlers
 // =========================================================================
 const MODAL_POPUP_DEFS = [
+    { id: 'my-account-modal', close: () => (typeof closeMyAccountModal === 'function' ? closeMyAccountModal() : null) },
     { id: 'compliance-modal', close: () => (typeof closeComplianceModal === 'function' ? closeComplianceModal() : null) },
     { id: 'book-webcam-modal', close: () => (typeof closeBookWebcamModal === 'function' ? closeBookWebcamModal() : null) },
     { id: 'reader-onboarding-modal', close: () => (typeof closeReaderOnboardingModal === 'function' ? closeReaderOnboardingModal(true) : null) },
@@ -500,6 +519,11 @@ window.closeScanModal = () => switchTab('home');
 
 // Open/activate Sell or Donate section
 function openSellSection() {
+    if (!STATE.currentUser) {
+        window.openSellAfterAuth = true;
+        openAuthModal('register', 'Sign in or create your free Student Seller account (Name, Contact & City) to list books and manage orders.');
+        return;
+    }
     switchTab('sell');
 }
 window.openSellSection = openSellSection;
@@ -516,8 +540,13 @@ window.openDealsSection = openDealsSection;
 
 // Tab Switching (Centralized & Clean)
 function switchTab(tabId) {
-    if ((tabId === 'deals' || tabId === 'profile') && !STATE.currentUser) {
-        openAuthModal('login');
+    if ((tabId === 'sell' || tabId === 'deals' || tabId === 'profile') && !STATE.currentUser) {
+        if (tabId === 'sell') {
+            window.openSellAfterAuth = true;
+            openAuthModal('register', 'Sign in or create your free Student Seller account (Name, Contact & City) to list books and manage orders.');
+        } else {
+            openAuthModal('login');
+        }
         return;
     }
     // If navigating away from scanner and camera is active, turn it off
@@ -2044,6 +2073,13 @@ function openUnlockModal(listingId) {
     document.getElementById('modal-seller-name').textContent = listing.seller_name;
     document.getElementById('modal-seller-city').textContent = `${listing.city} (${listing.pickup_location || 'Campus / Pickup'})`;
 
+    const sellerRatingPill = document.getElementById('modal-seller-rating-pill');
+    if (sellerRatingPill) {
+        const ratingVal = listing.seller_rating || (listing.seller && listing.seller.rating) || 5.0;
+        const reviewsCount = listing.seller_total_reviews || (listing.seller && listing.seller.total_reviews) || 0;
+        sellerRatingPill.innerHTML = `★ ${parseFloat(ratingVal).toFixed(1)} <span class="font-normal text-[9px] text-amber-700">(${reviewsCount} reviews)</span>`;
+    }
+
     const pdfWrapper = document.getElementById('modal-pdf-download-wrapper');
     const pdfBtn = document.getElementById('modal-pdf-download-btn');
     if (pdfWrapper && pdfBtn) {
@@ -2819,12 +2855,26 @@ async function submitEditListing() {
 }
 
 // Real Auth Modal (Login & Register)
-function openAuthModal(mode = 'login') {
+function openAuthModal(mode = 'login', bannerText = '') {
     switchAuthTab(mode);
+    const banner = document.getElementById('auth-modal-banner');
+    const bannerTextEl = document.getElementById('auth-modal-banner-text');
+    if (banner && bannerTextEl) {
+        if (bannerText) {
+            bannerTextEl.textContent = bannerText;
+            banner.classList.remove('hidden');
+        } else {
+            banner.classList.add('hidden');
+        }
+    }
     document.getElementById('auth-modal').classList.remove('hidden');
 }
 
 function closeAuthModal() {
+    const banner = document.getElementById('auth-modal-banner');
+    if (banner) banner.classList.add('hidden');
+    window.openSellAfterAuth = false;
+    window.pendingSellIsbn = null;
     document.getElementById('auth-modal').classList.add('hidden');
 }
 window.closeAuthModal = closeAuthModal;
@@ -2904,6 +2954,12 @@ async function handleAuthLogin(e) {
             if (userId) {
                 localStorage.setItem('bb_user_id', userId);
             }
+            if (window.openSellAfterAuth) {
+                sessionStorage.setItem('bookzy_open_sell_after_reload', 'true');
+                if (window.pendingSellIsbn) {
+                    sessionStorage.setItem('bookzy_pending_sell_isbn', window.pendingSellIsbn);
+                }
+            }
             alert(`Welcome back, ${data.profile?.full_name || 'Reader'}!`);
             closeAuthModal();
             location.reload();
@@ -2978,6 +3034,12 @@ async function handleAuthRegister(e) {
             if (userId) {
                 localStorage.setItem('bb_user_id', userId);
             }
+            if (window.openSellAfterAuth) {
+                sessionStorage.setItem('bookzy_open_sell_after_reload', 'true');
+                if (window.pendingSellIsbn) {
+                    sessionStorage.setItem('bookzy_pending_sell_isbn', window.pendingSellIsbn);
+                }
+            }
             alert(data.message || "Registration successful! Welcome to Bookzy AI.");
             closeAuthModal();
             location.reload();
@@ -3022,11 +3084,15 @@ function setRatingValue(val) {
 }
 window.setRatingValue = setRatingValue;
 
-function openReviewModal(unlockId, sellerName) {
+function openReviewModal(unlockId, sellerName, listingId = null, sellerId = null) {
     const modal = document.getElementById('review-modal');
     if (!modal) return;
     const unlockInput = document.getElementById('review-unlock-id');
-    if (unlockInput) unlockInput.value = unlockId;
+    if (unlockInput) unlockInput.value = unlockId || '';
+    const listingInput = document.getElementById('review-listing-id');
+    if (listingInput) listingInput.value = listingId || '';
+    const sellerInput = document.getElementById('review-seller-id');
+    if (sellerInput) sellerInput.value = sellerId || '';
     const sellerEl = document.getElementById('review-seller-name');
     if (sellerEl) sellerEl.textContent = sellerName || 'Seller';
     const commentEl = document.getElementById('review-comment-input');
@@ -3044,11 +3110,13 @@ window.closeReviewModal = closeReviewModal;
 
 async function submitReview() {
     const unlockId = document.getElementById('review-unlock-id')?.value;
+    const listingId = document.getElementById('review-listing-id')?.value;
+    const sellerId = document.getElementById('review-seller-id')?.value;
     const rating = document.getElementById('review-rating-select')?.value || 5;
     const comment = document.getElementById('review-comment-input')?.value || '';
 
-    if (!unlockId) {
-        alert("Unlock reference is missing.");
+    if (!unlockId && !listingId && !sellerId) {
+        alert("Review target reference is missing.");
         return;
     }
 
@@ -3059,10 +3127,15 @@ async function submitReview() {
     }
 
     try {
+        const payload = { rating: rating, comment: comment };
+        if (unlockId) payload.unlock_id = unlockId;
+        if (listingId) payload.listing_id = listingId;
+        if (sellerId) payload.seller_id = sellerId;
+
         const res = await fetch('/api/reviews/create/', {
             method: 'POST',
             headers: getAuthHeaders({ 'Content-Type': 'application/json' }),
-            body: JSON.stringify({ unlock_id: unlockId, rating: rating, comment: comment })
+            body: JSON.stringify(payload)
         });
         const data = await res.json();
         if (res.ok) {
@@ -3071,6 +3144,7 @@ async function submitReview() {
             if (typeof loadUserDeals === 'function') loadUserDeals();
             if (typeof loadInitialData === 'function') loadInitialData();
             if (typeof loadMySellerListings === 'function') loadMySellerListings();
+            if (typeof loadMyAccountData === 'function') loadMyAccountData();
         } else {
             alert(data.error || "Error submitting review.");
         }
@@ -3086,8 +3160,417 @@ async function submitReview() {
 }
 window.submitReview = submitReview;
 
+// Helper: safe HTML escaping for client-side rendering
+function escapeHtml(str) {
+    if (!str) return '';
+    return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+}
+window.escapeHtml = escapeHtml;
+
+// =========================================================================
+// MY ACCOUNT & SELLER DASHBOARD CONTROLLER
+// =========================================================================
+let MY_ACCOUNT_CACHE = {
+    profile: null,
+    summary: null,
+    listings: [],
+    unlocks_received: [],
+    deal_history: [],
+    reviews: []
+};
+
+async function openMyAccountModal() {
+    if (!STATE.currentUser) {
+        openAuthModal('login');
+        return;
+    }
+    const modal = document.getElementById('my-account-modal');
+    if (!modal) return;
+    modal.classList.remove('hidden');
+    switchAccountTab('listings');
+    await loadMyAccountData();
+}
+window.openMyAccountModal = openMyAccountModal;
+
+function closeMyAccountModal() {
+    const modal = document.getElementById('my-account-modal');
+    if (modal) modal.classList.add('hidden');
+}
+window.closeMyAccountModal = closeMyAccountModal;
+
+function switchAccountTab(tabKey) {
+    const tabs = ['listings', 'unlocks', 'history', 'reviews'];
+    tabs.forEach(t => {
+        const btn = document.getElementById(`account-tab-${t}`);
+        const panel = document.getElementById(`account-panel-${t}`);
+        if (t === tabKey) {
+            if (btn) {
+                btn.classList.add('text-blue-700', 'border-b-2', 'border-blue-700');
+                btn.classList.remove('text-slate-500', 'border-transparent');
+            }
+            if (panel) panel.classList.remove('hidden');
+        } else {
+            if (btn) {
+                btn.classList.remove('text-blue-700', 'border-b-2', 'border-blue-700');
+                btn.classList.add('text-slate-500', 'border-transparent');
+            }
+            if (panel) panel.classList.add('hidden');
+        }
+    });
+}
+window.switchAccountTab = switchAccountTab;
+
+async function loadMyAccountData() {
+    try {
+        const res = await fetch('/api/seller/dashboard/', {
+            headers: getAuthHeaders()
+        });
+        if (!res.ok) {
+            console.warn("Failed to fetch seller dashboard data:", res.status);
+            return;
+        }
+        const data = await res.json();
+        MY_ACCOUNT_CACHE = data;
+        renderMyAccountUI(data);
+    } catch (err) {
+        console.error("Error loading My Account data:", err);
+    }
+}
+window.loadMyAccountData = loadMyAccountData;
+
+function renderMyAccountUI(data) {
+    const prof = data.profile || {};
+    const sum = data.summary || {};
+
+    // Header Profile
+    const nameEl = document.getElementById('account-profile-name');
+    const phoneEl = document.getElementById('account-profile-phone');
+    const cityEl = document.getElementById('account-profile-city');
+    const scoreEl = document.getElementById('account-rating-score');
+    const reviewsEl = document.getElementById('account-reviews-count');
+
+    if (nameEl) nameEl.textContent = prof.full_name || 'Seller';
+    if (phoneEl) phoneEl.innerHTML = `<i class="fa-solid fa-phone text-[10px]"></i> ${prof.phone_number || ''}`;
+    if (cityEl) cityEl.innerHTML = `<i class="fa-solid fa-location-dot text-[10px]"></i> ${prof.city || 'Islamabad'}${prof.campus_or_area ? ' (' + prof.campus_or_area + ')' : ''}`;
+    if (scoreEl) scoreEl.textContent = (prof.rating || 5.0).toFixed(1);
+    if (reviewsEl) reviewsEl.textContent = `(${prof.total_reviews || 0} reviews)`;
+
+    // 4 Quick Stats
+    const statListings = document.getElementById('account-stat-listings');
+    const statUnlocks = document.getElementById('account-stat-unlocks');
+    const statDeals = document.getElementById('account-stat-deals');
+    const statWallet = document.getElementById('account-stat-wallet');
+
+    if (statListings) statListings.textContent = `${sum.active_listings || 0} Active / ${sum.total_listings || 0} Total`;
+    if (statUnlocks) statUnlocks.textContent = `${sum.unlocks_received || 0} Buyers Unlocked`;
+    if (statDeals) statDeals.textContent = `${sum.deals_done || 0} Done / ${sum.deals_pending || 0} Pending`;
+    if (statWallet) statWallet.textContent = `Rs. ${(prof.wallet_balance || 0).toFixed(0)}`;
+
+    // Badges on tabs
+    const badgeListings = document.getElementById('account-badge-listings');
+    const badgeUnlocks = document.getElementById('account-badge-unlocks');
+    const badgeReviews = document.getElementById('account-badge-reviews');
+
+    if (badgeListings) badgeListings.textContent = (data.listings || []).length;
+    if (badgeUnlocks) badgeUnlocks.textContent = (data.unlocks_received || []).length;
+    if (badgeReviews) badgeReviews.textContent = (data.reviews || []).length;
+
+    // Render Panels
+    renderAccountListings(data.listings || []);
+    renderAccountUnlocks(data.unlocks_received || []);
+    renderAccountHistory(data.deal_history || []);
+    renderAccountReviews(data.reviews || [], prof);
+}
+
+function renderAccountListings(listings) {
+    const container = document.getElementById('account-listings-container');
+    const empty = document.getElementById('account-listings-empty');
+    if (!container) return;
+
+    if (!listings.length) {
+        container.innerHTML = '';
+        if (empty) empty.classList.remove('hidden');
+        return;
+    }
+    if (empty) empty.classList.add('hidden');
+
+    container.innerHTML = listings.map(l => {
+        const isSold = l.status === 'sold';
+        const statusBadge = isSold 
+            ? `<span class="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-slate-200 text-slate-700">SOLD</span>`
+            : `<span class="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-emerald-100 text-emerald-800">ACTIVE</span>`;
+        const priceDisplay = l.is_free ? 'Free / Donation' : `Rs. ${parseInt(l.price)}`;
+
+        const soldBtn = !isSold 
+            ? `<button onclick="markListingSoldFromAccount(${l.id})" class="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold transition-all flex items-center gap-1 shadow-2xs">
+                    <i class="fa-solid fa-check"></i> <span>Mark Sold</span>
+               </button>`
+            : `<button onclick="relistListingFromAccount(${l.id})" class="px-2.5 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-bold transition-all flex items-center gap-1 shadow-2xs">
+                    <i class="fa-solid fa-rotate-left"></i> <span>Relist</span>
+               </button>`;
+
+        return `
+            <div class="bg-white rounded-2xl p-3 border border-slate-200/80 shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:border-blue-300 transition-all">
+                <div class="flex items-center gap-3 min-w-0">
+                    <img src="${l.cover_image || 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=120'}" 
+                         alt="${escapeHtml(l.title)}" 
+                         class="w-12 h-16 object-cover rounded-xl border border-slate-200 shrink-0 bg-slate-100">
+                    <div class="min-w-0">
+                        <div class="flex items-center gap-2">
+                            <h4 class="font-bold text-xs text-slate-900 truncate">${escapeHtml(l.title)}</h4>
+                            ${statusBadge}
+                        </div>
+                        <div class="text-[11px] text-slate-500 truncate">${escapeHtml(l.author)} • ${l.condition || 'Good'} • ${l.city || ''}</div>
+                        <div class="flex items-center gap-3 text-xs mt-1">
+                            <span class="font-extrabold text-blue-700">${priceDisplay}</span>
+                            <span class="text-[11px] text-slate-500 font-medium">
+                                <i class="fa-solid fa-unlock-keyhole text-blue-500 text-[10px]"></i> ${l.unlocks_count || 0} unlocks
+                            </span>
+                            <span class="text-[10px] text-slate-400 font-mono">${l.created_at || ''}</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="flex items-center gap-2 shrink-0 self-end sm:self-center">
+                    ${soldBtn}
+                    <button onclick="deleteListingFromAccount(${l.id})" class="px-2 py-1 text-rose-600 hover:bg-rose-50 rounded-lg text-xs font-bold transition-all" title="Delete listing">
+                        <i class="fa-solid fa-trash-can"></i>
+                    </button>
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+function renderAccountUnlocks(unlocks) {
+    const container = document.getElementById('account-unlocks-container');
+    const empty = document.getElementById('account-unlocks-empty');
+    if (!container) return;
+
+    if (!unlocks.length) {
+        container.innerHTML = '';
+        if (empty) empty.classList.remove('hidden');
+        return;
+    }
+    if (empty) empty.classList.add('hidden');
+
+    container.innerHTML = unlocks.map(u => {
+        let statusBadge = '';
+        if (u.deal_status === 'deal_made') {
+            statusBadge = `<span class="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-emerald-100 text-emerald-800">DEAL DONE</span>`;
+        } else if (u.deal_status === 'disputed') {
+            statusBadge = `<span class="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-rose-100 text-rose-800">DISPUTED / REFUND REQ</span>`;
+        } else if (u.deal_status === 'no_deal_refunded') {
+            statusBadge = `<span class="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-slate-200 text-slate-700">REFUNDED</span>`;
+        } else {
+            statusBadge = `<span class="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-amber-100 text-amber-800">PENDING DEAL</span>`;
+        }
+
+        const markDoneBtn = u.can_mark_done
+            ? `<button onclick="markDealDoneFromAccount('${u.unlock_id}', '${escapeHtml(u.buyer_name)}')" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition-all shadow-2xs flex items-center gap-1.5 shrink-0">
+                    <i class="fa-solid fa-check"></i> <span>Mark Deal Done</span>
+               </button>`
+            : '';
+
+        const cleanPhone = (u.buyer_phone || '').replace(/[^0-9]/g, '');
+        const waLink = cleanPhone ? `https://wa.me/92${cleanPhone.replace(/^0+/, '')}` : '#';
+
+        return `
+            <div class="bg-white rounded-2xl p-3.5 border border-slate-200/80 shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div class="min-w-0">
+                    <div class="flex items-center gap-2">
+                        <span class="font-extrabold text-xs text-slate-900">${escapeHtml(u.buyer_name)}</span>
+                        ${statusBadge}
+                    </div>
+                    <div class="text-xs text-slate-600 mt-0.5">
+                        Requested: <strong class="text-slate-800">${escapeHtml(u.book_title)}</strong>
+                    </div>
+                    <div class="flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-slate-500 mt-1">
+                        <span class="font-mono text-slate-700"><i class="fa-solid fa-phone text-[9px] text-slate-400"></i> ${u.buyer_phone}</span>
+                        ${u.buyer_city ? `<span><i class="fa-solid fa-location-dot text-[9px] text-slate-400"></i> ${escapeHtml(u.buyer_city)}</span>` : ''}
+                        <span class="text-slate-400">${u.unlocked_at}</span>
+                    </div>
+                </div>
+                <div class="flex items-center gap-2 shrink-0 self-end sm:self-center">
+                    ${cleanPhone ? `
+                    <a href="${waLink}" target="_blank" class="px-3 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-300 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-colors">
+                        <i class="fa-brands fa-whatsapp text-emerald-600"></i> <span>Chat</span>
+                    </a>` : ''}
+                    ${markDoneBtn}
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+function renderAccountHistory(history) {
+    const container = document.getElementById('account-history-container');
+    const empty = document.getElementById('account-history-empty');
+    if (!container) return;
+
+    if (!history.length) {
+        container.innerHTML = '';
+        if (empty) empty.classList.remove('hidden');
+        return;
+    }
+    if (empty) empty.classList.add('hidden');
+
+    container.innerHTML = history.map(h => {
+        const isBuyer = h.role === 'Buyer';
+        const roleBadge = isBuyer 
+            ? `<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-100 text-blue-800">You as Buyer</span>`
+            : `<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-purple-100 text-purple-800">You as Seller</span>`;
+
+        let statusText = h.deal_status === 'deal_made' ? 'Completed' : (h.deal_status === 'no_deal_refunded' ? 'Refunded' : 'Pending');
+
+        return `
+            <div class="bg-white rounded-2xl p-3 border border-slate-200/80 shadow-2xs flex items-center justify-between text-xs">
+                <div class="min-w-0">
+                    <div class="flex items-center gap-2">
+                        <span class="font-bold text-slate-900 truncate">${escapeHtml(h.book_title)}</span>
+                        ${roleBadge}
+                    </div>
+                    <div class="text-[11px] text-slate-500 mt-0.5">
+                        With: ${escapeHtml(h.other_party_name)} (${h.other_party_phone}) • ${h.date}
+                    </div>
+                </div>
+                <div class="text-right shrink-0">
+                    <span class="font-extrabold ${statusText === 'Completed' ? 'text-emerald-700' : 'text-slate-600'}">${statusText}</span>
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+function renderAccountReviews(reviews, prof) {
+    const container = document.getElementById('account-reviews-container');
+    const empty = document.getElementById('account-reviews-empty');
+    const summaryScore = document.getElementById('account-reviews-summary-score');
+    const summaryStars = document.getElementById('account-reviews-summary-stars');
+    const summaryCount = document.getElementById('account-reviews-summary-count');
+
+    if (summaryScore) summaryScore.textContent = (prof.rating || 5.0).toFixed(1);
+    if (summaryStars) {
+        const rounded = Math.round(prof.rating || 5);
+        summaryStars.textContent = '★'.repeat(rounded) + '☆'.repeat(5 - rounded);
+    }
+    if (summaryCount) summaryCount.textContent = `Based on ${reviews.length} verified student reviews`;
+
+    if (!container) return;
+
+    if (!reviews.length) {
+        container.innerHTML = '';
+        if (empty) empty.classList.remove('hidden');
+        return;
+    }
+    if (empty) empty.classList.add('hidden');
+
+    container.innerHTML = reviews.map(r => {
+        const stars = '★'.repeat(r.rating || 5) + '☆'.repeat(5 - (r.rating || 5));
+        return `
+            <div class="bg-white rounded-2xl p-3.5 border border-slate-200/80 shadow-2xs space-y-1.5">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-2">
+                        <span class="font-bold text-xs text-slate-900">${escapeHtml(r.buyer_name || 'Student')}</span>
+                        <span class="text-amber-500 font-bold text-xs tracking-wider">${stars}</span>
+                    </div>
+                    <span class="text-[10px] text-slate-400 font-mono">${r.formatted_date || ''}</span>
+                </div>
+                ${r.listing_title ? `<div class="text-[11px] text-blue-700 font-medium">Book: ${escapeHtml(r.listing_title)}</div>` : ''}
+                ${r.comment ? `<p class="text-xs text-slate-700 bg-slate-50 p-2 rounded-xl border border-slate-100 italic">"${escapeHtml(r.comment)}"</p>` : `<p class="text-[11px] text-slate-400 italic">No written comment provided.</p>`}
+            </div>
+        `;
+    }).join('');
+}
+
+async function markListingSoldFromAccount(listingId) {
+    if (!confirm("Are you sure you want to mark this book as SOLD? This will close any pending deals and stop buyer notifications.")) return;
+    try {
+        const res = await fetch(`/api/listings/${listingId}/mark-sold/`, {
+            method: 'POST',
+            headers: getAuthHeaders({ 'Content-Type': 'application/json' })
+        });
+        if (res.ok) {
+            showToast("Listing marked as SOLD successfully.");
+            await loadMyAccountData();
+            if (typeof loadInitialData === 'function') loadInitialData();
+            if (typeof loadMySellerListings === 'function') loadMySellerListings();
+        } else {
+            const data = await res.json().catch(() => ({}));
+            alert(data.error || "Failed to mark as sold.");
+        }
+    } catch (err) {
+        console.error("Error marking sold:", err);
+    }
+}
+window.markListingSoldFromAccount = markListingSoldFromAccount;
+
+async function relistListingFromAccount(listingId) {
+    try {
+        const res = await fetch(`/api/listings/${listingId}/toggle_status/`, {
+            method: 'POST',
+            headers: getAuthHeaders({ 'Content-Type': 'application/json' })
+        });
+        if (res.ok) {
+            showToast("Book relisted as ACTIVE!");
+            await loadMyAccountData();
+            if (typeof loadInitialData === 'function') loadInitialData();
+            if (typeof loadMySellerListings === 'function') loadMySellerListings();
+        } else {
+            const data = await res.json().catch(() => ({}));
+            alert(data.error || "Failed to relist book.");
+        }
+    } catch (err) {
+        console.error("Error relisting book:", err);
+    }
+}
+window.relistListingFromAccount = relistListingFromAccount;
+
+async function deleteListingFromAccount(listingId) {
+    if (!confirm("Are you sure you want to delete this listing? This action cannot be undone.")) return;
+    try {
+        const res = await fetch(`/api/listings/${listingId}/delete/`, {
+            method: 'DELETE',
+            headers: getAuthHeaders()
+        });
+        if (res.ok) {
+            showToast("Listing deleted.");
+            await loadMyAccountData();
+            if (typeof loadInitialData === 'function') loadInitialData();
+            if (typeof loadMySellerListings === 'function') loadMySellerListings();
+        } else {
+            const data = await res.json().catch(() => ({}));
+            alert(data.error || "Failed to delete listing.");
+        }
+    } catch (err) {
+        console.error("Error deleting listing:", err);
+    }
+}
+window.deleteListingFromAccount = deleteListingFromAccount;
+
+function markDealDoneFromAccount(unlockId, buyerName) {
+    openReviewModal(unlockId, buyerName);
+}
+window.markDealDoneFromAccount = markDealDoneFromAccount;
+
+function openListBookFromAccount() {
+    closeMyAccountModal();
+    openSellSection();
+}
+window.openListBookFromAccount = openListBookFromAccount;
+
 // Selling Flow with Multipart Image Upload & Interstitial Ad
 function prefillSellForm(isbn) {
+    if (!STATE.currentUser) {
+        window.openSellAfterAuth = true;
+        window.pendingSellIsbn = isbn;
+        openAuthModal('register', 'Sign in or create your free Student Seller account (Name, Contact & City) to list books and manage orders.');
+        return;
+    }
     switchTab('sell');
     const input = document.getElementById('sell-isbn-input');
     if (input) {

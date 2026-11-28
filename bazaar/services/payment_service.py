@@ -773,6 +773,32 @@ def verify_and_complete_contact_unlock(
                 unlock=unlock,
                 is_resolved=True
             )
+
+            if created:
+                AdminNotification.objects.create(
+                    notification_type='CONTACT_UNLOCKED',
+                    title='Contact Unlocked',
+                    message=f"🔓 Buyer {buyer_label} unlocked {seller_label}'s contact for '{book_title}'.",
+                    user=locked_txn.buyer,
+                    buyer=locked_txn.buyer,
+                    seller=locked_txn.listing.seller,
+                    listing=locked_txn.listing,
+                    transaction=locked_txn,
+                    unlock=unlock,
+                    is_resolved=False
+                )
+                AdminNotification.objects.create(
+                    notification_type='DEAL_PENDING',
+                    title='Deal Pending',
+                    message=f"⏳ Deal Pending: Buyer {buyer_label} & Seller {seller_label} for '{book_title}'.",
+                    user=locked_txn.buyer,
+                    buyer=locked_txn.buyer,
+                    seller=locked_txn.listing.seller,
+                    listing=locked_txn.listing,
+                    transaction=locked_txn,
+                    unlock=unlock,
+                    is_resolved=False
+                )
         except Exception as notif_err:
             logger.warning(f"Failed to create AdminNotification for payment: {notif_err}")
 

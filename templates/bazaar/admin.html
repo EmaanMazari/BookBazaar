@@ -391,9 +391,12 @@
                             <th class="py-2.5 px-3">User & Contact</th>
                             <th class="py-2.5 px-3">City & Campus</th>
                             <th class="py-2.5 px-3">Role</th>
-                            <th class="py-2.5 px-3">Rating</th>
+                            <th class="py-2.5 px-3">Books Listed</th>
+                            <th class="py-2.5 px-3">Unlocks Received</th>
+                            <th class="py-2.5 px-3">Deals Done</th>
+                            <th class="py-2.5 px-3">Pending Deals</th>
+                            <th class="py-2.5 px-3">Avg Rating (★)</th>
                             <th class="py-2.5 px-3">Wallet</th>
-                            <th class="py-2.5 px-3">Sales / Books</th>
                             <th class="py-2.5 px-3">Status</th>
                             <th class="py-2.5 px-3 text-right">Actions</th>
                         </tr>
@@ -490,10 +493,11 @@
                             <th class="py-2.5 px-3">Seller Name</th>
                             <th class="py-2.5 px-3">Phone (OTP Verified)</th>
                             <th class="py-2.5 px-3">City / Campus</th>
-                            <th class="py-2.5 px-3">Rating</th>
-                            <th class="py-2.5 px-3">Active Listings</th>
-                            <th class="py-2.5 px-3">Sold Books</th>
-                            <th class="py-2.5 px-3">Unlocks Received</th>
+                            <th class="py-2.5 px-3">Books Listed</th>
+                            <th class="py-2.5 px-3">Contact Unlocks Received</th>
+                            <th class="py-2.5 px-3">Deals Done</th>
+                            <th class="py-2.5 px-3">Pending Deals</th>
+                            <th class="py-2.5 px-3">Avg Rating (★)</th>
                             <th class="py-2.5 px-3">Account Status</th>
                             <th class="py-2.5 px-3 text-right">Action</th>
                         </tr>
@@ -1155,7 +1159,19 @@
             let typeBadge = '<span class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-slate-100 text-slate-600">ALERT</span>';
             let actionHtml = '';
 
-            if (n.notification_type === 'PAYMENT_RECEIVED') {
+            if (n.notification_type === 'SELLER_REGISTERED') {
+                iconHtml = '<i class="fa-solid fa-user-plus text-indigo-600 text-sm"></i>';
+                typeBadge = '<span class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-indigo-100 text-indigo-800">NEW SELLER</span>';
+            } else if (n.notification_type === 'BOOK_LISTED') {
+                iconHtml = '<i class="fa-solid fa-book-bookmark text-emerald-600 text-sm"></i>';
+                typeBadge = '<span class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800">BOOK LISTED</span>';
+            } else if (n.notification_type === 'CONTACT_UNLOCKED') {
+                iconHtml = '<i class="fa-solid fa-lock-open text-blue-600 text-sm"></i>';
+                typeBadge = '<span class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-blue-100 text-blue-800">CONTACT UNLOCKED</span>';
+            } else if (n.notification_type === 'DEAL_PENDING') {
+                iconHtml = '<i class="fa-solid fa-clock text-amber-600 text-sm"></i>';
+                typeBadge = '<span class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-amber-100 text-amber-800">DEAL PENDING</span>';
+            } else if (n.notification_type === 'PAYMENT_RECEIVED') {
                 iconHtml = '<i class="fa-solid fa-money-bill-wave text-emerald-600 text-sm"></i>';
                 typeBadge = '<span class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-blue-100 text-blue-800">PAYMENT</span>';
             } else if (n.notification_type === 'PAYMENT_FAILED') {
@@ -1470,11 +1486,12 @@
                 </td>
                 <td class="py-2.5 px-3 text-slate-700">${u.city} <span class="text-[10px] text-slate-400 block">${u.campus_or_area || 'Campus'}</span></td>
                 <td class="py-2.5 px-3 uppercase text-[10px] font-bold text-slate-600">${u.user_type}</td>
+                <td class="py-2.5 px-3 font-bold text-slate-800">${u.books_listed_count ?? (u.active_listings_count + u.sold_listings_count)} books</td>
+                <td class="py-2.5 px-3 font-bold text-blue-700">${u.unlocks_received_count || 0}</td>
+                <td class="py-2.5 px-3 font-extrabold text-emerald-700">${u.deals_done_count || 0}</td>
+                <td class="py-2.5 px-3 font-bold text-amber-600">${u.deals_pending_count || 0}</td>
                 <td class="py-2.5 px-3 font-semibold text-amber-500">★ ${u.rating} <span class="text-[10px] text-slate-400">(${u.total_reviews})</span></td>
                 <td class="py-2.5 px-3 font-extrabold text-blue-700">Rs. ${parseFloat(u.wallet_balance).toFixed(0)}</td>
-                <td class="py-2.5 px-3 text-slate-600">
-                    <span class="text-blue-700 font-bold">${u.sold_listings_count || 0} sold</span> / ${u.active_listings_count || 0} active
-                </td>
                 <td class="py-2.5 px-3">
                     <span class="px-2 py-0.5 rounded-full text-[10px] font-extrabold ${u.is_blocked ? 'bg-red-100 text-red-800' : 'bg-blue-100 text-blue-800'}">
                         ${u.is_blocked ? 'BLOCKED' : 'ACTIVE'}
@@ -1710,10 +1727,11 @@
                 <td class="py-2.5 px-3 font-extrabold text-slate-900">${s.full_name}</td>
                 <td class="py-2.5 px-3 font-mono text-slate-700">${s.phone_number}</td>
                 <td class="py-2.5 px-3">${s.city} <span class="text-[10px] text-slate-400 block">${s.campus_or_area || 'Campus'}</span></td>
-                <td class="py-2.5 px-3 font-bold text-amber-500">★ ${s.rating.toFixed(1)} <span class="text-[10px] text-slate-400">(${s.total_reviews})</span></td>
-                <td class="py-2.5 px-3 font-bold text-slate-800">${s.active_listings} books</td>
-                <td class="py-2.5 px-3 font-extrabold text-blue-700">${s.sold_listings} sold</td>
-                <td class="py-2.5 px-3 font-bold text-blue-700">${s.unlocks_received} unlocked</td>
+                <td class="py-2.5 px-3 font-bold text-slate-800">${s.books_listed ?? (s.active_listings + s.sold_listings)} books</td>
+                <td class="py-2.5 px-3 font-bold text-blue-700">${s.unlocks_received || 0} unlocked</td>
+                <td class="py-2.5 px-3 font-extrabold text-emerald-700">${s.deals_done || 0} done</td>
+                <td class="py-2.5 px-3 font-bold text-amber-600">${s.deals_pending || 0} pending</td>
+                <td class="py-2.5 px-3 font-bold text-amber-500">★ ${s.rating ? s.rating.toFixed(1) : '5.0'} <span class="text-[10px] text-slate-400">(${s.total_reviews || 0})</span></td>
                 <td class="py-2.5 px-3">
                     <span class="px-2 py-0.5 rounded-full text-[10px] font-extrabold ${s.is_blocked ? 'bg-red-100 text-red-800' : 'bg-blue-100 text-blue-800'}">
                         ${s.is_blocked ? 'BLOCKED' : 'VERIFIED'}

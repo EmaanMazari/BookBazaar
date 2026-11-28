@@ -52,6 +52,10 @@ urlpatterns = [
     path('api/favorites/toggle/', views.toggle_favorite, name='api_toggle_favorite'),
     path('api/favorites/user/<int:user_id>/', views.get_user_favorites, name='api_user_favorites'),
 
+    # Seller Dashboard & Reviews APIs
+    path('api/seller/dashboard/', views.get_seller_dashboard, name='api_seller_dashboard'),
+    path('api/reviews/seller/<int:seller_id>/', views.get_seller_reviews, name='api_seller_reviews'),
+
     # Contact Unlock & Refund APIs (Phase 1 & Phase 3)
     path('api/unlocks/', views.request_contact_unlock, name='api_unlock_root'),
     path('api/unlocks/initiate/', views.initiate_payment_api, name='api_unlock_initiate'),
